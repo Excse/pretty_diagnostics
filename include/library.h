@@ -2,9 +2,33 @@
 #define PRETTY_ERRORS_LIBRARY_H
 
 #include <cstdint>
+#include <cassert>
 #include <string>
 #include <vector>
 #include <memory>
+
+#include <termcolor/termcolor.hpp>
+
+#define COLOR_RED 228, 38, 103
+#define COLOR_GREEN 175, 255, 95
+#define COLOR_WHITE 220, 238, 235
+#define COLOR_GREY 148, 148, 148
+#define COLOR_BEACH 125, 199, 164
+#define COLOR_LIGHT_GREY 170, 173, 176
+
+#define COLOR_RGB(text, rgb) termcolor::color<rgb> << text << termcolor::reset
+
+#define COLOR_TEXT_RED(text) COLOR_RGB(text, COLOR_RED)
+#define COLOR_TEXT_WHITE(text) COLOR_RGB(text, COLOR_WHITE)
+#define COLOR_TEXT_GREY(text) COLOR_RGB(text, COLOR_GREY)
+#define COLOR_TEXT_BEACH(text) COLOR_RGB(text, COLOR_BEACH)
+#define COLOR_TEXT_LIGHT_GREY(text) COLOR_RGB(text, COLOR_LIGHT_GREY)
+
+#define COLOR_BY_TYPE(type, text) color_by_type (std::cout, type) << text << termcolor::reset
+
+#define assertm(exp, msg) assert(((void)msg, exp))
+
+#define LINE_PADDING 1
 
 namespace pretty_diagnostics {
 
@@ -19,12 +43,12 @@ auto report_type_to_prefix (ReportType type) -> std::string;
 auto report_type_to_string (ReportType type) -> std::string;
 
 enum class ColorType {
-  NONE,
+  DEFAULT,
   RED,
-  BLUE,
-  YELLOW,
   GREEN,
 };
+
+auto color_by_type (std::ostream &stream, ColorType type) -> std::ostream &;
 
 struct Label;
 
@@ -75,12 +99,15 @@ class Label {
   auto get_span () const -> const Span &;
 
   [[nodiscard]]
+  auto get_color () const -> ColorType;
+
+  [[nodiscard]]
   auto get_line () const -> size_t;
 
  private:
   std::string message_;
   Span span_;
-  ColorType color_type_;
+  ColorType color_;
   size_t line_;
 };
 
@@ -168,7 +195,7 @@ class Report {
   size_t code_;
 
   std::vector<Label> labels_;
-  std::string tip_;
+  std::string note_;
 };
 
 }

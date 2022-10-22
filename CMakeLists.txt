@@ -21,6 +21,12 @@ set(SRC_FILES
         ${PROJECT_SOURCE_DIR}/src/library.cpp)
 
 ########################################
+# Add other libraries
+########################################
+add_subdirectory(./libs/termcolor)
+include_directories(${termcolor_SOURCE_DIR}/include)
+
+########################################
 # Compile source files into a library
 ########################################
 add_library(${PROJECT_NAME}_lib ${SRC_FILES})

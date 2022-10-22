@@ -1,16 +1,11 @@
 #include "library.h"
 
 #include <iostream>
-#include <cassert>
 #include <iomanip>
 #include <utility>
 #include <ranges>
 #include <regex>
 #include <map>
-
-#define assertm(exp, msg) assert(((void)msg, exp))
-
-#define LINE_PADDING 0
 
 using namespace pretty_diagnostics;
 
@@ -25,11 +20,31 @@ auto pretty_diagnostics::report_type_to_prefix (ReportType type) -> std::string 
 
 auto pretty_diagnostics::report_type_to_string (ReportType type) -> std::string {
   switch (type) {
-  case ReportType::ERROR: return "ERROR";
-  case ReportType::INFO: return "INFO";
-  case ReportType::WARNING: return "WARNING";
+  case ReportType::ERROR: return "Error";
+  case ReportType::INFO: return "Info";
+  case ReportType::WARNING: return "Warning";
   default: assertm(false, "This report type is not implemented yet.");
   }
+}
+
+auto pretty_diagnostics::color_by_type (std::ostream &stream, ColorType type) -> std::ostream & {
+  switch (type) {
+  case ColorType::DEFAULT: {
+    stream << termcolor::color<COLOR_LIGHT_GREY>;
+    break;
+  }
+  case ColorType::RED: {
+    stream << termcolor::color<COLOR_RED>;
+    break;
+  }
+  case ColorType::GREEN: {
+    stream << termcolor::color<COLOR_GREEN>;
+    break;
+  };
+  default: assertm(false, "This color is not implemented yet.");
+  }
+  return stream;
+
 }
 
 bool AscendingLabels::operator() (const Label *first, const Label *second) const {
@@ -89,7 +104,7 @@ auto Span::get_width () const -> size_t {
 }
 
 Label::Label (const std::string &message, const Span &span, ColorType color_type)
-    : message_ (message), span_ (span), color_type_ (color_type) {
+    : message_ (message), span_ (span), color_ (color_type) {
   this->line_ = this->span_.get_details ()->get_label_line (*this);
 }
 
@@ -99,6 +114,10 @@ auto Label::get_message () const -> const std::string & {
 
 auto Label::get_span () const -> const Span & {
   return this->span_;
+}
+
+auto Label::get_color () const -> ColorType {
+  return this->color_;
 }
 
 auto Label::get_line () const -> size_t {
@@ -171,11 +190,12 @@ void LabelGroup::print (const std::string &spaces_prefix) const {
   for (auto line_index = beginning_line; line_index <= ending_line; line_index++) {
     auto line_span = this->general_details_->get_line_spans ()[line_index];
     auto line_number = line_index + 1;
-    std::cout << "  " << std::setw (spaces_prefix.length () - 3) << std::setfill (' ')
-              << line_number << " │  ";
+    std::cout << "  " << COLOR_TEXT_GREY(std::setw (spaces_prefix.length () - 3)
+                                             << std::setfill (' ')
+                                             << line_number << " │  ");
 
     auto line_source = this->general_details_->get_line_source (*line_span);
-    std::cout << line_source << std::endl;
+    std::cout << COLOR_TEXT_LIGHT_GREY(line_source) << std::endl;
 
     auto descending_line_labels = this->find_labels_in_line (line_index);
     if (descending_line_labels.empty ()) {
@@ -196,15 +216,16 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
     relative_start_indicies[relative_span.get_start_index ()] = label;
   }
 
-  std::cout << spaces_prefix << "·  ";
+  std::cout << spaces_prefix << COLOR_TEXT_GREY("·  ");
   size_t last_label_ending = 0u;
+  Label *last_label = nullptr;
   for (auto index = 1u; index < line_span.get_width () + 1; index++) {
     auto result = relative_start_indicies.find (index);
     if (result == relative_start_indicies.end ()) {
       if (index == last_label_ending) {
-        std::cout << "╯";
+        COLOR_BY_TYPE(last_label->get_color (), "╯");
       } else if (index < last_label_ending) {
-        std::cout << "─";
+        COLOR_BY_TYPE(last_label->get_color (), "─");
       } else {
         std::cout << " ";
       }
@@ -212,22 +233,25 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
       continue;
     }
 
-    auto relative_span = result->second->get_span ().relative_to (line_span);
+    auto label = result->second;
+    auto relative_span = label->get_span ().relative_to (line_span);
+
     if (last_label_ending >= index) {
-      std::cout << "┤";
+      COLOR_BY_TYPE(label->get_color (), "┤");
     } else if (relative_span.get_end_index () > index) {
-      std::cout << "├";
+      COLOR_BY_TYPE(label->get_color (), "├");
     } else {
-      std::cout << "│";
+      COLOR_BY_TYPE(label->get_color (), "│");
     }
 
     last_label_ending = relative_span.get_end_index ();
+    last_label = label;
   }
 
   std::cout << std::endl;
 
   for (auto label_index = 0u; label_index < labels.size (); label_index++) {
-    std::cout << spaces_prefix << "·  ";
+    std::cout << spaces_prefix << COLOR_TEXT_GREY("·  ");
 
     auto label = labels.at (label_index);
     for (auto index = 1u; index < line_span.get_width () + 1; index++) {
@@ -237,11 +261,12 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
       } else if (result->second == label) {
         break;
       } else {
-        std::cout << "│";
+        auto color_label = result->second;
+        COLOR_BY_TYPE(color_label->get_color (), "│");
       }
     }
 
-    std::cout << "╰";
+    COLOR_BY_TYPE(label->get_color (), "╰");
 
     auto dash_amount = label->get_span ().get_width ();
     if (dash_amount == 0) {
@@ -249,10 +274,11 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
     }
 
     while (dash_amount--) {
-      std::cout << "─";
+      COLOR_BY_TYPE(label->get_color (), "─");
     }
 
-    std::cout << "▶ " << label->get_message () << std::endl;
+    COLOR_BY_TYPE(label->get_color (), "▶ ") << COLOR_TEXT_WHITE(label->get_message ())
+                                             << std::endl;
   }
 }
 
@@ -298,15 +324,17 @@ FileGroup::FileGroup (Details *details, std::vector<Label *> labels)
 }
 
 void FileGroup::print (const std::string &spaces_prefix) {
-  std::cout << "─ [" << this->details_->get_path () << "]" << std::endl;
-  std::cout << spaces_prefix << "·" << std::endl;
+  std::cout << COLOR_TEXT_GREY("─[")
+            << COLOR_TEXT_WHITE(this->details_->get_path ())
+            << COLOR_TEXT_GREY("]") << std::endl;
+  std::cout << spaces_prefix << COLOR_TEXT_GREY("·") << std::endl;
 
   for (auto index = 0u; index < this->label_groups_.size (); index++) {
     auto &labels_group = this->label_groups_.at (index);
     labels_group.print (spaces_prefix);
 
     if (index != this->label_groups_.size () - 1) {
-      std::cout << spaces_prefix << "⋮" << std::endl;
+      std::cout << spaces_prefix << COLOR_TEXT_GREY("⋮") << std::endl;
     }
   }
 }
@@ -331,13 +359,15 @@ auto FileGroup::get_biggest_displayed_number () -> size_t {
 Report::Report (ReportType type, std::string message, size_t code, std::vector<Label> labels,
                 std::string tip)
     : type_ (type), message_ (std::move (message)), code_ (code), labels_ (std::move (labels)),
-      tip_ (std::move (tip)) {}
+      note_ (std::move (tip)) {}
 
 void Report::print () {
-  std::cout << "[" << report_type_to_prefix (this->type_)
-            << std::setw (3) << std::setfill ('0') << this->code_ << "] ";
-  std::cout << report_type_to_string (this->type_) << ": ";
-  std::cout << this->message_ << std::endl;
+  std::cout << COLOR_TEXT_RED("[" << report_type_to_prefix (this->type_)
+                                  << std::setw (3) << std::setfill ('0')
+                                  << this->code_ << "] "
+                                  << report_type_to_string (this->type_) << ":")
+            << " " << COLOR_TEXT_WHITE(this->message_)
+            << std::endl;
 
   auto file_groups = this->find_file_groups ();
 
@@ -352,25 +382,28 @@ void Report::print () {
   auto biggest_number_width = std::to_string (biggest_number).length ();
   auto spaces_prefix = std::string (biggest_number_width + 3, ' ');
 
-  std::cout << spaces_prefix << "╭";
+  std::cout << spaces_prefix << COLOR_TEXT_GREY("╭");
   for (auto index = 0u; index < file_groups.size (); index++) {
     auto &file_group = file_groups.at (index);
     file_group.print (spaces_prefix);
 
     if (index != file_groups.size () - 1) {
-      std::cout << spaces_prefix << "·" << std::endl;
-      std::cout << spaces_prefix << "├";
+      std::cout << spaces_prefix << COLOR_TEXT_GREY("·") << std::endl;
+      std::cout << spaces_prefix << COLOR_TEXT_GREY("├");
     }
   }
 
-  std::cout << spaces_prefix << "·" << std::endl;
-  std::cout << spaces_prefix << "│  Tip: " << this->tip_ << std::endl;
+  std::cout << spaces_prefix << COLOR_TEXT_GREY("·") << std::endl;
+  std::cout << spaces_prefix << COLOR_TEXT_GREY("│")
+            << COLOR_TEXT_BEACH("  Note: ")
+            << COLOR_TEXT_WHITE(this->note_)
+            << std::endl;
 
   auto dashes_prefix = biggest_number_width + 3;
   while (dashes_prefix--) {
-    std::cout << "─";
+    std::cout << COLOR_TEXT_GREY("─");
   }
-  std::cout << "╯" << std::endl;
+  std::cout << COLOR_TEXT_GREY("╯") << std::endl;
 }
 
 auto Report::find_file_groups () -> std::vector<FileGroup> {
