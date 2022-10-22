@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-namespace pretty_errors {
+namespace pretty_diagnostics {
 
 enum class ReportType {
   ERROR,

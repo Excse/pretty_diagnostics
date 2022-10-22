@@ -8,9 +8,9 @@
 
 #define assertm(exp, msg) assert(((void)msg, exp))
 
-using namespace pretty_errors;
+using namespace pretty_diagnostics;
 
-auto pretty_errors::report_type_to_prefix (ReportType type) -> std::string {
+auto pretty_diagnostics::report_type_to_prefix (ReportType type) -> std::string {
   switch (type) {
   case ReportType::ERROR: return "E";
   case ReportType::INFO: return "I";
@@ -19,7 +19,7 @@ auto pretty_errors::report_type_to_prefix (ReportType type) -> std::string {
   }
 }
 
-auto pretty_errors::report_type_to_string (ReportType type) -> std::string {
+auto pretty_diagnostics::report_type_to_string (ReportType type) -> std::string {
   switch (type) {
   case ReportType::ERROR: return "ERROR";
   case ReportType::INFO: return "INFO";
