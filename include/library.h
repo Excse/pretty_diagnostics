@@ -28,9 +28,11 @@ enum class ColorType {
 
 struct Label;
 
+class Details;
+
 class Span {
  public:
-  Span (size_t start_index, size_t end_index);
+  Span (Details *details, size_t start_index, size_t end_index);
 
   Span ();
 
@@ -44,6 +46,9 @@ class Span {
   auto get_start_index () const -> size_t;
 
   [[nodiscard]]
+  auto get_details () const -> Details *;
+
+  [[nodiscard]]
   auto get_end_index () const -> size_t;
 
   void set_end_index (size_t end_index);
@@ -53,13 +58,30 @@ class Span {
 
  private:
   size_t start_index_;
+  Details *details_;
   size_t end_index_;
 };
 
-struct Label {
+class Details;
+
+class Label {
+ public:
+  Label (const std::string &message, const Span &span, ColorType color_type);
+
+  [[nodiscard]]
+  auto get_message () const -> const std::string &;
+
+  [[nodiscard]]
+  auto get_span () const -> const Span &;
+
+  [[nodiscard]]
+  auto get_line () const -> size_t;
+
+ private:
   std::string message_;
   Span span_;
   ColorType color_type_;
+  size_t line_;
 };
 
 struct AscendingLabels {
@@ -70,22 +92,15 @@ struct DescendingLabels {
   bool operator() (const Label *first, const Label *second) const;
 };
 
-struct LabelExtremsResult {
-  size_t first_line_number_;
-  size_t last_line_number_;
-};
-
 class Details {
  public:
   Details (std::string source, std::string path);
 
   [[nodiscard]]
-  auto get_line_source (const Span &span) -> std::string;
+  auto get_line_source (const Span &span) const -> std::string;
 
   [[nodiscard]]
-  auto get_label_line (const Label &label) -> size_t;
-
-  void find_line_spans ();
+  auto get_label_line (const Label &label) const -> size_t;
 
   [[nodiscard]]
   auto get_line_spans () const -> const std::vector<std::shared_ptr<Span>> &;
@@ -101,7 +116,7 @@ class Details {
 
 class LabelGroup {
  public:
-  LabelGroup (Details *details, std::vector<Label *> labels);
+  LabelGroup (Details *general_details, std::vector<Label *> labels);
 
   void print (const std::string &spaces_prefix) const;
 
@@ -117,23 +132,36 @@ class LabelGroup {
 
  private:
   std::vector<Label *> labels_;
+  Details *general_details_;
   Label *first_label_;
   Label *last_label_;
+};
+
+class FileGroup {
+ public:
+  FileGroup (Details *details, std::vector<Label *> labels);
+
+  void print (const std::string &spaces_prefix);
+
+  [[nodiscard]]
+  auto get_biggest_displayed_number () -> size_t;
+
+ private:
+  std::vector<LabelGroup> label_groups_;
   Details *details_;
 };
 
 class Report {
  public:
-  Report (Details *details, ReportType type, std::string message, size_t code, std::vector<
-      Label> labels, std::string tip);
+  Report (ReportType type, std::string message, size_t code, std::vector<Label> labels,
+          std::string tip);
 
   void print ();
 
   [[nodiscard]]
-  auto find_label_groups () -> std::vector<LabelGroup>;
+  auto find_file_groups () -> std::vector<FileGroup>;
 
  private:
-  Details *details_;
   ReportType type_;
 
   std::string message_;
