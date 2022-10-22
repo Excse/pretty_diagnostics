@@ -16,7 +16,7 @@ auto read_file (const std::string &path) -> pretty_diagnostics::Details {
   auto source = std::string (size, '\0');
   source_file.read (source.data (), (long)size);
 
-  return pretty_diagnostics::Details (source, path);
+  return {source, path};
 }
 
 TEST (SimpleTest, IsPrintable) {
