@@ -34,11 +34,6 @@ add_library(${PROJECT_NAME}_lib ${SRC_FILES})
 ########################################
 # Testing
 ########################################
-add_subdirectory(./libs/googletest)
-
-########################################
-# Testing
-########################################
 enable_testing()
 
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
