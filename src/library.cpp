@@ -91,40 +91,31 @@ auto Details::get_path () const -> const std::string & {
   return this->path_;
 }
 
-Report::Report (Details *details, ReportType type, std::string message, size_t code,
-                std::vector<Label> labels, std::string tip)
-    : details_ (details), type_ (type), message_ (std::move (message)), code_ (code),
-      labels_ (std::move (labels)), tip_ (std::move (tip)) {}
-
 #define LINE_PADDING 1
 
-void Report::print () {
-  std::cout << "[" << report_type_to_prefix (this->type_)
-            << std::setw (3) << std::setfill ('0') << this->code_ << "] ";
-  std::cout << report_type_to_string (this->type_) << ": ";
-  std::cout << this->message_ << std::endl;
+LabelGroup::LabelGroup (Details *details, std::vector<Label *> labels)
+    : labels_ (labels), details_ (details), first_label_ (), last_label_ () {
+  assertm(!this->labels_.empty (), "Couldn't find the last labels as there are no labels.");
 
-  auto [first_line_number, last_line_number] = this->find_label_extrems ();
+  auto ascending_labels (this->labels_);
+  std::sort (ascending_labels.begin (), ascending_labels.end (), AscendingLabels ());
 
-  auto beginning_line = first_line_number - LINE_PADDING;
-  auto first_label = this->find_first_label_in_line (first_line_number);
-  auto first_line_span = this->details_->get_line_spans ().at (first_line_number);
-  auto relative_first_span = first_label->span_.relative_to (*first_line_span);
-  auto first_line = first_line_number + 1;
+  this->first_label_ = ascending_labels.front ();
+  this->last_label_ = ascending_labels.back ();
+}
 
-  auto last_line = last_line_number + LINE_PADDING;
-  auto number_space_width = std::to_string (last_line + 1).length ();
-  auto number_spaces = std::string (number_space_width + 3, ' ');
+void LabelGroup::print (const std::string &spaces_prefix) const {
+  auto first_line = this->details_->get_label_line (*this->first_label_);
+  auto last_line = this->details_->get_label_line (*this->last_label_);
 
-  std::cout << number_spaces << "╭─ [" << this->details_->get_path () << ":" << first_line << ":"
-            << relative_first_span.get_start_index () << "]" << std::endl;
-  std::cout << number_spaces << "·" << std::endl;
+  auto beginning_line = first_line - LINE_PADDING;
+  auto ending_line = last_line + LINE_PADDING;
 
-  for (auto line_index = beginning_line; line_index <= last_line; line_index++) {
+  for (auto line_index = beginning_line; line_index <= ending_line; line_index++) {
     auto line_span = this->details_->get_line_spans ()[line_index];
     auto line_number = line_index + 1;
-    std::cout << "  " << std::setw ((int)number_space_width)
-              << std::setfill (' ') << line_number << " │  ";
+    std::cout << "  " << std::setw (spaces_prefix.length () - 3) << std::setfill (' ')
+              << line_number << " │  ";
 
     auto line_source = this->details_->get_line_source (*line_span);
     std::cout << line_source << std::endl;
@@ -135,24 +126,20 @@ void Report::print () {
     }
 
     std::sort (descending_line_labels.begin (), descending_line_labels.end (), DescendingLabels ());
-    this->print_descenting_labels (number_spaces, descending_line_labels, *line_span);
+    this->print_descenting_labels (spaces_prefix, descending_line_labels, *line_span);
   }
-
-  std::cout << number_spaces << "·" << std::endl;
-  std::cout << number_spaces << "│  Tip: " << this->tip_ << std::endl;
-  std::cout << "─────╯" << std::endl;
 }
 
-void Report::print_descenting_labels (const std::string &number_spaces,
-                                      const std::vector<Label *> &labels,
-                                      const Span &line_span) {
+void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
+                                          const std::vector<Label *> &labels,
+                                          const Span &line_span) const {
   std::map<size_t, Label *> relative_start_indicies;
   for (auto &label : labels) {
     auto relative_span = label->span_.relative_to (line_span);
     relative_start_indicies[relative_span.get_start_index ()] = label;
   }
 
-  std::cout << number_spaces << "·  ";
+  std::cout << spaces_prefix << "·  ";
   size_t last_label_ending = 0u;
   for (auto index = 1u; index < line_span.get_width () + 1; index++) {
     auto result = relative_start_indicies.find (index);
@@ -183,7 +170,7 @@ void Report::print_descenting_labels (const std::string &number_spaces,
   std::cout << std::endl;
 
   for (auto label_index = 0u; label_index < labels.size (); label_index++) {
-    std::cout << number_spaces << "·  ";
+    std::cout << spaces_prefix << "·  ";
 
     auto label = labels.at (label_index);
     for (auto index = 1u; index < line_span.get_width () + 1; index++) {
@@ -212,49 +199,99 @@ void Report::print_descenting_labels (const std::string &number_spaces,
   }
 }
 
-auto Report::find_label_extrems () -> LabelExtremsResult {
-  assertm(!this->labels_.empty (), "Couldn't find the last labels as there are no labels.");
-
-  std::vector<Label *> sorted_labels;
-  for (auto &label : this->labels_) {
-    sorted_labels.push_back (&label);
-  }
-
-  std::sort (sorted_labels.begin (), sorted_labels.end (), AscendingLabels ());
-
-  auto first_label = sorted_labels.front ();
-  auto first_line = this->details_->get_label_line (*first_label);
-
-  auto last_label = sorted_labels.back ();
-  auto last_line = this->details_->get_label_line (*last_label);
-
-  return {
-      .first_line_number_ = first_line,
-      .last_line_number_ = last_line,
-  };
-}
-
-auto Report::find_first_label_in_line (size_t line_index) -> Label * {
-  auto labels = this->find_labels_in_line (line_index);
-  if (labels.empty ()) {
-    assertm(false, "Couldn't find the first label with this line index.");
-  }
-
-  std::sort (labels.begin (), labels.end (), AscendingLabels ());
-  return labels.front ();
-}
-
-auto Report::find_labels_in_line (size_t line_index) -> std::vector<Label *> {
+auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<Label *> {
   std::vector<Label *> result;
 
   auto line_span = this->details_->get_line_spans ().at (line_index);
   for (auto &item : this->labels_) {
-    if (line_span->is_label_in_range (item)) {
-      result.push_back (&item);
+    if (line_span->is_label_in_range (*item)) {
+      result.push_back (item);
     }
   }
 
   return result;
+}
+
+auto LabelGroup::get_last_label () const -> Label * {
+  return this->last_label_;
+}
+
+Report::Report (Details *details, ReportType type, std::string message, size_t code,
+                std::vector<Label> labels, std::string tip)
+    : details_ (details), type_ (type), message_ (std::move (message)), code_ (code),
+      labels_ (std::move (labels)), tip_ (std::move (tip)) {}
+
+void Report::print () {
+  std::cout << "[" << report_type_to_prefix (this->type_)
+            << std::setw (3) << std::setfill ('0') << this->code_ << "] ";
+  std::cout << report_type_to_string (this->type_) << ": ";
+  std::cout << this->message_ << std::endl;
+
+  auto labels_groups = this->find_label_groups ();
+
+  auto biggest_number = 0u;
+  for (const auto &labels_group : labels_groups) {
+    auto last_label = labels_group.get_last_label ();
+    auto line_number = this->details_->get_label_line (*last_label);
+    if (biggest_number < line_number) {
+      biggest_number = line_number;
+    }
+  }
+
+  // Add 1 to get a number starting at 1. Add the line padding to get the last line displayed by
+  // the report.
+  biggest_number += 1 + LINE_PADDING;
+
+  auto biggest_number_width = std::to_string (biggest_number).length ();
+  auto spaces_prefix = std::string (biggest_number_width + 3, ' ');
+
+  std::cout << spaces_prefix << "╭─ [" << this->details_->get_path () << "]" << std::endl;
+  std::cout << spaces_prefix << "·" << std::endl;
+
+  for (auto index = 0u; index < labels_groups.size (); index++) {
+    auto &labels_group = labels_groups.at (index);
+    labels_group.print (spaces_prefix);
+
+    if (index != labels_groups.size () - 1) {
+      std::cout << spaces_prefix << "⋮" << std::endl;
+    }
+  }
+
+  std::cout << spaces_prefix << "·" << std::endl;
+  std::cout << spaces_prefix << "│  Tip: " << this->tip_ << std::endl;
+
+  auto dashes_prefix = biggest_number_width + 3;
+  while (dashes_prefix--) {
+    std::cout << "─";
+  }
+  std::cout << "╯" << std::endl;
+}
+
+auto Report::find_label_groups () -> std::vector<LabelGroup> {
+  assertm(!this->labels_
+      .empty (), "Cannot find label current_labels if there are no labels_collection.");
+
+  std::vector<std::vector<Label *>> labels_collection;
+  auto current_labels = &labels_collection.emplace_back ();
+
+  size_t last_label_line = this->details_->get_label_line (this->labels_.at (0));
+  for (auto &label : this->labels_) {
+    auto label_line = this->details_->get_label_line (label);
+    auto line_difference = label_line - last_label_line;
+    if (line_difference > LINE_PADDING) {
+      current_labels = &labels_collection.emplace_back ();
+    }
+
+    current_labels->push_back (&label);
+    last_label_line = label_line;
+  }
+
+  std::vector<LabelGroup> label_groups;
+  for (const auto &labels : labels_collection) {
+    label_groups.emplace_back (this->details_, labels);
+  }
+
+  return label_groups;
 }
 
 Span::Span (size_t start_index, size_t end_index)

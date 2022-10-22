@@ -99,6 +99,29 @@ class Details {
   std::string path_;
 };
 
+class LabelGroup {
+ public:
+  LabelGroup (Details *details, std::vector<Label *> labels);
+
+  void print (const std::string &spaces_prefix) const;
+
+  void print_descenting_labels (const std::string &spaces_prefix,
+                                const std::vector<Label *> &labels,
+                                const Span &line_span) const;
+
+  [[nodiscard]]
+  auto find_labels_in_line (size_t line_index) const -> std::vector<Label *>;
+
+  [[nodiscard]]
+  auto get_last_label () const -> Label *;
+
+ private:
+  std::vector<Label *> labels_;
+  Label *first_label_;
+  Label *last_label_;
+  Details *details_;
+};
+
 class Report {
  public:
   Report (Details *details, ReportType type, std::string message, size_t code, std::vector<
@@ -107,16 +130,7 @@ class Report {
   void print ();
 
   [[nodiscard]]
-  auto find_label_extrems () -> LabelExtremsResult;
-
-  [[nodiscard]]
-  auto find_first_label_in_line (size_t line_index) -> Label *;
-
-  [[nodiscard]]
-  auto find_labels_in_line (size_t line_index) -> std::vector<Label *>;
-
-  void print_descenting_labels (const std::string &number_spaces, const std::vector<Label *> &labels,
-                                const Span &line_span);
+  auto find_label_groups () -> std::vector<LabelGroup>;
 
  private:
   Details *details_;

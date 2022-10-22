@@ -36,7 +36,7 @@ auto create_invalid_type_combination (pretty_diagnostics::Details *details,
 }
 
 TEST (SimpleTest, IsPrintable) {
-  auto input_path = "./test/source.ark";
+  auto input_path = "/media/mass_storage/Linux/Projects/worked_on/pretty_diagnostics/test/source.ark";
   std::ifstream source_file (input_path, std::ios::in | std::ios::binary);
 
   auto size = std::filesystem::file_size (input_path);
@@ -49,7 +49,7 @@ TEST (SimpleTest, IsPrintable) {
   auto report = create_invalid_type_combination (
       &details,
       "i64", pretty_diagnostics::Span (120, 124),
-      "i32", pretty_diagnostics::Span (111, 111)
+      "i32", pretty_diagnostics::Span (192, 192)
   );
   report.print ();
 }
