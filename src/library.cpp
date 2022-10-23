@@ -40,7 +40,23 @@ auto pretty_diagnostics::color_by_type (std::ostream &stream, ColorType type) ->
   case ColorType::GREEN: {
     stream << termcolor::color<COLOR_GREEN>;
     break;
-  };
+  }
+  case ColorType::BLUE: {
+    stream << termcolor::color<COLOR_BLUE>;
+    break;
+  }
+  case ColorType::ORANGE: {
+    stream << termcolor::color<COLOR_ORANGE>;
+    break;
+  }
+  case ColorType::YELLOW: {
+    stream << termcolor::color<COLOR_YELLOW>;
+    break;
+  }
+  case ColorType::AQUA: {
+    stream << termcolor::color<COLOR_AQUA>;
+    break;
+  }
   default: assertm(false, "This color is not implemented yet.");
   }
   return stream;
@@ -70,12 +86,11 @@ bool DescendingLabels::operator() (const Label *first, const Label *second) cons
 Span::Span (Details *details, size_t start_index, size_t end_index)
     : start_index_ (start_index), details_ (details), end_index_ (end_index) {}
 
-Span::Span () : end_index_ (), start_index_ () {}
+Span::Span () : end_index_ (), start_index_ (), details_ () {}
 
 auto Span::relative_to (const Span &span) const -> Span {
-  return Span (span.get_details (),
-               this->start_index_ - span.start_index_,
-               this->end_index_ - span.start_index_);
+  return {span.get_details (), this->start_index_ - span.start_index_,
+          this->end_index_ - span.start_index_};
 }
 
 auto Span::is_label_in_range (const Label &label) const -> bool {
@@ -103,8 +118,8 @@ auto Span::get_width () const -> size_t {
   return this->end_index_ - this->start_index_;
 }
 
-Label::Label (const std::string &message, const Span &span, ColorType color_type)
-    : message_ (message), span_ (span), color_ (color_type) {
+Label::Label (std::string message, const Span &span, ColorType color_type)
+    : message_ (std::move (message)), span_ (span), color_ (color_type) {
   this->line_ = this->span_.get_details ()->get_label_line (*this);
 }
 
@@ -170,7 +185,8 @@ auto Details::get_path () const -> const std::string & {
 }
 
 LabelGroup::LabelGroup (Details *general_details_, std::vector<Label *> labels)
-    : labels_ (labels), general_details_ (general_details_), first_label_ (), last_label_ () {
+    : labels_ (std::move (labels)), general_details_ (general_details_), first_label_ (),
+      last_label_ () {
   assertm(!this->labels_.empty (), "Couldn't find the last labels as there are no labels.");
 
   auto ascending_labels (this->labels_);
@@ -181,8 +197,8 @@ LabelGroup::LabelGroup (Details *general_details_, std::vector<Label *> labels)
 }
 
 void LabelGroup::print (const std::string &spaces_prefix) const {
-  auto first_line = this->general_details_->get_label_line (*this->first_label_);
-  auto last_line = this->general_details_->get_label_line (*this->last_label_);
+  auto first_line = this->first_label_->get_line ();
+  auto last_line = this->last_label_->get_line ();
 
   auto beginning_line = first_line - LINE_PADDING;
   auto ending_line = last_line + LINE_PADDING;
@@ -195,9 +211,11 @@ void LabelGroup::print (const std::string &spaces_prefix) const {
                                              << line_number << " │  ");
 
     auto line_source = this->general_details_->get_line_source (*line_span);
-    std::cout << COLOR_TEXT_LIGHT_GREY(line_source) << std::endl;
-
     auto descending_line_labels = this->find_labels_in_line (line_index);
+
+    auto color_line = this->color_source_line_using_labels (line_source, descending_line_labels);
+    std::cout << color_line << std::endl;
+
     if (descending_line_labels.empty ()) {
       continue;
     }
@@ -210,18 +228,18 @@ void LabelGroup::print (const std::string &spaces_prefix) const {
 void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
                                           const std::vector<Label *> &labels,
                                           const Span &line_span) const {
-  std::map<size_t, Label *> relative_start_indicies;
+  std::map<size_t, Label *> mapped_labels;
   for (auto &label : labels) {
     auto relative_span = label->get_span ().relative_to (line_span);
-    relative_start_indicies[relative_span.get_start_index ()] = label;
+    mapped_labels[relative_span.get_start_index ()] = label;
   }
 
   std::cout << spaces_prefix << COLOR_TEXT_GREY("·  ");
   size_t last_label_ending = 0u;
   Label *last_label = nullptr;
   for (auto index = 1u; index < line_span.get_width () + 1; index++) {
-    auto result = relative_start_indicies.find (index);
-    if (result == relative_start_indicies.end ()) {
+    auto result = mapped_labels.find (index);
+    if (result == mapped_labels.end ()) {
       if (index == last_label_ending) {
         COLOR_BY_TYPE(last_label->get_color (), "╯");
       } else if (index < last_label_ending) {
@@ -250,13 +268,12 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
 
   std::cout << std::endl;
 
-  for (auto label_index = 0u; label_index < labels.size (); label_index++) {
+  for (auto label : labels) {
     std::cout << spaces_prefix << COLOR_TEXT_GREY("·  ");
 
-    auto label = labels.at (label_index);
     for (auto index = 1u; index < line_span.get_width () + 1; index++) {
-      auto result = relative_start_indicies.find (index);
-      if (result == relative_start_indicies.end ()) {
+      auto result = mapped_labels.find (index);
+      if (result == mapped_labels.end ()) {
         std::cout << " ";
       } else if (result->second == label) {
         break;
@@ -297,6 +314,52 @@ auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<La
 
 auto LabelGroup::get_last_label () const -> Label * {
   return this->last_label_;
+}
+auto LabelGroup::color_source_line_using_labels (
+    const std::string &source, const std::vector<Label *> &labels) const -> std::string {
+  std::map<size_t, Label *> mapped_labels;
+  for (const auto &label : labels) {
+    auto &line_span = this->general_details_->get_line_spans ()[label->get_line ()];
+    auto relative_span = label->get_span ().relative_to (*line_span);
+    mapped_labels[relative_span.get_start_index () - 1] = label;
+  }
+
+  std::ostringstream output;
+
+  // Needs to be done as termcolor checks the stream if the colorized flag is set.
+  auto is_cout_tty = termcolor::_internal::is_atty (std::cout);
+  output.iword (termcolor::_internal::colorize_index ()) = is_cout_tty;
+
+  output << termcolor::color<COLOR_LIGHT_GREY>;
+  for (auto char_index = 0u; char_index < source.length (); char_index++) {
+    auto current_char = source.at (char_index);
+    if (!mapped_labels.contains (char_index)) {
+      output << current_char;
+      continue;
+    }
+
+    auto label = mapped_labels.at (char_index);
+
+    color_by_type (output, label->get_color ());
+    output << current_char;
+
+    auto starting_index = char_index;
+    for (char_index++; char_index < starting_index + label->get_span ().get_width () + 1;
+         char_index++) {
+      if (mapped_labels.contains (char_index)) {
+        break;
+      }
+
+      auto label_char = source.at (char_index);
+      output << label_char;
+    }
+    char_index--;
+
+    output << termcolor::color<COLOR_LIGHT_GREY>;
+  }
+  output << termcolor::reset;
+
+  return output.str ();
 }
 
 FileGroup::FileGroup (Details *details, std::vector<Label *> labels)

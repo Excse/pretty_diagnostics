@@ -15,6 +15,10 @@
 #define COLOR_GREY 148, 148, 148
 #define COLOR_BEACH 125, 199, 164
 #define COLOR_LIGHT_GREY 170, 173, 176
+#define COLOR_BLUE 0, 116, 217
+#define COLOR_ORANGE 255, 133, 27
+#define COLOR_YELLOW 255, 220, 0
+#define COLOR_AQUA 127, 219, 255
 
 #define COLOR_RGB(text, rgb) termcolor::color<rgb> << text << termcolor::reset
 
@@ -22,7 +26,6 @@
 #define COLOR_TEXT_WHITE(text) COLOR_RGB(text, COLOR_WHITE)
 #define COLOR_TEXT_GREY(text) COLOR_RGB(text, COLOR_GREY)
 #define COLOR_TEXT_BEACH(text) COLOR_RGB(text, COLOR_BEACH)
-#define COLOR_TEXT_LIGHT_GREY(text) COLOR_RGB(text, COLOR_LIGHT_GREY)
 
 #define COLOR_BY_TYPE(type, text) color_by_type (std::cout, type) << text << termcolor::reset
 
@@ -46,11 +49,15 @@ enum class ColorType {
   DEFAULT,
   RED,
   GREEN,
+  BLUE,
+  ORANGE,
+  YELLOW,
+  AQUA
 };
 
 auto color_by_type (std::ostream &stream, ColorType type) -> std::ostream &;
 
-struct Label;
+class Label;
 
 class Details;
 
@@ -86,11 +93,9 @@ class Span {
   size_t end_index_;
 };
 
-class Details;
-
 class Label {
  public:
-  Label (const std::string &message, const Span &span, ColorType color_type);
+  Label (std::string message, const Span &span, ColorType color_type);
 
   [[nodiscard]]
   auto get_message () const -> const std::string &;
@@ -150,6 +155,10 @@ class LabelGroup {
   void print_descenting_labels (const std::string &spaces_prefix,
                                 const std::vector<Label *> &labels,
                                 const Span &line_span) const;
+
+  [[nodiscard]]
+  auto color_source_line_using_labels (const std::string &source,
+                                       const std::vector<Label *> &labels) const -> std::string;
 
   [[nodiscard]]
   auto find_labels_in_line (size_t line_index) const -> std::vector<Label *>;
