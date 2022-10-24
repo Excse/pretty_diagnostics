@@ -1,4 +1,4 @@
-#include "library.h"
+#include "pretty_diagnostics/library.h"
 
 #include <iostream>
 #include <iomanip>
@@ -6,6 +6,8 @@
 #include <ranges>
 #include <regex>
 #include <map>
+
+#include "pretty_diagnostics/utils.h"
 
 using namespace pretty_diagnostics;
 
@@ -159,8 +161,7 @@ Details::Details (std::string source, std::string path)
 }
 
 auto Details::get_line_source (const Span &span) const -> std::string {
-  auto result = this->source_.substr (span.get_start_index (),
-                                      span.get_end_index () - span.get_start_index ());
+  auto result = this->source_.substr (span.get_start_index (), span.get_width ());
   result = std::regex_replace (result, std::regex ("\t"), " ");
   return result;
 }
@@ -184,8 +185,8 @@ auto Details::get_path () const -> const std::string & {
   return this->path_;
 }
 
-LabelGroup::LabelGroup (Details *general_details_, std::vector<Label *> labels)
-    : labels_ (std::move (labels)), general_details_ (general_details_), first_label_ (),
+LabelGroup::LabelGroup (Details *general_details_, std::vector<const Label *> labels)
+    : labels_ (std::move (labels)), details_ (general_details_), first_label_ (),
       last_label_ () {
   assertm(!this->labels_.empty (), "Couldn't find the last labels as there are no labels.");
 
@@ -196,56 +197,56 @@ LabelGroup::LabelGroup (Details *general_details_, std::vector<Label *> labels)
   this->last_label_ = ascending_labels.back ();
 }
 
-void LabelGroup::print (const std::string &spaces_prefix) const {
+void LabelGroup::print (std::ostream &output, const std::string &spaces_prefix) const {
   auto first_line = this->first_label_->get_line ();
   auto last_line = this->last_label_->get_line ();
 
-  auto beginning_line = first_line - LINE_PADDING;
-  auto ending_line = last_line + LINE_PADDING;
+  auto beginning_line = first_line - DISPLAYED_LINE_PADDING;
+  auto ending_line = last_line + DISPLAYED_LINE_PADDING;
 
   for (auto line_index = beginning_line; line_index <= ending_line; line_index++) {
-    auto line_span = this->general_details_->get_line_spans ()[line_index];
+    const auto &line_span = this->details_->get_line_spans ()[line_index];
+
     auto line_number = line_index + 1;
-    std::cout << "  " << COLOR_TEXT_GREY(std::setw (spaces_prefix.length () - 3)
-                                             << std::setfill (' ')
-                                             << line_number << " │  ");
+    output << "  " << COLOR_RGB(std::setw (spaces_prefix.length () - 3)
+                                    << std::setfill (' ')
+                                    << line_number << " │  ", COLOR_GREY);
 
-    auto line_source = this->general_details_->get_line_source (*line_span);
-    auto descending_line_labels = this->find_labels_in_line (line_index);
+    auto descending_labels = this->find_labels_in_line (line_index);
+    this->print_colored_source_line (output, *line_span, descending_labels);
 
-    auto color_line = this->color_source_line_using_labels (line_source, descending_line_labels);
-    std::cout << color_line << std::endl;
-
-    if (descending_line_labels.empty ()) {
+    if (descending_labels.empty ()) {
       continue;
     }
 
-    std::sort (descending_line_labels.begin (), descending_line_labels.end (), DescendingLabels ());
-    this->print_descenting_labels (spaces_prefix, descending_line_labels, *line_span);
+    std::sort (descending_labels.begin (), descending_labels.end (), DescendingLabels ());
+    this->print_descenting_labels (output, spaces_prefix, descending_labels, *line_span);
   }
 }
 
-void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
-                                          const std::vector<Label *> &labels,
+void LabelGroup::print_descenting_labels (std::ostream &output,
+                                          const std::string &spaces_prefix,
+                                          const std::vector<const Label *> &labels,
                                           const Span &line_span) const {
-  std::map<size_t, Label *> mapped_labels;
+  std::map<size_t, const Label *> mapped_labels;
   for (auto &label : labels) {
-    auto relative_span = label->get_span ().relative_to (line_span);
+    const auto relative_span = label->get_span ().relative_to (line_span);
     mapped_labels[relative_span.get_start_index ()] = label;
   }
 
-  std::cout << spaces_prefix << COLOR_TEXT_GREY("·  ");
-  size_t last_label_ending = 0u;
-  Label *last_label = nullptr;
+  output << spaces_prefix << COLOR_RGB("·  ", COLOR_GREY);
+
+  const Label *last_label = nullptr;
+  size_t last_end_index = 0u;
   for (auto index = 1u; index < line_span.get_width () + 1; index++) {
-    auto result = mapped_labels.find (index);
+    const auto &result = mapped_labels.find (index);
     if (result == mapped_labels.end ()) {
-      if (index == last_label_ending) {
+      if (index == last_end_index) {
         COLOR_BY_TYPE(last_label->get_color (), "╯");
-      } else if (index < last_label_ending) {
+      } else if (index < last_end_index) {
         COLOR_BY_TYPE(last_label->get_color (), "─");
       } else {
-        std::cout << " ";
+        output << " ";
       }
 
       continue;
@@ -254,7 +255,7 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
     auto label = result->second;
     auto relative_span = label->get_span ().relative_to (line_span);
 
-    if (last_label_ending >= index) {
+    if (last_end_index >= index) {
       COLOR_BY_TYPE(label->get_color (), "┤");
     } else if (relative_span.get_end_index () > index) {
       COLOR_BY_TYPE(label->get_color (), "├");
@@ -262,19 +263,19 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
       COLOR_BY_TYPE(label->get_color (), "│");
     }
 
-    last_label_ending = relative_span.get_end_index ();
+    last_end_index = relative_span.get_end_index ();
     last_label = label;
   }
 
-  std::cout << std::endl;
+  output << "\n";
 
-  for (auto label : labels) {
-    std::cout << spaces_prefix << COLOR_TEXT_GREY("·  ");
+  for (const auto &label : labels) {
+    output << spaces_prefix << COLOR_RGB("·  ", COLOR_GREY);
 
     for (auto index = 1u; index < line_span.get_width () + 1; index++) {
-      auto result = mapped_labels.find (index);
+      const auto &result = mapped_labels.find (index);
       if (result == mapped_labels.end ()) {
-        std::cout << " ";
+        output << " ";
       } else if (result->second == label) {
         break;
       } else {
@@ -290,20 +291,18 @@ void LabelGroup::print_descenting_labels (const std::string &spaces_prefix,
       dash_amount = 1;
     }
 
-    while (dash_amount--) {
-      COLOR_BY_TYPE(label->get_color (), "─");
-    }
+    COLOR_BY_TYPE(label->get_color (), repeat_string ("─", dash_amount));
+    COLOR_BY_TYPE(label->get_color (), "▶ ") << COLOR_RGB(label->get_message (), COLOR_WHITE);
 
-    COLOR_BY_TYPE(label->get_color (), "▶ ") << COLOR_TEXT_WHITE(label->get_message ())
-                                             << std::endl;
+    output << "\n";
   }
 }
 
-auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<Label *> {
-  std::vector<Label *> result;
+auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<const Label *> {
+  std::vector<const Label *> result;
 
-  auto line_span = this->general_details_->get_line_spans ().at (line_index);
-  for (auto &item : this->labels_) {
+  const auto &line_span = this->details_->get_line_spans ().at (line_index);
+  for (const auto &item : this->labels_) {
     if (line_span->is_label_in_range (*item)) {
       result.push_back (item);
     }
@@ -312,33 +311,30 @@ auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<La
   return result;
 }
 
-auto LabelGroup::get_last_label () const -> Label * {
+auto LabelGroup::get_last_label () const -> const Label * {
   return this->last_label_;
 }
-auto LabelGroup::color_source_line_using_labels (
-    const std::string &source, const std::vector<Label *> &labels) const -> std::string {
-  std::map<size_t, Label *> mapped_labels;
+
+void LabelGroup::print_colored_source_line (std::ostream &output, const Span &label_span,
+                                            const std::vector<const Label *> &labels) const {
+  const auto source = this->details_->get_line_source (label_span);
+
+  std::map<size_t, const Label *> mapped_labels;
   for (const auto &label : labels) {
-    auto &line_span = this->general_details_->get_line_spans ()[label->get_line ()];
+    const auto &line_span = this->details_->get_line_spans ()[label->get_line ()];
     auto relative_span = label->get_span ().relative_to (*line_span);
     mapped_labels[relative_span.get_start_index () - 1] = label;
   }
 
-  std::ostringstream output;
-
-  // Needs to be done as termcolor checks the stream if the colorized flag is set.
-  auto is_cout_tty = termcolor::_internal::is_atty (std::cout);
-  output.iword (termcolor::_internal::colorize_index ()) = is_cout_tty;
-
   output << termcolor::color<COLOR_LIGHT_GREY>;
   for (auto char_index = 0u; char_index < source.length (); char_index++) {
-    auto current_char = source.at (char_index);
+    const auto &current_char = source.at (char_index);
     if (!mapped_labels.contains (char_index)) {
       output << current_char;
       continue;
     }
 
-    auto label = mapped_labels.at (char_index);
+    const auto &label = mapped_labels.at (char_index);
 
     color_by_type (output, label->get_color ());
     output << current_char;
@@ -350,35 +346,34 @@ auto LabelGroup::color_source_line_using_labels (
         break;
       }
 
-      auto label_char = source.at (char_index);
+      const auto &label_char = source.at (char_index);
       output << label_char;
     }
     char_index--;
 
     output << termcolor::color<COLOR_LIGHT_GREY>;
   }
-  output << termcolor::reset;
 
-  return output.str ();
+  output << termcolor::reset << "\n";
 }
 
-FileGroup::FileGroup (Details *details, std::vector<Label *> labels)
+FileGroup::FileGroup (Details *details, std::vector<const Label *> labels)
     : details_ (details) {
   assertm(!labels.empty (), "Cannot find label current_labels if there are no labels_collection.");
 
-  std::vector<std::vector<Label *>> labels_collection;
+  std::vector<std::vector<const Label *>> labels_collection;
   auto current_labels = &labels_collection.emplace_back ();
 
-  size_t last_label_line = labels.at (0)->get_line ();
-  for (auto &label : labels) {
+  auto last_line = labels.front ()->get_line ();
+  for (const auto &label : labels) {
     auto label_line = label->get_line ();
-    auto line_difference = label_line - last_label_line;
-    if (line_difference > LINE_PADDING) {
+    auto line_difference = label_line - last_line;
+    if (line_difference > DISPLAYED_LINE_PADDING) {
       current_labels = &labels_collection.emplace_back ();
     }
 
     current_labels->push_back (label);
-    last_label_line = label_line;
+    last_line = label_line;
   }
 
   for (const auto &collected_labels : labels_collection) {
@@ -386,23 +381,27 @@ FileGroup::FileGroup (Details *details, std::vector<Label *> labels)
   }
 }
 
-void FileGroup::print (const std::string &spaces_prefix) {
-  std::cout << COLOR_TEXT_GREY("─[")
-            << COLOR_TEXT_WHITE(this->details_->get_path ())
-            << COLOR_TEXT_GREY("]") << std::endl;
-  std::cout << spaces_prefix << COLOR_TEXT_GREY("·") << std::endl;
+void FileGroup::print (std::ostream &output, const std::string &spaces_prefix) const {
+  output << COLOR_RGB("─[", COLOR_GREY)
+         << COLOR_RGB(this->details_->get_path (), COLOR_WHITE)
+         << COLOR_RGB("]", COLOR_GREY);
+  output << "\n";
+
+  output << spaces_prefix << COLOR_RGB("·", COLOR_GREY);
+  output << "\n";
 
   for (auto index = 0u; index < this->label_groups_.size (); index++) {
-    auto &labels_group = this->label_groups_.at (index);
-    labels_group.print (spaces_prefix);
+    const auto &labels_group = this->label_groups_.at (index);
+    labels_group.print (output, spaces_prefix);
 
     if (index != this->label_groups_.size () - 1) {
-      std::cout << spaces_prefix << COLOR_TEXT_GREY("⋮") << std::endl;
+      output << spaces_prefix << COLOR_RGB("⋮", COLOR_GREY);
+      output << "\n";
     }
   }
 }
 
-auto FileGroup::get_biggest_displayed_number () -> size_t {
+auto FileGroup::get_biggest_displayed_number () const -> size_t {
   auto biggest_number = 0u;
   for (const auto &labels_group : this->label_groups_) {
     auto last_label = labels_group.get_last_label ();
@@ -414,7 +413,7 @@ auto FileGroup::get_biggest_displayed_number () -> size_t {
 
   // Add 1 to get a number starting at 1. Add the line padding to get the last line displayed by
   // the report.
-  biggest_number += 1 + LINE_PADDING;
+  biggest_number += 1 + DISPLAYED_LINE_PADDING;
 
   return biggest_number;
 }
@@ -424,18 +423,18 @@ Report::Report (ReportType type, std::string message, size_t code, std::vector<L
     : type_ (type), message_ (std::move (message)), code_ (code), labels_ (std::move (labels)),
       note_ (std::move (tip)) {}
 
-void Report::print () {
-  std::cout << COLOR_TEXT_RED("[" << report_type_to_prefix (this->type_)
-                                  << std::setw (3) << std::setfill ('0')
-                                  << this->code_ << "] "
-                                  << report_type_to_string (this->type_) << ":")
-            << " " << COLOR_TEXT_WHITE(this->message_)
-            << std::endl;
+void Report::print (std::ostream &output) const {
+  output << COLOR_RGB("[" << report_type_to_prefix (this->type_)
+                          << std::setw (3) << std::setfill ('0')
+                          << this->code_ << "] "
+                          << report_type_to_string (this->type_) << ":", COLOR_RED)
+         << " " << COLOR_RGB(this->message_, COLOR_WHITE);
+  output << "\n";
 
   auto file_groups = this->find_file_groups ();
 
   auto biggest_number = 0u;
-  for (auto &file_group : file_groups) {
+  for (const auto &file_group : file_groups) {
     auto file_biggest_number = file_group.get_biggest_displayed_number ();
     if (file_biggest_number > biggest_number) {
       biggest_number = file_biggest_number;
@@ -445,33 +444,36 @@ void Report::print () {
   auto biggest_number_width = std::to_string (biggest_number).length ();
   auto spaces_prefix = std::string (biggest_number_width + 3, ' ');
 
-  std::cout << spaces_prefix << COLOR_TEXT_GREY("╭");
+  output << spaces_prefix << COLOR_RGB("╭", COLOR_GREY);
   for (auto index = 0u; index < file_groups.size (); index++) {
-    auto &file_group = file_groups.at (index);
-    file_group.print (spaces_prefix);
+    const auto &file_group = file_groups.at (index);
+    file_group.print (output, spaces_prefix);
 
     if (index != file_groups.size () - 1) {
-      std::cout << spaces_prefix << COLOR_TEXT_GREY("·") << std::endl;
-      std::cout << spaces_prefix << COLOR_TEXT_GREY("├");
+      output << spaces_prefix << COLOR_RGB("·", COLOR_GREY);
+      output << "\n";
+
+      output << spaces_prefix << COLOR_RGB("├", COLOR_GREY);
     }
   }
 
-  std::cout << spaces_prefix << COLOR_TEXT_GREY("·") << std::endl;
-  std::cout << spaces_prefix << COLOR_TEXT_GREY("│")
-            << COLOR_TEXT_BEACH("  Note: ")
-            << COLOR_TEXT_WHITE(this->note_)
-            << std::endl;
+  output << spaces_prefix << COLOR_RGB("·", COLOR_GREY);
+  output << "\n";
+
+  output << spaces_prefix << COLOR_RGB("│", COLOR_GREY)
+         << COLOR_RGB("  Note: ", COLOR_BEACH)
+         << COLOR_RGB(this->note_, COLOR_WHITE);
+  output << "\n";
 
   auto dashes_prefix = biggest_number_width + 3;
-  while (dashes_prefix--) {
-    std::cout << COLOR_TEXT_GREY("─");
-  }
-  std::cout << COLOR_TEXT_GREY("╯") << std::endl;
+  output << COLOR_RGB(repeat_string ("─", dashes_prefix), COLOR_GREY)
+         << COLOR_RGB("╯", COLOR_GREY);
+  output << "\n";
 }
 
-auto Report::find_file_groups () -> std::vector<FileGroup> {
-  std::map<Details *, std::vector<Label *>> group_mappings;
-  for (auto &label : this->labels_) {
+auto Report::find_file_groups () const -> std::vector<FileGroup> {
+  std::map<Details *, std::vector<const Label *>> group_mappings;
+  for (const auto &label : this->labels_) {
     auto details = label.get_span ().get_details ();
     auto result = group_mappings.find (details);
     if (result == group_mappings.end ()) {
@@ -482,7 +484,7 @@ auto Report::find_file_groups () -> std::vector<FileGroup> {
   }
 
   std::vector<FileGroup> file_groups;
-  for (auto &[details, labels] : group_mappings) {
+  for (const auto &[details, labels] : group_mappings) {
     file_groups.emplace_back (details, labels);
   }
 

@@ -9,29 +9,12 @@
 
 #include <termcolor/termcolor.hpp>
 
-#define COLOR_RED 228, 38, 103
-#define COLOR_GREEN 175, 255, 95
-#define COLOR_WHITE 220, 238, 235
-#define COLOR_GREY 148, 148, 148
-#define COLOR_BEACH 125, 199, 164
-#define COLOR_LIGHT_GREY 170, 173, 176
-#define COLOR_BLUE 0, 116, 217
-#define COLOR_ORANGE 255, 133, 27
-#define COLOR_YELLOW 255, 220, 0
-#define COLOR_AQUA 127, 219, 255
-
-#define COLOR_RGB(text, rgb) termcolor::color<rgb> << text << termcolor::reset
-
-#define COLOR_TEXT_RED(text) COLOR_RGB(text, COLOR_RED)
-#define COLOR_TEXT_WHITE(text) COLOR_RGB(text, COLOR_WHITE)
-#define COLOR_TEXT_GREY(text) COLOR_RGB(text, COLOR_GREY)
-#define COLOR_TEXT_BEACH(text) COLOR_RGB(text, COLOR_BEACH)
+#include "config.h"
 
 #define COLOR_BY_TYPE(type, text) color_by_type (std::cout, type) << text << termcolor::reset
+#define COLOR_RGB(text, rgb) termcolor::color<rgb> << text << termcolor::reset
 
 #define assertm(exp, msg) assert(((void)msg, exp))
-
-#define LINE_PADDING 1
 
 namespace pretty_diagnostics {
 
@@ -111,9 +94,9 @@ class Label {
 
  private:
   std::string message_;
-  Span span_;
   ColorType color_;
   size_t line_;
+  Span span_;
 };
 
 struct AscendingLabels {
@@ -148,39 +131,39 @@ class Details {
 
 class LabelGroup {
  public:
-  LabelGroup (Details *general_details, std::vector<Label *> labels);
+  LabelGroup (Details *general_details, std::vector<const Label *> labels);
 
-  void print (const std::string &spaces_prefix) const;
+  void print (std::ostream &output, const std::string &spaces_prefix) const;
 
-  void print_descenting_labels (const std::string &spaces_prefix,
-                                const std::vector<Label *> &labels,
+  void print_descenting_labels (std::ostream &output,
+                                const std::string &spaces_prefix,
+                                const std::vector<const Label *> &labels,
                                 const Span &line_span) const;
 
-  [[nodiscard]]
-  auto color_source_line_using_labels (const std::string &source,
-                                       const std::vector<Label *> &labels) const -> std::string;
+  void print_colored_source_line (std::ostream &output, const Span &label_span,
+                                  const std::vector<const Label *> &labels) const;
 
   [[nodiscard]]
-  auto find_labels_in_line (size_t line_index) const -> std::vector<Label *>;
+  auto find_labels_in_line (size_t line_index) const -> std::vector<const Label *>;
 
   [[nodiscard]]
-  auto get_last_label () const -> Label *;
+  auto get_last_label () const -> const Label *;
 
  private:
-  std::vector<Label *> labels_;
-  Details *general_details_;
-  Label *first_label_;
-  Label *last_label_;
+  std::vector<const Label *> labels_;
+  const Label *first_label_;
+  const Label *last_label_;
+  Details *details_;
 };
 
 class FileGroup {
  public:
-  FileGroup (Details *details, std::vector<Label *> labels);
+  FileGroup (Details *details, std::vector<const Label *> labels);
 
-  void print (const std::string &spaces_prefix);
+  void print (std::ostream &output, const std::string &spaces_prefix) const;
 
   [[nodiscard]]
-  auto get_biggest_displayed_number () -> size_t;
+  auto get_biggest_displayed_number () const -> size_t;
 
  private:
   std::vector<LabelGroup> label_groups_;
@@ -192,19 +175,17 @@ class Report {
   Report (ReportType type, std::string message, size_t code, std::vector<Label> labels,
           std::string tip);
 
-  void print ();
+  void print (std::ostream &output) const;
 
   [[nodiscard]]
-  auto find_file_groups () -> std::vector<FileGroup>;
+  auto find_file_groups () const -> std::vector<FileGroup>;
 
  private:
-  ReportType type_;
-
-  std::string message_;
-  size_t code_;
-
   std::vector<Label> labels_;
+  std::string message_;
   std::string note_;
+  ReportType type_;
+  size_t code_;
 };
 
 }

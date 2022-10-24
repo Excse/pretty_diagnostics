@@ -18,7 +18,8 @@ include_directories(${COMMON_INCLUDES})
 # Source files
 ########################################
 set(SRC_FILES
-        ${PROJECT_SOURCE_DIR}/src/library.cpp)
+        ${PROJECT_SOURCE_DIR}/src/pretty_diagnostics/library.cpp
+        ${PROJECT_SOURCE_DIR}/src/pretty_diagnostics/utils.cpp)
 
 ########################################
 # Add other libraries

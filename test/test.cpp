@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "library.h"
+#include "pretty_diagnostics/library.h"
 
 #include <filesystem>
 #include <fstream>
@@ -43,5 +43,5 @@ TEST (SimpleTest, IsPrintable) {
       },
       "Try to cast the {RED}expression{/} to the type of the {BLUE}variable{/}.");
 
-  report.print ();
+  report.print (std::cout);
 }
