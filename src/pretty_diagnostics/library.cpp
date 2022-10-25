@@ -374,7 +374,7 @@ void LabelGroup::print_colored_source_line (std::ostream &output, const Span &la
   for (const auto &label : labels) {
     const auto &line_span = this->details_->get_line_spans ()[label->get_line ()];
     auto relative_span = label->get_span ().relative_to (*line_span);
-    mapped_labels[relative_span.get_start_index () - 1] = label;
+    mapped_labels[relative_span.get_start_index ()] = label;
   }
 
   output << termcolor::color<COLOR_LIGHT_GREY>;
