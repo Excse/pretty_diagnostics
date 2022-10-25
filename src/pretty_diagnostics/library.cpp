@@ -263,7 +263,11 @@ void LabelGroup::print (std::ostream &output, const std::string &spaces_prefix) 
   auto first_line = this->first_label_->get_line ();
   auto last_line = this->last_label_->get_line ();
 
-  auto beginning_line = first_line - DISPLAYED_LINE_PADDING;
+  auto beginning_line = 0u;
+  if (first_line >= DISPLAYED_LINE_PADDING) {
+    beginning_line = first_line - DISPLAYED_LINE_PADDING;
+  }
+
   auto ending_line = last_line + DISPLAYED_LINE_PADDING;
 
   for (auto line_index = beginning_line; line_index <= ending_line; line_index++) {
@@ -300,10 +304,10 @@ void LabelGroup::print_descenting_labels (std::ostream &output,
 
   const Label *last_label = nullptr;
   size_t last_end_index = 0u;
-  for (auto index = 1u; index < line_span.get_width () + 1; index++) {
+  for (auto index = 0u; index < line_span.get_width (); index++) {
     const auto &result = mapped_labels.find (index);
     if (result == mapped_labels.end ()) {
-      if (index == last_end_index) {
+      if (index == last_end_index && index != 0) {
         COLOR_BY_TYPE(last_label->get_color (), "╯");
       } else if (index < last_end_index) {
         COLOR_BY_TYPE(last_label->get_color (), "─");
@@ -317,7 +321,7 @@ void LabelGroup::print_descenting_labels (std::ostream &output,
     auto label = result->second;
     auto relative_span = label->get_span ().relative_to (line_span);
 
-    if (last_end_index >= index) {
+    if (last_end_index >= index && index != 0) {
       COLOR_BY_TYPE(label->get_color (), "┤");
     } else if (relative_span.get_end_index () > index) {
       COLOR_BY_TYPE(label->get_color (), "├");
@@ -334,7 +338,7 @@ void LabelGroup::print_descenting_labels (std::ostream &output,
   for (const auto &label : labels) {
     output << spaces_prefix << COLOR_RGB("·  ", COLOR_GREY);
 
-    for (auto index = 1u; index < line_span.get_width () + 1; index++) {
+    for (auto index = 0u; index < line_span.get_width (); index++) {
       const auto &result = mapped_labels.find (index);
       if (result == mapped_labels.end ()) {
         output << " ";
