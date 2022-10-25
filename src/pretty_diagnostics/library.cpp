@@ -146,7 +146,7 @@ bool DescendingLabels::operator() (const Label *first, const Label *second) cons
 Span::Span (Details *details, size_t start_index, size_t end_index)
     : start_index_ (start_index), details_ (details), end_index_ (end_index) {}
 
-Span::Span () : end_index_ (), start_index_ (), details_ () {}
+Span::Span () : start_index_ (), details_ (), end_index_ () {}
 
 auto Span::relative_to (const Span &span) const -> Span {
   return {span.get_details (), this->start_index_ - span.start_index_,
@@ -179,7 +179,7 @@ auto Span::get_width () const -> size_t {
 }
 
 Label::Label (std::string message, const Span &span, ColorType color_type)
-    : message_ (std::move (message)), span_ (span), color_ (color_type) {
+    : message_ (std::move (message)), color_ (color_type), span_ (span) {
   this->line_ = this->span_.get_details ()->get_label_line (*this);
 }
 
@@ -239,13 +239,17 @@ auto Details::get_line_spans () const -> const std::vector<std::shared_ptr<Span>
   return this->line_spans_;
 }
 
+auto Details::get_source () const -> const std::string & {
+  return this->source_;
+}
+
 auto Details::get_path () const -> const std::string & {
   return this->path_;
 }
 
 LabelGroup::LabelGroup (Details *general_details_, std::vector<const Label *> labels)
-    : labels_ (std::move (labels)), details_ (general_details_), first_label_ (),
-      last_label_ () {
+    : labels_ (std::move (labels)), first_label_ (), last_label_ (),
+      details_ (general_details_) {
   assertm(!this->labels_.empty (), "Couldn't find the last labels as there are no labels.");
 
   auto ascending_labels (this->labels_);
@@ -413,8 +417,20 @@ auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<co
   return result;
 }
 
+auto LabelGroup::get_labels () const -> const std::vector<const Label *> & {
+  return this->labels_;
+}
+
+auto LabelGroup::get_first_label () const -> const Label * {
+  return this->first_label_;
+}
+
 auto LabelGroup::get_last_label () const -> const Label * {
   return this->last_label_;
+}
+
+auto LabelGroup::get_details () const -> Details * {
+  return this->details_;
 }
 
 FileGroup::FileGroup (Details *details, std::vector<const Label *> labels)
@@ -478,10 +494,18 @@ auto FileGroup::get_biggest_displayed_number () const -> size_t {
   return biggest_number;
 }
 
+auto FileGroup::get_label_groups () const -> const std::vector<LabelGroup> & {
+  return this->label_groups_;
+}
+
+auto FileGroup::get_details () const -> Details * {
+  return this->details_;
+}
+
 Report::Report (ReportType type, std::string message, size_t code, std::vector<Label> labels,
                 std::string tip)
-    : type_ (type), message_ (std::move (message)), code_ (code), labels_ (std::move (labels)),
-      note_ (std::move (tip)) {}
+    : labels_ (std::move (labels)), message_ (std::move (message)), note_ (std::move (tip)),
+      type_ (type), code_ (code) {}
 
 void Report::print (std::ostream &output) const {
   output << COLOR_RGB("[" << report_type_to_prefix (this->type_)
@@ -549,4 +573,24 @@ auto Report::find_file_groups () const -> std::vector<FileGroup> {
   }
 
   return file_groups;
+}
+
+auto Report::get_labels () const -> const std::vector<Label> & {
+  return this->labels_;
+}
+
+auto Report::get_message () const -> const std::string & {
+  return this->message_;
+}
+
+auto Report::get_note () const -> const std::string & {
+  return this->note_;
+}
+
+auto Report::get_type () const -> ReportType {
+  return this->type_;
+}
+
+auto Report::get_code () const -> size_t {
+  return this->code_;
 }

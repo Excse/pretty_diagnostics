@@ -123,6 +123,9 @@ class Details {
   auto get_line_spans () const -> const std::vector<std::shared_ptr<Span>> &;
 
   [[nodiscard]]
+  auto get_source () const -> const std::string &;
+
+  [[nodiscard]]
   auto get_path () const -> const std::string &;
 
  private:
@@ -149,6 +152,15 @@ class LabelGroup {
   auto find_labels_in_line (size_t line_index) const -> std::vector<const Label *>;
 
   [[nodiscard]]
+  auto get_labels () const -> const std::vector<const Label *> &;
+
+  [[nodiscard]]
+  auto get_first_label () const -> const Label *;
+
+  [[nodiscard]]
+  auto get_details () const -> Details *;
+
+  [[nodiscard]]
   auto get_last_label () const -> const Label *;
 
  private:
@@ -167,6 +179,12 @@ class FileGroup {
   [[nodiscard]]
   auto get_biggest_displayed_number () const -> size_t;
 
+  [[nodiscard]]
+  auto get_label_groups () const -> const std::vector<LabelGroup> &;
+
+  [[nodiscard]]
+  auto get_details () const -> Details *;
+
  private:
   std::vector<LabelGroup> label_groups_;
   Details *details_;
@@ -181,6 +199,21 @@ class Report {
 
   [[nodiscard]]
   auto find_file_groups () const -> std::vector<FileGroup>;
+
+  [[nodiscard]]
+  auto get_labels () const -> const std::vector<Label> &;
+
+  [[nodiscard]]
+  auto get_message () const -> const std::string &;
+
+  [[nodiscard]]
+  auto get_note () const -> const std::string &;
+
+  [[nodiscard]]
+  auto get_type () const -> ReportType;
+
+  [[nodiscard]]
+  auto get_code () const -> size_t;
 
  private:
   std::vector<Label> labels_;
