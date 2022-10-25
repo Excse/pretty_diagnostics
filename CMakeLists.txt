@@ -1,62 +1,16 @@
-# https://github.com/selyunin/gtest_submodule/blob/master/CMakeLists.txt
-
 cmake_minimum_required(VERSION 3.23)
-
-########################################
-# Project setup
-########################################
-set(CMAKE_CXX_STANDARD 23)
 project(pretty_diagnostics)
 
-########################################
-# Define include directories
-########################################
-set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
-include_directories(${COMMON_INCLUDES})
+set(${PROJECT_NAME}_version_major 0 CACHE STRING "major version" FORCE)
+set(${PROJECT_NAME}_version_minor 1 CACHE STRING "minor version" FORCE)
+set(${PROJECT_NAME}_version_patch 0 CACHE STRING "patch version" FORCE)
+set(${PROJECT_NAME}_version "${${PROJECT_NAME}_version_major}.${${PROJECT_NAME}_version_minor}.${${PROJECT_NAME}_version_patch}"
+        CACHE STRING "full version")
 
-########################################
-# Source files
-########################################
-set(SRC_FILES
-        ${PROJECT_SOURCE_DIR}/src/pretty_diagnostics/library.cpp
-        ${PROJECT_SOURCE_DIR}/src/pretty_diagnostics/utils.cpp)
+include(cmake/configuration.cmake)
 
-########################################
-# Add other libraries
-########################################
-add_subdirectory(./libs/termcolor)
-include_directories(${termcolor_SOURCE_DIR}/include)
-
-########################################
-# Compile source files into a library
-########################################
-add_library(${PROJECT_NAME}_lib ${SRC_FILES})
-
-########################################
-# Testing
-########################################
-enable_testing()
-
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-
-########################################
-# Test files
-########################################
-file(GLOB TEST_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cpp)
-
-########################################
-# Unit Tests
-########################################
-add_executable(${PROJECT_NAME}_tests ${TEST_SRC_FILES})
-
-########################################
-# Standard linking to gtest stuff.
-########################################
-target_link_libraries(${PROJECT_NAME}_tests gtest gtest_main)
-
-########################################
-# Extra linking for the project.
-########################################
-target_link_libraries(${PROJECT_NAME}_tests ${PROJECT_NAME}_lib)
-
-add_test(UnitTests ${PROJECT_NAME}_tests)
+add_subdirectory(src)
+#if(${PROJECT_NAME}_build_tests)
+    enable_testing()
+    add_subdirectory(test)
+#endif()

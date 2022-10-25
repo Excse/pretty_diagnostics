@@ -11,6 +11,19 @@
 
 using namespace pretty_diagnostics;
 
+#define DISPLAYED_LINE_PADDING 1
+
+#define COLOR_RED 228, 38, 103
+#define COLOR_GREEN 175, 255, 95
+#define COLOR_WHITE 220, 238, 235
+#define COLOR_GREY 148, 148, 148
+#define COLOR_BEACH 125, 199, 164
+#define COLOR_LIGHT_GREY 170, 173, 176
+#define COLOR_BLUE 0, 116, 217
+#define COLOR_ORANGE 255, 133, 27
+#define COLOR_YELLOW 255, 220, 0
+#define COLOR_AQUA 127, 219, 255
+
 auto pretty_diagnostics::report_type_to_prefix (ReportType type) -> std::string {
   switch (type) {
   case ReportType::ERROR: return "E";
@@ -61,8 +74,53 @@ auto pretty_diagnostics::color_by_type (std::ostream &stream, ColorType type) ->
   }
   default: assertm(false, "This color is not implemented yet.");
   }
-  return stream;
 
+  return stream;
+}
+
+auto pretty_diagnostics::get_color_by_name (const std::string &name) -> ColorType {
+  if (name == "RED") {
+    return ColorType::RED;
+  } else if (name == "GREEN") {
+    return ColorType::GREEN;
+  } else if (name == "BLUE") {
+    return ColorType::BLUE;
+  } else if (name == "ORANGE") {
+    return ColorType::ORANGE;
+  } else if (name == "YELLOW") {
+    return ColorType::YELLOW;
+  } else if (name == "AQUA") {
+    return ColorType::AQUA;
+  }
+
+  assertm (false, "This color is not implemented yet.");
+}
+
+void pretty_diagnostics::print_formatted_text (std::ostream &output, const std::string &text) {
+  output << termcolor::color<COLOR_WHITE>;
+
+  for (auto index = 0u; index < text.length (); index++) {
+    const auto &current_char = text.at (index);
+    if (current_char == '{') {
+      std::string mode;
+      for (index++; index < text.length (); index++) {
+        const auto &mode_char = text.at (index);
+        if (mode_char == '}') {
+          break;
+        }
+
+        mode += mode_char;
+      }
+
+      if (mode == "/") {
+        output << termcolor::color<COLOR_WHITE>;
+      } else {
+        color_by_type (output, get_color_by_name (mode));
+      }
+    } else {
+      output << current_char;
+    }
+  }
 }
 
 bool AscendingLabels::operator() (const Label *first, const Label *second) const {
@@ -292,27 +350,12 @@ void LabelGroup::print_descenting_labels (std::ostream &output,
     }
 
     COLOR_BY_TYPE(label->get_color (), repeat_string ("─", dash_amount));
-    COLOR_BY_TYPE(label->get_color (), "▶ ") << COLOR_RGB(label->get_message (), COLOR_WHITE);
+    COLOR_BY_TYPE(label->get_color (), "▶ ");
+
+    print_formatted_text (output, label->get_message ());
 
     output << "\n";
   }
-}
-
-auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<const Label *> {
-  std::vector<const Label *> result;
-
-  const auto &line_span = this->details_->get_line_spans ().at (line_index);
-  for (const auto &item : this->labels_) {
-    if (line_span->is_label_in_range (*item)) {
-      result.push_back (item);
-    }
-  }
-
-  return result;
-}
-
-auto LabelGroup::get_last_label () const -> const Label * {
-  return this->last_label_;
 }
 
 void LabelGroup::print_colored_source_line (std::ostream &output, const Span &label_span,
@@ -355,6 +398,23 @@ void LabelGroup::print_colored_source_line (std::ostream &output, const Span &la
   }
 
   output << termcolor::reset << "\n";
+}
+
+auto LabelGroup::find_labels_in_line (size_t line_index) const -> std::vector<const Label *> {
+  std::vector<const Label *> result;
+
+  const auto &line_span = this->details_->get_line_spans ().at (line_index);
+  for (const auto &item : this->labels_) {
+    if (line_span->is_label_in_range (*item)) {
+      result.push_back (item);
+    }
+  }
+
+  return result;
+}
+
+auto LabelGroup::get_last_label () const -> const Label * {
+  return this->last_label_;
 }
 
 FileGroup::FileGroup (Details *details, std::vector<const Label *> labels)
@@ -461,8 +521,8 @@ void Report::print (std::ostream &output) const {
   output << "\n";
 
   output << spaces_prefix << COLOR_RGB("│", COLOR_GREY)
-         << COLOR_RGB("  Note: ", COLOR_BEACH)
-         << COLOR_RGB(this->note_, COLOR_WHITE);
+         << COLOR_RGB("  Note: ", COLOR_BEACH);
+  print_formatted_text (output, this->note_);
   output << "\n";
 
   auto dashes_prefix = biggest_number_width + 3;

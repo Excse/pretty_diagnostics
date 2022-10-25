@@ -9,8 +9,6 @@
 
 #include <termcolor/termcolor.hpp>
 
-#include "config.h"
-
 #define COLOR_BY_TYPE(type, text) color_by_type (std::cout, type) << text << termcolor::reset
 #define COLOR_RGB(text, rgb) termcolor::color<rgb> << text << termcolor::reset
 
@@ -39,6 +37,10 @@ enum class ColorType {
 };
 
 auto color_by_type (std::ostream &stream, ColorType type) -> std::ostream &;
+
+auto get_color_by_name (const std::string &name) -> ColorType;
+
+void print_formatted_text (std::ostream &output, const std::string &text);
 
 class Label;
 
