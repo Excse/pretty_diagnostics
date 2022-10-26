@@ -297,6 +297,9 @@ void LabelGroup::print (std::ostream &output, const std::string &spaces_prefix) 
   }
 
   auto ending_line = last_line + DISPLAYED_LINE_PADDING;
+  if(ending_line >= this->details_->get_line_spans().size()) {
+    ending_line = last_line;
+  }
 
   for (auto line_index = beginning_line; line_index <= ending_line; line_index++) {
     const auto &line_span = this->details_->get_line_spans ()[line_index];
