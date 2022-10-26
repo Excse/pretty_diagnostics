@@ -178,12 +178,12 @@ auto Span::get_width () const -> size_t {
   return this->end_index_ - this->start_index_;
 }
 
-Label::Label (std::string message, const Span &span, ColorType color_type)
+Label::Label (std::optional<std::string> message, const Span &span, ColorType color_type)
     : message_ (std::move (message)), color_ (color_type), span_ (span) {
   this->line_ = this->span_.get_details ()->get_label_line (*this);
 }
 
-auto Label::get_message () const -> const std::string & {
+auto Label::get_message () const -> const std::optional<std::string> & {
   return this->message_;
 }
 
@@ -197,6 +197,34 @@ auto Label::get_color () const -> ColorType {
 
 auto Label::get_line () const -> size_t {
   return this->line_;
+}
+
+LabelBuilder::LabelBuilder () : message_ (), color_ (), span_ () {}
+
+LabelBuilder &LabelBuilder::with_message (const std::string &message) {
+  this->message_ = message;
+  return *this;
+}
+
+LabelBuilder &LabelBuilder::with_color (ColorType color) {
+  this->color_ = color;
+  return *this;
+}
+
+LabelBuilder &LabelBuilder::with_span (const Span &span) {
+  this->span_ = span;
+  return *this;
+}
+
+Label LabelBuilder::build () {
+  assertm(this->span_, "A span is required to build a label.");
+
+  ColorType color = ColorType::DEFAULT;
+  if (this->color_) {
+    color = this->color_.value ();
+  }
+
+  return Label (this->message_, this->span_.value (), color);
 }
 
 Details::Details (std::string source, std::string path)
@@ -322,11 +350,21 @@ void LabelGroup::print_descenting_labels (std::ostream &output,
     auto relative_span = label->get_span ().relative_to (line_span);
 
     if (last_end_index >= index && index != 0) {
-      COLOR_BY_TYPE(label->get_color (), "┤");
+      if (label->get_message ()) {
+        COLOR_BY_TYPE(label->get_color (), "┤");
+      } else {
+        COLOR_BY_TYPE(label->get_color (), "╯");
+      }
     } else if (relative_span.get_end_index () > index) {
-      COLOR_BY_TYPE(label->get_color (), "├");
-    } else {
+      if (label->get_message ()) {
+        COLOR_BY_TYPE(label->get_color (), "├");
+      } else {
+        COLOR_BY_TYPE(label->get_color (), "╰");
+      }
+    } else if (label->get_message ()) {
       COLOR_BY_TYPE(label->get_color (), "│");
+    } else {
+      COLOR_BY_TYPE(label->get_color (), "^");
     }
 
     last_end_index = relative_span.get_end_index ();
@@ -336,11 +374,15 @@ void LabelGroup::print_descenting_labels (std::ostream &output,
   output << "\n";
 
   for (const auto &label : labels) {
+    if (!label->get_message ()) {
+      continue;
+    }
+
     output << spaces_prefix << COLOR_RGB("·  ", COLOR_GREY);
 
     for (auto index = 0u; index < line_span.get_width (); index++) {
       const auto &result = mapped_labels.find (index);
-      if (result == mapped_labels.end ()) {
+      if (result == mapped_labels.end () || !result->second->get_message()) {
         output << " ";
       } else if (result->second == label) {
         break;
@@ -360,7 +402,7 @@ void LabelGroup::print_descenting_labels (std::ostream &output,
     COLOR_BY_TYPE(label->get_color (), repeat_string ("─", dash_amount));
     COLOR_BY_TYPE(label->get_color (), "▶ ");
 
-    print_formatted_text (output, label->get_message ());
+    print_formatted_text (output, label->get_message ().value ());
 
     output << "\n";
   }
@@ -507,8 +549,8 @@ auto FileGroup::get_details () const -> Details * {
 }
 
 Report::Report (ReportType type, std::string message, size_t code, std::vector<Label> labels,
-                std::string tip)
-    : labels_ (std::move (labels)), message_ (std::move (message)), note_ (std::move (tip)),
+                std::optional<std::string> note)
+    : note_ (std::move (note)), labels_ (std::move (labels)), message_ (std::move (message)),
       type_ (type), code_ (code) {}
 
 void Report::print (std::ostream &output) const {
@@ -548,10 +590,12 @@ void Report::print (std::ostream &output) const {
   output << spaces_prefix << COLOR_RGB("·", COLOR_GREY);
   output << "\n";
 
-  output << spaces_prefix << COLOR_RGB("│", COLOR_GREY)
-         << COLOR_RGB("  Note: ", COLOR_BEACH);
-  print_formatted_text (output, this->note_);
-  output << "\n";
+  if (this->note_) {
+    output << spaces_prefix << COLOR_RGB("│", COLOR_GREY)
+           << COLOR_RGB("  Note: ", COLOR_BEACH);
+    print_formatted_text (output, this->note_.value ());
+    output << "\n";
+  }
 
   auto dashes_prefix = biggest_number_width + 3;
   output << COLOR_RGB(repeat_string ("─", dashes_prefix), COLOR_GREY)
@@ -579,6 +623,10 @@ auto Report::find_file_groups () const -> std::vector<FileGroup> {
   return file_groups;
 }
 
+auto Report::get_note () const -> const std::optional<std::string> & {
+  return this->note_;
+}
+
 auto Report::get_labels () const -> const std::vector<Label> & {
   return this->labels_;
 }
@@ -587,14 +635,45 @@ auto Report::get_message () const -> const std::string & {
   return this->message_;
 }
 
-auto Report::get_note () const -> const std::string & {
-  return this->note_;
-}
-
 auto Report::get_type () const -> ReportType {
   return this->type_;
 }
 
 auto Report::get_code () const -> size_t {
   return this->code_;
+}
+
+ReportBuilder::ReportBuilder () : message_ (), note_ (), type_ (), code_ (), labels_ () {}
+
+ReportBuilder &ReportBuilder::with_message (const std::string &message) {
+  this->message_ = message;
+  return *this;
+}
+
+ReportBuilder &ReportBuilder::with_note (const std::string &note) {
+  this->note_ = note;
+  return *this;
+}
+
+ReportBuilder &ReportBuilder::add_label (const Label &label) {
+  this->labels_.push_back (label);
+  return *this;
+}
+
+ReportBuilder &ReportBuilder::with_type (ReportType type) {
+  this->type_ = type;
+  return *this;
+}
+
+ReportBuilder &ReportBuilder::with_code (size_t code) {
+  this->code_ = code;
+  return *this;
+}
+
+Report ReportBuilder::build () {
+  assertm(this->type_, "A type is required to build a report.");
+  assertm(this->message_, "A message is required to build a report.");
+  assertm(this->code_, "A message is required to build a report.");
+  return {this->type_.value (), this->message_.value (), this->code_.value (), this->labels_,
+          this->note_};
 }

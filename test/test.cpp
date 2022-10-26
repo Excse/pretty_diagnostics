@@ -23,25 +23,27 @@ TEST (SimpleTest, IsPrintable) {
   auto first_details = read_file ("/media/mass_storage/Linux/Projects/worked_on/pretty_diagnostics/test/first.ark");
   auto second_details = read_file ("/media/mass_storage/Linux/Projects/worked_on/pretty_diagnostics/test/second.ark");
 
-  auto report = pretty_diagnostics::Report (
-      pretty_diagnostics::ReportType::ERROR,
-      "Couldn't implicitly convert the expression to the desired type.",
-      3,
-      {
-          pretty_diagnostics::Label (
-              "Provides an {RED}expression{/} of the type \"i64\".",
-              pretty_diagnostics::Span (&first_details, 119, 123),
-              pretty_diagnostics::ColorType::RED),
-          pretty_diagnostics::Label (
-              "But the {GREEN}variable{/} requires the type \"i32\".",
-              pretty_diagnostics::Span (&first_details, 110, 110),
-              pretty_diagnostics::ColorType::GREEN),
-          pretty_diagnostics::Label (
-              "But the {GREEN}variable{/} requires the type \"i32\".",
-              pretty_diagnostics::Span (&second_details, 110, 110),
-              pretty_diagnostics::ColorType::GREEN),
-      },
-      "Try to cast the {RED}expression{/} to the type of the {GREEN}variable{/}.");
+  auto report = pretty_diagnostics::ReportBuilder ()
+      .with_type (pretty_diagnostics::ReportType::ERROR)
+      .with_message ("Couldn't implicitly convert the expression to the desired type.")
+      .with_code (003)
+      .add_label (pretty_diagnostics::LabelBuilder ()
+                      .with_message ("Provides an {RED}expression{/} of the type \"i64\".")
+                      .with_span ({&first_details, 119, 123})
+                      .with_color (pretty_diagnostics::ColorType::RED)
+                      .build ())
+      .add_label (pretty_diagnostics::LabelBuilder ()
+                      .with_message ("But the {GREEN}variable{/} requires the type \"i32\".")
+                      .with_span ({&first_details, 110, 110})
+                      .with_color (pretty_diagnostics::ColorType::GREEN)
+                      .build ())
+      .add_label (pretty_diagnostics::LabelBuilder ()
+                      .with_message ("But the {GREEN}variable{/} requires the type \"i32\".")
+                      .with_span ({&second_details, 110, 110})
+                      .with_color (pretty_diagnostics::ColorType::GREEN)
+                      .build ())
+      .with_note ("Try to cast the {RED}expression{/} to the type of the {GREEN}variable{/}.")
+      .build ();
 
   report.print (std::cout);
 }

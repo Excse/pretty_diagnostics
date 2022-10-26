@@ -1,6 +1,7 @@
 #ifndef PRETTY_ERRORS_LIBRARY_H
 #define PRETTY_ERRORS_LIBRARY_H
 
+#include <optional>
 #include <cstdint>
 #include <cassert>
 #include <string>
@@ -80,10 +81,10 @@ class Span {
 
 class Label {
  public:
-  Label (std::string message, const Span &span, ColorType color_type);
+  Label (std::optional<std::string> message, const Span &span, ColorType color_type);
 
   [[nodiscard]]
-  auto get_message () const -> const std::string &;
+  auto get_message () const -> const std::optional<std::string> &;
 
   [[nodiscard]]
   auto get_span () const -> const Span &;
@@ -95,10 +96,28 @@ class Label {
   auto get_line () const -> size_t;
 
  private:
-  std::string message_;
+  std::optional<std::string> message_;
   ColorType color_;
   size_t line_;
   Span span_;
+};
+
+class LabelBuilder {
+ public:
+  LabelBuilder ();
+
+  LabelBuilder &with_message (const std::string &message);
+
+  LabelBuilder &with_color (ColorType color);
+
+  LabelBuilder &with_span (const Span &span);
+
+  Label build ();
+
+ private:
+  std::optional<std::string> message_;
+  std::optional<ColorType> color_;
+  std::optional<Span> span_;
 };
 
 struct AscendingLabels {
@@ -193,12 +212,15 @@ class FileGroup {
 class Report {
  public:
   Report (ReportType type, std::string message, size_t code, std::vector<Label> labels,
-          std::string tip);
+          std::optional<std::string> note);
 
   void print (std::ostream &output) const;
 
   [[nodiscard]]
   auto find_file_groups () const -> std::vector<FileGroup>;
+
+  [[nodiscard]]
+  auto get_note () const -> const std::optional<std::string> &;
 
   [[nodiscard]]
   auto get_labels () const -> const std::vector<Label> &;
@@ -207,20 +229,41 @@ class Report {
   auto get_message () const -> const std::string &;
 
   [[nodiscard]]
-  auto get_note () const -> const std::string &;
-
-  [[nodiscard]]
   auto get_type () const -> ReportType;
 
   [[nodiscard]]
   auto get_code () const -> size_t;
 
  private:
+  std::optional<std::string> note_;
   std::vector<Label> labels_;
   std::string message_;
-  std::string note_;
   ReportType type_;
   size_t code_;
+};
+
+class ReportBuilder {
+ public:
+  ReportBuilder ();
+
+  ReportBuilder &with_message (const std::string &message);
+
+  ReportBuilder &with_note (const std::string &note);
+
+  ReportBuilder &add_label(const Label &label);
+
+  ReportBuilder &with_type (ReportType type);
+
+  ReportBuilder &with_code (size_t code);
+
+  Report build ();
+
+ private:
+  std::optional<std::string> message_;
+  std::optional<std::string> note_;
+  std::optional<ReportType> type_;
+  std::optional<size_t> code_;
+  std::vector<Label> labels_;
 };
 
 }
