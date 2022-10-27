@@ -489,10 +489,13 @@ FileGroup::FileGroup (Details *details, std::vector<const Label *> labels)
   std::vector<std::vector<const Label *>> labels_collection;
   auto current_labels = &labels_collection.emplace_back ();
 
+  auto ascending_labels(labels);
+  std::sort (ascending_labels.begin (), ascending_labels.end (), AscendingLabels());
+
   auto last_line = labels.front ()->get_line ();
-  for (const auto &label : labels) {
+  for (const auto &label : ascending_labels) {
     auto label_line = label->get_line ();
-    auto line_difference = label_line - last_line;
+    auto line_difference = (int32_t) label_line - (int32_t) last_line;
     if (line_difference > DISPLAYED_LINE_PADDING) {
       current_labels = &labels_collection.emplace_back ();
     }
