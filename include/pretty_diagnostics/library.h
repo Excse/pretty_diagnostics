@@ -57,7 +57,7 @@ class Span {
   auto relative_to (const Span &span) const -> Span;
 
   [[nodiscard]]
-  auto is_label_in_range (const Label &label) const -> bool;
+  auto is_inside_span (const Span &span) const -> bool;
 
   [[nodiscard]]
   auto get_start_index () const -> size_t;
@@ -153,28 +153,37 @@ class Details {
   std::string path_;
 };
 
+using Labels = std::vector<const Label *>;
+
 class LabelGroup {
  public:
-  LabelGroup (Details *general_details, std::vector<const Label *> labels);
+  LabelGroup (Details *general_details, Labels labels);
 
   void print (std::ostream &output, const std::string &spaces_prefix) const;
 
-  void print_descenting_labels (std::ostream &output,
-                                const std::string &spaces_prefix,
-                                const std::vector<const Label *> &labels,
-                                const Span &line_span) const;
+  static void print_labels_level (const std::vector<Labels> &level_labels,
+                                  size_t current_level,
+                                  const Span &line_span,
+                                  std::ostream &output,
+                                  const std::string &spaces_prefix) ;
 
   void print_colored_source_line (std::ostream &output, const Span &label_span,
-                                  const std::vector<const Label *> &labels) const;
+                                  const Labels &labels) const;
 
   [[nodiscard]]
-  auto find_labels_in_line (size_t line_index) const -> std::vector<const Label *>;
+  static auto find_label_levels (const Labels &labels) -> std::vector<Labels>;
 
   [[nodiscard]]
-  auto get_labels () const -> const std::vector<const Label *> &;
+  static auto find_remove_overlapping_labels (Labels &labels) -> Labels;
+
+  [[nodiscard]]
+  auto find_labels_in_line (size_t line_index) const -> Labels;
 
   [[nodiscard]]
   auto get_first_label () const -> const Label *;
+
+  [[nodiscard]]
+  auto get_labels () const -> const Labels &;
 
   [[nodiscard]]
   auto get_details () const -> Details *;
@@ -183,15 +192,15 @@ class LabelGroup {
   auto get_last_label () const -> const Label *;
 
  private:
-  std::vector<const Label *> labels_;
   const Label *first_label_;
   const Label *last_label_;
   Details *details_;
+  Labels labels_;
 };
 
 class FileGroup {
  public:
-  FileGroup (Details *details, std::vector<const Label *> labels);
+  FileGroup (Details *details, Labels labels);
 
   void print (std::ostream &output, const std::string &spaces_prefix) const;
 
