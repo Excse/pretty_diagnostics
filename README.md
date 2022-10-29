@@ -26,8 +26,7 @@ $ git submodule add -f https://github.com/Excse/pretty_diagnostics <output direc
 
 Including it in your existing `CMake` project:
 ```cmake
-add_subdirectory(${PROJECT_SOURCE_DIR}/libs/pretty_diagnostics
-        ${CMAKE_CURRENT_BINARY_DIR}/pretty_diagnostics)
+add_subdirectory(${PROJECT_SOURCE_DIR}/libs/pretty_diagnostics)
 target_link_libraries(${PROJECT_NAME}_lib pretty_diagnostics)
 ```
 
