@@ -57,7 +57,7 @@ auto report = pretty_diagnostics::ReportBuilder ()
 report.print (std::cout);
 ```
 
-The output looks like:
+The output looks like:</br>
 ![Image of this example](./resources/example.png)
 
 ## License
