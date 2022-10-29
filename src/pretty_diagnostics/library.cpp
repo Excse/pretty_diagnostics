@@ -243,6 +243,10 @@ Details::Details (std::string source, std::string path)
       continue;
     }
   }
+
+  if(current_span) {
+    current_span->set_end_index (this->source_.size() - 1);
+  }
 }
 
 auto Details::get_line_source (const Span &span) const -> std::string {
