@@ -4,3 +4,9 @@
 ; [submodule "libs/googletest"]
 ; 	path = libs/googletest
 ; 	url = https://github.com/google/googletest
+[submodule "libs/termcolor"]
+	path = libs/termcolor
+	url = https://github.com/ikalnytskyi/termcolor
+[submodule "libs/googletest"]
+	path = libs/googletest
+	url = https://github.com/google/googletest
