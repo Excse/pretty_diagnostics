@@ -41,16 +41,16 @@ auto details = pretty_diagnostics::Details{"This is a test text\n"
                                             "some/weird/path"};
 
 auto report = pretty_diagnostics::ReportBuilder ()
-    .with_type (pretty_diagnostics::ReportType::ERROR)
-    .with_message ("Displaying a brief summary of what happend.")
-    .with_code (1337)
-    .add_label (pretty_diagnostics::LabelBuilder ()
-                    .with_message ("Giving some {RED}tips{/} or {ORANGE}extra details{/} about "
+    .type (pretty_diagnostics::Type::ERROR)
+    .message ("Displaying a brief summary of what happend.")
+    .code (1337)
+    .label (pretty_diagnostics::LabelBuilder ()
+                    .message ("Giving some {RED}tips{/} or {ORANGE}extra details{/} about "
                                     "what is wrong here.")
-                    .with_span ({&details, 10, 13})
-                    .with_color (pretty_diagnostics::ColorType::RED)
+                    .span ({&details, 10, 13})
+                    .color (pretty_diagnostics::ColorType::RED)
                     .build ())
-    .with_note ("Can be used to give a hint about what you could do better.")
+    .note ("Can be used to give a hint about what you could do better.")
     .build ();
 
 report.print (std::cout);

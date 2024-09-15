@@ -7,10 +7,6 @@
 
 #include <string>
 
-namespace pretty_diagnostics {
-
-auto repeat_string (const std::string &input, size_t amount) -> std::string;
-
-}
+auto repeat_string(const std::string &input, size_t amount) -> std::string;
 
 #endif //_UTILS_H_
