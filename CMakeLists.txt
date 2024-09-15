@@ -9,8 +9,11 @@ set(${PROJECT_NAME}_version "${${PROJECT_NAME}_version_major}.${${PROJECT_NAME}_
 
 include(cmake/configuration.cmake)
 
+add_subdirectory("libs/termcolor")
 add_subdirectory(src)
+
 if(${PROJECT_NAME}_build_tests)
     enable_testing()
+    add_subdirectory("libs/googletest")
     add_subdirectory(test)
 endif()
