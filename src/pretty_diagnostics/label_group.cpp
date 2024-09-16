@@ -4,12 +4,12 @@
 #include <iomanip>
 #include <map>
 
-#include "details.h"
+#include "file.h"
 #include "label.h"
 
 constexpr size_t DISPLAYED_LINE_PADDING = 1;
 
-LabelGroup::LabelGroup(std::shared_ptr<Details> details, std::vector<const Label *> labels)
+LabelGroup::LabelGroup(std::shared_ptr<File> details, std::vector<const Label *> labels)
         : _details(std::move(details)), _first_label(), _last_label(),
           _labels(std::move(labels)) {
     if (_labels.empty()) {
@@ -24,8 +24,8 @@ LabelGroup::LabelGroup(std::shared_ptr<Details> details, std::vector<const Label
 }
 
 void LabelGroup::print(std::ostream &output, const std::string &spaces_prefix) const {
-    auto first_line = _first_label->line();
-    auto last_line = _last_label->line();
+    auto first_line = _first_label->span().line();
+    auto last_line = _last_label->span().line();
 
     auto beginning_line = 0u;
     if (first_line >= DISPLAYED_LINE_PADDING) {
@@ -89,7 +89,7 @@ auto LabelGroup::find_remove_overlapping_labels(Labels &labels) -> Labels {
     for (auto iterator = labels.begin() + 1; iterator < labels.end(); iterator++) {
         auto next_label = *iterator;
 
-        if (next_label->span().end_index() < current_label->span().start_index()) {
+        if (next_label->span().end() < current_label->span().start()) {
             current_label = next_label;
         } else {
             overlapping_labels.push_back(next_label);
@@ -110,8 +110,8 @@ void LabelGroup::print_labels_level(const std::vector<Labels> &level_labels,
         auto &labels = level_labels.at(index);
         for (const auto &label: labels) {
             const auto relative_span = label->span().relative_to(line_span);
-            next_label_startings[relative_span.start_index()] = label;
-            next_label_endings[relative_span.end_index()] = label;
+            next_label_startings[relative_span.start()] = label;
+            next_label_endings[relative_span.end()] = label;
         }
     }
 
@@ -120,7 +120,7 @@ void LabelGroup::print_labels_level(const std::vector<Labels> &level_labels,
     std::map<size_t, const Label *> current_label_startings;
     for (const auto &label: current_labels) {
         const auto relative_span = label->span().relative_to(line_span);
-        current_label_startings[relative_span.start_index()] = label;
+        current_label_startings[relative_span.start()] = label;
     }
 
     output << spaces_prefix << "·  ";
@@ -153,7 +153,7 @@ void LabelGroup::print_labels_level(const std::vector<Labels> &level_labels,
             } else {
                 std::cout << "╯";
             }
-        } else if (relative_span.end_index() > index) {
+        } else if (relative_span.end() > index) {
             if (label->message()) {
                 std::cout << "├";
             } else {
@@ -165,7 +165,7 @@ void LabelGroup::print_labels_level(const std::vector<Labels> &level_labels,
             std::cout << "^";
         }
 
-        last_end_index = relative_span.end_index();
+        last_end_index = relative_span.end();
     }
 
     output << "\n";
@@ -178,7 +178,7 @@ void LabelGroup::print_labels_level(const std::vector<Labels> &level_labels,
         output << spaces_prefix << "·  ";
 
         const auto relative_span = label->span().relative_to(line_span);
-        for (auto index = 0u; index < relative_span.start_index(); index++) {
+        for (auto index = 0u; index < relative_span.start(); index++) {
             if (next_label_endings.contains(index) || next_label_startings.contains(index) ||
                 current_label_startings.contains(index)) {
                 std::cout << "│";
@@ -200,9 +200,9 @@ void LabelGroup::print_colored_source_line(std::ostream &output, const Span &lab
 
     std::map<size_t, const Label *> mapped_labels;
     for (const auto &label: labels) {
-        const auto &line_span = _details->line_spans()[label->line()];
+        const auto &line_span = _details->line_spans()[label->span().line()];
         auto relative_span = label->span().relative_to(*line_span);
-        mapped_labels[relative_span.start_index()] = label;
+        mapped_labels[relative_span.start()] = label;
     }
 
     for (auto char_index = 0u; char_index < source.length(); char_index++) {

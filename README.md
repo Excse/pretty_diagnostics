@@ -36,7 +36,7 @@ And that's all.
 
 The code looks like:
 ```cpp
-auto details = pretty_diagnostics::Details{"This is a test text\n"
+auto details = pretty_diagnostics::File{"This is a test text\n"
                                             "Maybe you could have guessed that.",
                                             "some/weird/path"};
 

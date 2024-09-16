@@ -10,7 +10,7 @@
 
 #include "span.h"
 
-class Details;
+class File;
 
 class Label;
 
@@ -18,7 +18,7 @@ using Labels = std::vector<const Label *>;
 
 class LabelGroup {
 public:
-    LabelGroup(std::shared_ptr<Details> details, Labels labels);
+    LabelGroup(std::shared_ptr<File> details, Labels labels);
 
     void print(std::ostream &output, const std::string &spaces_prefix) const;
 
@@ -46,7 +46,7 @@ public:
                                    const std::string &spaces_prefix);
 
 private:
-    std::shared_ptr<Details> _details;
+    std::shared_ptr<File> _details;
     const Label *_first_label;
     const Label *_last_label;
     Labels _labels;

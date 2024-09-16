@@ -3,12 +3,9 @@
 
 #include <memory>
 
-class Details;
-
 class Span {
 public:
-    Span(std::shared_ptr<Details> details, size_t start_index, size_t end_index)
-            : _details(std::move(details)), _start_index(start_index), _end_index(end_index) {}
+    Span(size_t start, size_t end, size_t line) : _start(start), _end(end), _line(line) {}
 
     [[nodiscard]] bool is_inside_span(const Span &span) const;
 
@@ -16,17 +13,16 @@ public:
 
     [[nodiscard]] size_t width() const;
 
-    [[nodiscard]] auto start_index() const { return _start_index; };
+    [[nodiscard]] auto start() const { return _start; };
 
-    void set_end_index(size_t index) { _end_index = index; }
+    [[nodiscard]] auto line() const { return _line; }
 
-    [[nodiscard]] auto end_index() const { return _end_index; }
+    void set_end(size_t index) { _end = index; }
 
-    [[nodiscard]] auto details() const { return _details; };
+    [[nodiscard]] auto end() const { return _end; }
 
 private:
-    std::shared_ptr<Details> _details;
-    size_t _start_index, _end_index;
+    size_t _start, _end, _line;
 };
 
 #endif //PRETTY_DIAGNOSTICS_SPAN_H

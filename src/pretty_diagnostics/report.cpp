@@ -5,6 +5,7 @@
 #include <map>
 
 #include "file_group.h"
+#include "label.h"
 #include "utils.h"
 
 Report::Report(Type type, std::string &&message, size_t code, std::vector<Label> &&labels,
@@ -57,12 +58,11 @@ std::ostream &operator<<(std::ostream &os, const Report &report) {
 }
 
 auto Report::find_file_groups() const -> std::vector<FileGroup> {
-    std::map<std::shared_ptr<Details>, Labels> group_mappings;
-    for (const auto &label: _labels) {
-        auto details = label.span().details();
-        auto result = group_mappings.find(details);
+    std::map<std::shared_ptr<File>, Labels> group_mappings;
+    for (const auto &label : _labels) {
+        auto result = group_mappings.find(label.file());
         if (result == group_mappings.end()) {
-            group_mappings[details] = {&label};
+            group_mappings[label.file()] = {&label};
         } else {
             result->second.push_back(&label);
         }

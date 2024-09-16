@@ -1,5 +1,5 @@
-#ifndef PRETTY_DIAGNOSTICS_DETAILS_H
-#define PRETTY_DIAGNOSTICS_DETAILS_H
+#ifndef PRETTY_DIAGNOSTICS_FILE_H
+#define PRETTY_DIAGNOSTICS_FILE_H
 
 #include <memory>
 #include <vector>
@@ -16,13 +16,11 @@ struct DescendingLabels {
     bool operator()(const Label *first, const Label *second) const;
 };
 
-class Details {
+class File {
 public:
-    Details(std::string source, std::string path);
+    File(std::string source, std::string path);
 
     [[nodiscard]] std::string line_source(const Span &span) const;
-
-    [[nodiscard]] size_t label_line(const Label &label) const;
 
     [[nodiscard]] const auto &line_spans() const { return _line_spans; };
 
@@ -32,8 +30,7 @@ public:
 
 private:
     std::vector<std::shared_ptr<Span>> _line_spans;
-    std::string _source;
-    std::string _path;
+    std::string _source, _path;
 };
 
-#endif //PRETTY_DIAGNOSTICS_DETAILS_H
+#endif //PRETTY_DIAGNOSTICS_FILE_H

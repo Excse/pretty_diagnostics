@@ -14,8 +14,8 @@ add_library(${PROJECT_NAME} ${${PROJECT_NAME}_sources} ${${PROJECT_NAME}_headers
         ../include/pretty_diagnostics/span.h
         pretty_diagnostics/label.cpp
         ../include/pretty_diagnostics/label.h
-        pretty_diagnostics/details.cpp
-        ../include/pretty_diagnostics/details.h
+        pretty_diagnostics/file.cpp
+        ../include/pretty_diagnostics/file.h
         pretty_diagnostics/label_group.cpp
         ../include/pretty_diagnostics/label_group.h)
 target_include_directories(${PROJECT_NAME} PUBLIC

@@ -4,19 +4,21 @@
 
 #include "gtest/gtest.h"
 
-#include "pretty_diagnostics/file_group.h"
+#include "pretty_diagnostics/report.h"
+#include "pretty_diagnostics/label.h"
+#include "pretty_diagnostics/file.h"
 
 #include <filesystem>
 #include <fstream>
 
-auto read_file(const std::string &path) -> Details {
+auto read_file(const std::string &path) -> std::shared_ptr<File> {
     std::ifstream source_file(path, std::ios::in | std::ios::binary);
 
     auto size = std::filesystem::file_size(path);
     auto source = std::string(size, '\0');
     source_file.read(source.data(), (long) size);
 
-    return {source, path};
+    return std::make_shared<File>(source, path);
 }
 
 TEST (SimpleTest, IsPrintable) {
@@ -24,31 +26,20 @@ TEST (SimpleTest, IsPrintable) {
     auto second_details = read_file("./second.ark");
 
     auto report = Report::Builder()
-            .type(ReportType::ERROR)
+            .type(Report::Type::ERROR)
             .message("Couldn't implicitly convert the expression to the desired type.")
             .code(003)
             .label(Label::Builder()
-                           .message("This is the 5th label")
-                           .span({&first_details, 120, 120})
-                           .build())
-            .label(Label::Builder()
-                           .message("This is the 4th label")
-                           .span({&first_details, 110, 119})
-                           .build())
-            .label(Label::Builder()
-                           .message("This is the 3rd label")
-                           .span({&first_details, 112, 116})
+                           .message("This is the 1st label")
+                           .span({0, 3, 0})
+                           .file(first_details)
                            .build())
             .label(Label::Builder()
                            .message("This is the 2nd label")
-                           .span({&first_details, 113, 117})
-                           .build())
-            .label(Label::Builder()
-                           .message("This is the 1st label")
-                           .span({&first_details, 121, 123})
+                           .span({184, 190, 14})
                            .build())
             .note("Try to cast the expression to the type of the variable.")
             .build();
 
-    report.print(std::cout);
+    std::cout << report;
 }

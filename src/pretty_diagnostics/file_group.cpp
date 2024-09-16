@@ -1,10 +1,10 @@
 #include "file_group.h"
 
-#include "details.h"
+#include "file.h"
 
 constexpr int32_t DISPLAYED_LINE_PADDING = 1;
 
-FileGroup::FileGroup(const std::shared_ptr<Details> &details, Labels labels)
+FileGroup::FileGroup(const std::shared_ptr<File> &details, Labels labels)
         : _details(details) {
     if (labels.empty()) {
         throw std::invalid_argument("Cannot find label current_labels if there are no labels_collection.");
@@ -16,9 +16,9 @@ FileGroup::FileGroup(const std::shared_ptr<Details> &details, Labels labels)
     auto ascending_labels(labels);
     std::sort(ascending_labels.begin(), ascending_labels.end(), AscendingLabels());
 
-    auto last_line = labels.front()->line();
+    auto last_line = labels.front()->span().line();
     for (const auto &label: ascending_labels) {
-        auto label_line = label->line();
+        auto label_line = label->span().line();
         auto line_difference = (int32_t) label_line - (int32_t) last_line;
         if (line_difference > DISPLAYED_LINE_PADDING) {
             current_labels = &labels_collection.emplace_back();
@@ -55,7 +55,7 @@ auto FileGroup::get_biggest_displayed_number() const -> size_t {
     auto biggest_number = 0u;
     for (const auto &labels_group: _label_groups) {
         auto &last_label = labels_group.last_label();
-        auto line_number = last_label.line();
+        auto line_number = last_label.span().line();
         if (biggest_number < line_number) {
             biggest_number = line_number;
         }

@@ -3,13 +3,13 @@
 
 #include "label_group.h"
 
-class Details;
+class File;
 
 using Labels = std::vector<const Label *>;
 
 class FileGroup {
 public:
-    FileGroup(const std::shared_ptr<Details> &details, Labels labels);
+    FileGroup(const std::shared_ptr<File> &details, Labels labels);
 
     FileGroup() : _label_groups(), _details() {}
 
@@ -23,7 +23,7 @@ public:
 
 private:
     std::vector<LabelGroup> _label_groups;
-    std::shared_ptr<Details> _details;
+    std::shared_ptr<File> _details;
 };
 
 #endif //PRETTY_ERRORS_LIBRARY_H
