@@ -1,40 +1,53 @@
-
 # Pretty Diagnostics
 
-This library is able to print out a brief summary of a given error. With labels
-you give exact information about what is wrong and where it is located in the
-source code.
+Pretty Diagnostics is a library designed to produce elegant and informative error messages, with labeled references to code segments across multiple files, similar to the error output in Rust. It is particularly useful for compilers, interpreters, and any program that needs to provide meaningful error messages based on text files. The goal is to make error diagnostics as user-friendly and descriptive as possible, helping users quickly identify and resolve issues in their code.
 
-Those who like to display error messages (mostly used by compilers and 
-interpreters) can now do exactly this task with a nice  result and a ease 
-of use.
+## Features
+
+- Generate structured, labeled error messages.
+- Highlight code segments across multiple files.
+- Enhance the debugging experience for developers.
+- Focused on compilers, interpreters, and other text file-based error reporting systems.
 
 ## Installation
 
-Installing this library on your system is not supported yet. This will be the case
-in the future, but due to the configuration designs this is not possible right now.
+### Using CMake
 
-But what you can do instead is to install `pretty_diagnostics` as a git submodule 
-and then using it by including it in your `CMake` project.
+You can install **Pretty Diagnostics** either locally for development or globally for system-wide use.
 
-To give an example on how this could work:
+#### Local Installation
 
-Installing `pretty_diagnostics` as a git submodule:
-```sh
-$ git submodule add -f https://github.com/Excse/pretty_diagnostics <output directory path>
+To install locally:
+
+```bash
+git clone https://github.com/Excse/pretty_diagnostics.git
+cd pretty-diagnostics
+mkdir build
+cd build
+cmake ..
+make
 ```
 
-Including it in your existing `CMake` project:
-```cmake
-add_subdirectory(${PROJECT_SOURCE_DIR}/libs/pretty_diagnostics)
-target_link_libraries(${PROJECT_NAME}_lib pretty_diagnostics)
+This will build the project and allow you to use it locally within your development environment.
+
+#### Global Installation
+
+To install globally:
+
+```bash
+git clone https://github.com/Excse/pretty_diagnostics.git
+cd pretty-diagnostics
+mkdir build
+cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+make
+sudo make install
 ```
 
-And that's all.
+This will install the library system-wide, allowing it to be accessible from anywhere on your machine.
 
-## Usage/Examples
+## Example Usage
 
-The code looks like:
 ```cpp
 auto details = pretty_diagnostics::File{"This is a test text\n"
                                             "Maybe you could have guessed that.",
@@ -57,12 +70,8 @@ report.print (std::cout);
 ```
 
 The output looks like:</br>
-![Image of this example](./resources/example.png)
+![Image of this example](resources/example.png)
 
 ## License
 
-[Apache License 2.0](LICENSE.txt)
-
-## Authors
-
-- [@excse](https://github.com/excse)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

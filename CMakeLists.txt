@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(pretty_diagnostics VERSION 0.1.0)
 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror -Wpedantic -fsanitize=address,undefined,leak")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -16,8 +17,7 @@ add_library(pretty_diagnostics STATIC
         src/label.cpp
         src/label_group.cpp
         src/report.cpp
-        src/span.cpp
-        src/utils.cpp)
+        src/span.cpp)
 
 target_include_directories(pretty_diagnostics PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -85,7 +85,8 @@ FetchContent_MakeAvailable(google_test)
 
 # Add the test executable for your library
 add_executable(test_pretty_diagnostics
-        test/test.cpp
+        test/span.cpp
+        test/report.cpp
 )
 
 # Link your library and GTest to the test executable

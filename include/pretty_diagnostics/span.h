@@ -2,24 +2,27 @@
 
 #include <memory>
 
+struct Location {
+    int64_t row, column;
+};
+
 class Span {
 public:
-    Span(size_t start, size_t end, size_t line) : _start(start), _end(end), _line(line) {}
+    Span(Location start, Location end) : Span(start, end, false) {}
 
-    [[nodiscard]] bool is_inside_span(const Span &span) const;
+    Span(Location start, Location end, bool ignore_multine);
 
-    [[nodiscard]] Span relative_to(const Span &span) const;
+    [[nodiscard]] bool contains(const Span &inner) const;
 
-    [[nodiscard]] size_t width() const;
+    [[nodiscard]] size_t column_width() const;
 
-    [[nodiscard]] auto start() const { return _start; };
+    [[nodiscard]] const auto &ignore_multiline() const { return _ignore_multiline; }
 
-    [[nodiscard]] auto line() const { return _line; }
+    [[nodiscard]] const auto &start() const { return _start; };
 
-    void set_end(size_t index) { _end = index; }
-
-    [[nodiscard]] auto end() const { return _end; }
+    [[nodiscard]] const auto &end() const { return _end; }
 
 private:
-    size_t _start, _end, _line;
+    bool _ignore_multiline;
+    Location _start, _end;
 };

@@ -4,23 +4,42 @@
 
 class File;
 
-using Labels = std::vector<const Label *>;
-
 class FileGroup {
+private:
+    FileGroup(std::shared_ptr<File> &&file, std::vector<LabelGroup> &&groups)
+        : _file(std::move(file)), _groups(std::move(groups)) {}
+
 public:
-    FileGroup(const std::shared_ptr<File> &details, Labels labels);
+    [[nodiscard]] const auto &groups() const { return _groups; };
 
-    FileGroup() : _label_groups(), _details() {}
-
-    void print(std::ostream &output, const std::string &spaces_prefix) const;
-
-    [[nodiscard]] size_t get_biggest_displayed_number() const;
-
-    [[nodiscard]] const auto &label_groups() const { return _label_groups; };
-
-    [[nodiscard]] const auto &details() const { return *_details; };
+    [[nodiscard]] const auto &file() const { return _file; };
 
 private:
-    std::vector<LabelGroup> _label_groups;
-    std::shared_ptr<File> _details;
+    std::vector<LabelGroup> _groups{};
+    std::shared_ptr<File> _file;
+
+public:
+    class Builder {
+    public:
+        Builder &file(std::shared_ptr<File> file);
+
+        Builder &label(Label &&label);
+
+        FileGroup build();
+
+    private:
+        std::vector<LabelGroup> _groups{};
+        std::shared_ptr<File> _file;
+    };
+};
+
+class InvalidFileGroupState : public std::runtime_error {
+public:
+    explicit InvalidFileGroupState(const std::string &field)
+        : std::runtime_error("The field \"" + field + "\" is required to build a file group.") {}
+};
+
+class NoLabels : public std::runtime_error {
+public:
+    explicit NoLabels() : std::runtime_error("Can't create a file group without labels.") {}
 };
