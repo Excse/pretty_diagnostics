@@ -1,12 +1,5 @@
-//
-// Created by timo on 24.10.22.
-//
-
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#pragma once
 
 #include <string>
 
-auto repeat_string(const std::string &input, size_t amount) -> std::string;
-
-#endif //_UTILS_H_
+std::string repeat_string(const std::string &input, size_t amount);

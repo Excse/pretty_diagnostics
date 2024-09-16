@@ -1,4 +1,6 @@
-#include "file.h"
+#include "pretty_diagnostics/file.h"
+
+#include <algorithm>
 
 bool AscendingLabels::operator()(const Label *first, const Label *second) const {
     auto difference = (int) first->span().start() - (int) second->span().start();

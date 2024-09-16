@@ -1,6 +1,10 @@
-#include "file_group.h"
+#include "pretty_diagnostics/file_group.h"
 
-#include "file.h"
+#include <stdexcept>
+#include <algorithm>
+#include <iostream>
+
+#include "pretty_diagnostics/file.h"
 
 constexpr int32_t DISPLAYED_LINE_PADDING = 1;
 

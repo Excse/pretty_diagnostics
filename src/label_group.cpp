@@ -1,11 +1,11 @@
-#include "label_group.h"
+#include "pretty_diagnostics/label_group.h"
 
+#include <algorithm>
 #include <iostream>
 #include <iomanip>
 #include <map>
 
-#include "file.h"
-#include "label.h"
+#include "../include/pretty_diagnostics/file.h"
 
 constexpr size_t DISPLAYED_LINE_PADDING = 1;
 

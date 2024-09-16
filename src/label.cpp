@@ -1,4 +1,4 @@
-#include "label.h"
+#include "pretty_diagnostics/label.h"
 
 Label::Builder &Label::Builder::message(std::string &&message) {
     _message = message;

@@ -1,5 +1,4 @@
-#ifndef PRETTY_DIAGNOSTICS_LABEL_H
-#define PRETTY_DIAGNOSTICS_LABEL_H
+#pragma once
 
 #include <optional>
 #include <string>
@@ -49,5 +48,3 @@ public:
     explicit InvalidLabelState(const std::string &field)
             : std::runtime_error("The " + field + " is required to build a label.") {}
 };
-
-#endif //PRETTY_DIAGNOSTICS_LABEL_H

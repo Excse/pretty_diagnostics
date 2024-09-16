@@ -1,5 +1,4 @@
-#ifndef PRETTY_DIAGNOSTICS_SPAN_H
-#define PRETTY_DIAGNOSTICS_SPAN_H
+#pragma once
 
 #include <memory>
 
@@ -24,5 +23,3 @@ public:
 private:
     size_t _start, _end, _line;
 };
-
-#endif //PRETTY_DIAGNOSTICS_SPAN_H

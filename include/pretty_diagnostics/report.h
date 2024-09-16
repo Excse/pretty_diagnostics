@@ -1,5 +1,4 @@
-#ifndef PRETTY_DIAGNOSTICS_REPORT_H
-#define PRETTY_DIAGNOSTICS_REPORT_H
+#pragma once
 
 #include <stdexcept>
 #include <optional>
@@ -77,5 +76,3 @@ public:
     explicit InvalidReportState(const std::string &field)
             : std::runtime_error("The " + field + " is required to build a report.") {}
 };
-
-#endif //PRETTY_DIAGNOSTICS_REPORT_H

@@ -1,7 +1,3 @@
-//
-// Created by timo on 22.10.22.
-//
-
 #include "gtest/gtest.h"
 
 #include "pretty_diagnostics/report.h"
@@ -22,8 +18,8 @@ auto read_file(const std::string &path) -> std::shared_ptr<File> {
 }
 
 TEST (SimpleTest, IsPrintable) {
-    auto first_details = read_file("./first.ark");
-    auto second_details = read_file("./second.ark");
+    auto second_details = read_file(TEST_DATA_PATH "second.ark");
+    auto first_details = read_file(TEST_DATA_PATH "first.ark");
 
     auto report = Report::Builder()
             .type(Report::Type::ERROR)

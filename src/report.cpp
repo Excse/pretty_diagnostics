@@ -1,12 +1,12 @@
-#include "report.h"
+#include "pretty_diagnostics/report.h"
 
 #include <iostream>
 #include <iomanip>
 #include <map>
 
-#include "file_group.h"
-#include "label.h"
-#include "utils.h"
+#include "pretty_diagnostics/file_group.h"
+#include "pretty_diagnostics/label.h"
+#include "pretty_diagnostics/utils.h"
 
 Report::Report(Type type, std::string &&message, size_t code, std::vector<Label> &&labels,
                std::optional<std::string> &&note)
@@ -59,7 +59,7 @@ std::ostream &operator<<(std::ostream &os, const Report &report) {
 
 auto Report::find_file_groups() const -> std::vector<FileGroup> {
     std::map<std::shared_ptr<File>, Labels> group_mappings;
-    for (const auto &label : _labels) {
+    for (const auto &label: _labels) {
         auto result = group_mappings.find(label.file());
         if (result == group_mappings.end()) {
             group_mappings[label.file()] = {&label};

@@ -1,5 +1,4 @@
-#ifndef PRETTY_ERRORS_LIBRARY_H
-#define PRETTY_ERRORS_LIBRARY_H
+#pragma once
 
 #include "label_group.h"
 
@@ -25,5 +24,3 @@ private:
     std::vector<LabelGroup> _label_groups;
     std::shared_ptr<File> _details;
 };
-
-#endif //PRETTY_ERRORS_LIBRARY_H

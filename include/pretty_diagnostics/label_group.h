@@ -1,9 +1,4 @@
-//
-// Created by timo on 9/15/24.
-//
-
-#ifndef PRETTY_DIAGNOSTICS_LABEL_GROUP_H
-#define PRETTY_DIAGNOSTICS_LABEL_GROUP_H
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -51,5 +46,3 @@ private:
     const Label *_last_label;
     Labels _labels;
 };
-
-#endif //PRETTY_DIAGNOSTICS_LABEL_GROUP_H

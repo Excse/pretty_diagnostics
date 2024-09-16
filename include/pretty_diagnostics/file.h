@@ -1,5 +1,4 @@
-#ifndef PRETTY_DIAGNOSTICS_FILE_H
-#define PRETTY_DIAGNOSTICS_FILE_H
+#pragma once
 
 #include <memory>
 #include <vector>
@@ -32,5 +31,3 @@ private:
     std::vector<std::shared_ptr<Span>> _line_spans;
     std::string _source, _path;
 };
-
-#endif //PRETTY_DIAGNOSTICS_FILE_H
