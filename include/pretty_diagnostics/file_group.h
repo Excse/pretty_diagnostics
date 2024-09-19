@@ -7,7 +7,7 @@ class File;
 class FileGroup {
 private:
     FileGroup(std::shared_ptr<File> &&file, std::vector<LabelGroup> &&groups)
-        : _file(std::move(file)), _groups(std::move(groups)) {}
+        : _groups(std::move(groups)), _file(std::move(file)) {}
 
 public:
     [[nodiscard]] const auto &groups() const { return _groups; };

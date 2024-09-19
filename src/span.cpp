@@ -1,7 +1,7 @@
 #include "pretty_diagnostics/span.h"
 
 Span::Span(Location start, Location end, bool ignore_multiline)
-    : _start(start), _end(end), _ignore_multiline(ignore_multiline) {
+    : _ignore_multiline(ignore_multiline), _start(start), _end(end) {
     if (_start.row > _end.row) {
         throw std::invalid_argument("The start row is before the end row.");
     }
