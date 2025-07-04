@@ -11,40 +11,28 @@ Pretty Diagnostics is a library designed to produce elegant and informative erro
 
 ## Installation
 
-### Using CMake
-
-You can install **Pretty Diagnostics** either locally for development or globally for system-wide use.
-
-#### Local Installation
-
-To install locally:
-
-```bash
-git clone https://github.com/Excse/pretty_diagnostics.git
-cd pretty-diagnostics
-mkdir build
-cd build
-cmake ..
-make
+Download the project or use git to clone it:
+```sh
+$ git clone https://github.com/Excse/pretty_diagnostics.git
 ```
 
-This will build the project and allow you to use it locally within your development environment.
-
-#### Global Installation
-
-To install globally:
-
-```bash
-git clone https://github.com/Excse/pretty_diagnostics.git
-cd pretty-diagnostics
-mkdir build
-cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-make
-sudo make install
+Navigate to the directory where the project is located and execute these commands:
+```sh
+$ cmake -S . -B build -DBUILD_TESTING=OFF
+$ cmake --build build
+$ cmake --install build
+$ sudo make install
 ```
 
-This will install the library system-wide, allowing it to be accessible from anywhere on your machine.
+When you are finished, you are ready to use the library. If you want to use it in a
+cmake project, use the following code to implement it.
+
+and in CMakeLists.txt:
+```cmake
+find_package(pretty_diagnostics CONFIG REQUIRED)
+
+target_link_libraries(!!PROJECT_NAME!! PRIVATE pretty_diagnostics::pretty_diagnostics)
+```
 
 ## Example Usage
 

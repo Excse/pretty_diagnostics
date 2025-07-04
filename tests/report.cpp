@@ -17,7 +17,7 @@ std::shared_ptr<File> read_file(const std::string &path) {
 }
 
 TEST(Report, Valid) {
-    auto source = read_file(TEST_DATA_PATH "example");
+    auto source = read_file(TEST_PATH "/resources/example");
 
     auto report = Report::Builder()
         .type(Report::Type::ERROR)

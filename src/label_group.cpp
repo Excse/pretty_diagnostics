@@ -1,5 +1,6 @@
 #include "pretty_diagnostics/label_group.h"
 
+#include <algorithm>
 #include <iostream>
 #include <limits>
 

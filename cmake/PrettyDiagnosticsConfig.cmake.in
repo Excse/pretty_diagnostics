@@ -1,6 +1,0 @@
-@PACKAGE_INIT@
-
-include("${CMAKE_CURRENT_LIST_DIR}/PrettyDiagnosticsTargets.cmake")
-
-set(PRETTY_DIAGNOSTICS_INCLUDE_DIRS "@PACKAGE_INCLUDE_INSTALL_DIR@")
-set(PRETTY_DIAGNOSTICS_LIBRARIES PrettyDiagnostics::pretty_diagnostics)
