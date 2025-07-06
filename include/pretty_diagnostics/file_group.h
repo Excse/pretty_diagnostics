@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "label_group.h"
 
 class File;
@@ -33,13 +35,13 @@ public:
     };
 };
 
-class InvalidFileGroupState : public std::runtime_error {
+class InvalidFileGroupState final : public std::runtime_error {
 public:
     explicit InvalidFileGroupState(const std::string &field)
         : std::runtime_error("The field \"" + field + "\" is required to build a file group.") {}
 };
 
-class NoLabels : public std::runtime_error {
+class NoLabels final : public std::runtime_error {
 public:
     explicit NoLabels() : std::runtime_error("Can't create a file group without labels.") {}
 };

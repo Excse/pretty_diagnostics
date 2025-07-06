@@ -1,10 +1,9 @@
 #pragma once
 
-#include <memory>
 #include <vector>
 
-#include "pretty_diagnostics/label.h"
-#include "pretty_diagnostics/span.h"
+#include "label.h"
+#include "span.h"
 
 class File;
 

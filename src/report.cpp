@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <map>
 
 std::ostream &operator<<(std::ostream &os, const Report &report) {
     os << "[" << report.type_to_prefix() << std::setw(4) << std::setfill('0') << report.code() << "] ";

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 struct Location {
     int64_t row, column;
 };

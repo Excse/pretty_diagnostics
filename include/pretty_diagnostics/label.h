@@ -1,8 +1,9 @@
 #pragma once
 
+#include <stdexcept>
 #include <optional>
-#include <string>
 #include <utility>
+#include <string>
 
 #include "span.h"
 
@@ -10,7 +11,7 @@ class File;
 
 class Label {
 private:
-    Label(std::optional<std::string> &&message, Span span)
+    Label(std::optional<std::string> &&message, const Span &span)
         : _message(std::move(message)), _span(span) {}
 
 public:
@@ -37,7 +38,7 @@ public:
     };
 };
 
-class InvalidLabelState : public std::runtime_error {
+class InvalidLabelState final : public std::runtime_error {
 public:
     explicit InvalidLabelState(const std::string &field)
         : std::runtime_error("The field \"" + field + "\" is required to build a label.") {}

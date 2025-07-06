@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "pretty_diagnostics/file_group.h"
+#include "file_group.h"
 
 class Report {
 public:
@@ -69,7 +69,7 @@ public:
     };
 };
 
-class InvalidReportState : public std::runtime_error {
+class InvalidReportState final : public std::runtime_error {
 public:
     explicit InvalidReportState(const std::string &field)
             : std::runtime_error("The field \"" + field + "\" is required to build a report.") {}

@@ -2,8 +2,8 @@
 cmake_minimum_required(VERSION 3.20)                    # Require CMake 3.20 or later
 project(pretty_diagnostics VERSION 1.0.0 LANGUAGES CXX) # Define project name, version, and language
 
-# Use C++20 and enforce it
-set(CMAKE_CXX_STANDARD 20)
+# Use C++23 and enforce it
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Option to enable/disable testing:
