@@ -19,7 +19,7 @@ include(GoogleTest)
 ### --- Unit Testing Setup --- ###
 
 # Collect all test source files
-file(GLOB TEST_SOURCES CONFIGURE_DEPENDS ./*.cpp)
+file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS *.cpp)
 # or use this for only specific sources:
 # set(TEST_SOURCES ...)
 
