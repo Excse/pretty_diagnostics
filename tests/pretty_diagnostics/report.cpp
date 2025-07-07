@@ -1,31 +1,52 @@
-#include "snapshot.h"
+#include "gtest/gtest.h"
 
+#include <filesystem>
 #include <fstream>
-#include <sstream>
 
-void expect_snapshot_eq(const std::string &name, const std::filesystem::path &path, const std::string &actual) {
-    const auto snapshot = Snapshot(name, path);
-    if (UPDATE_SNAPSHOTS) {
-        snapshot.save(actual);
-        SUCCEED() << "Snapshot updated: " << snapshot.path();
-    } else {
-        const auto expected = snapshot.load();
-        EXPECT_EQ(expected, actual) << "Snapshot mismatch: " << snapshot.path();
-    }
+#include "pretty_diagnostics/report.h"
+#include "pretty_diagnostics/file.h"
+
+#include "../utils/snapshot.h"
+#include "pretty_diagnostics/renderer.h"
+
+using namespace pretty_diagnostics;
+
+TEST(Report, BuilderCorrect) {
+    const auto file = File(TEST_PATH "/resources/example");
+
+    constexpr auto severity = Severity::Error;
+    constexpr auto message = "Displaying a brief summary of what happened";
+    constexpr auto code = "E1337";
+
+    const auto report = Report::Builder()
+            .severity(severity)
+            .message(message)
+            .code(code)
+            .build();
+
+    ASSERT_EQ(report.severity(), Severity::Error);
+    ASSERT_EQ(report.message(), message);
+    ASSERT_EQ(report.code(), code);
 }
 
-void Snapshot::save(const std::string &data) const {
-    std::ofstream file(_path);
-    file << data;
-}
+TEST(Report, CorrectTextRender) {
+    const auto file = File(TEST_PATH "/resources/example");
 
-std::string Snapshot::load() const {
-    std::ifstream file(_path);
-    std::stringstream buffer;
+    constexpr auto severity = Severity::Error;
+    constexpr auto message = "Displaying a brief summary of what happened";
+    constexpr auto code = "E1337";
 
-    if (file) buffer << file.rdbuf();
+    const auto report = Report::Builder()
+            .severity(severity)
+            .message(message)
+            .code(code)
+            .build();
 
-    return buffer.str();
+    const auto renderer = TextRenderer();
+    auto stream = std::ostringstream();
+    report.render(renderer, stream);
+
+    EXPECT_SNAPSHOT_EQ(TextRender, stream.str());
 }
 
 // BSD 3-Clause License

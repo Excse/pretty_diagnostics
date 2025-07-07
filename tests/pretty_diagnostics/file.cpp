@@ -1,31 +1,19 @@
-#include "snapshot.h"
+#include "gtest/gtest.h"
 
+#include <filesystem>
 #include <fstream>
-#include <sstream>
 
-void expect_snapshot_eq(const std::string &name, const std::filesystem::path &path, const std::string &actual) {
-    const auto snapshot = Snapshot(name, path);
-    if (UPDATE_SNAPSHOTS) {
-        snapshot.save(actual);
-        SUCCEED() << "Snapshot updated: " << snapshot.path();
-    } else {
-        const auto expected = snapshot.load();
-        EXPECT_EQ(expected, actual) << "Snapshot mismatch: " << snapshot.path();
-    }
-}
+#include "pretty_diagnostics/file.h"
+#include "../utils/snapshot.h"
 
-void Snapshot::save(const std::string &data) const {
-    std::ofstream file(_path);
-    file << data;
-}
+using namespace pretty_diagnostics;
 
-std::string Snapshot::load() const {
-    std::ifstream file(_path);
-    std::stringstream buffer;
+TEST(File, ReadCorrectly) {
+    const auto path = TEST_PATH "/resources/example";
+    const auto file = File(path);
 
-    if (file) buffer << file.rdbuf();
-
-    return buffer.str();
+    EXPECT_SNAPSHOT_EQ(ReadCorrectly, file.contents());
+    ASSERT_EQ(file.path(), path);
 }
 
 // BSD 3-Clause License

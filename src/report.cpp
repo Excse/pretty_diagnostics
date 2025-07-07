@@ -1,60 +1,69 @@
 #include "pretty_diagnostics/report.h"
 
-#include <iostream>
-#include <iomanip>
+#include <stdexcept>
 
-std::ostream &operator<<(std::ostream &os, const Report &report) {
-    os << "[" << report.type_to_prefix() << std::setw(4) << std::setfill('0') << report.code() << "] ";
-    os << report.type_to_string() << ":" << " " << report.message() << "\n";
-    return os;
+using namespace pretty_diagnostics;
+
+Report::Report(std::string message, std::optional<std::string> code, Severity severity)
+    : _message(std::move(message)), _code(std::move(code)), _severity(severity) {
 }
 
-std::string Report::type_to_prefix() const {
-    switch (_type) {
-        case Type::ERROR: return "E";
-        case Type::INFO: return "I";
-        case Type::WARNING: return "W";
-        default: throw std::invalid_argument("This report type is not implemented yet.");
+void Report::render(const IReporterRenderer &renderer, std::ostream &stream) const {
+    renderer.render(*this, stream);
+}
+
+Report::Builder &Report::Builder::severity(Severity severity) {
+    _severity = severity;
+    return *this;
+}
+
+Report::Builder &Report::Builder::message(std::string message) {
+    _message = std::move(message);
+    return *this;
+}
+
+Report::Builder &Report::Builder::code(std::string code) {
+    _code = std::move(code);
+    return *this;
+}
+
+Report Report::Builder::build() const {
+    if (!_message.has_value()) {
+        throw std::runtime_error("Report::Builder::build(): message is not set");
     }
+
+    return {
+        _message.value(),
+        std::move(_code),
+        _severity.value_or(Severity::Error)
+    };
 }
 
-std::string Report::type_to_string() const {
-    switch (_type) {
-        case Type::ERROR: return "Error";
-        case Type::INFO: return "Info";
-        case Type::WARNING: return "Warning";
-        default: throw std::invalid_argument("This report type is not implemented yet.");
-    }
-}
-
-Report::Builder &Report::Builder::message(std::string &&message) {
-    _message = message;
-    return *this;
-}
-
-Report::Builder &Report::Builder::note(std::string &&note) {
-    _note = note;
-    return *this;
-}
-
-Report::Builder &Report::Builder::group(FileGroup &&group) {
-    _groups.push_back(group);
-    return *this;
-}
-
-Report::Builder &Report::Builder::type(Type type) {
-    _type = type;
-    return *this;
-}
-
-Report::Builder &Report::Builder::code(size_t code) {
-    _code = code;
-    return *this;
-}
-
-Report Report::Builder::build() {
-    if (!_message.has_value()) throw InvalidReportState("message");
-    if (!_type.has_value()) throw InvalidReportState("type");
-    if (!_code.has_value()) throw InvalidReportState("code");
-    return {_type.value(), std::move(_message.value()), _code.value(), std::move(_groups), std::move(_note)};
-}
+// BSD 3-Clause License
+//
+// Copyright (c) 2025, Timo Behrend
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this
+//    list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation
+//    and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its
+//    contributors may be used to endorse or promote products derived from
+//    this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+// DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+// FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+// OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

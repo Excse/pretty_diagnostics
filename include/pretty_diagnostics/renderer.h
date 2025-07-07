@@ -1,32 +1,15 @@
-#include "snapshot.h"
+#pragma once
 
-#include <fstream>
-#include <sstream>
+#include "report.h"
 
-void expect_snapshot_eq(const std::string &name, const std::filesystem::path &path, const std::string &actual) {
-    const auto snapshot = Snapshot(name, path);
-    if (UPDATE_SNAPSHOTS) {
-        snapshot.save(actual);
-        SUCCEED() << "Snapshot updated: " << snapshot.path();
-    } else {
-        const auto expected = snapshot.load();
-        EXPECT_EQ(expected, actual) << "Snapshot mismatch: " << snapshot.path();
-    }
-}
+namespace pretty_diagnostics {
 
-void Snapshot::save(const std::string &data) const {
-    std::ofstream file(_path);
-    file << data;
-}
+class TextRenderer final : public IReporterRenderer {
+public:
+    void render(const Report &report, std::ostream &stream) const override;
+};
 
-std::string Snapshot::load() const {
-    std::ifstream file(_path);
-    std::stringstream buffer;
-
-    if (file) buffer << file.rdbuf();
-
-    return buffer.str();
-}
+} // namespace pretty_diagnostics
 
 // BSD 3-Clause License
 //

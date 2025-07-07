@@ -1,32 +1,26 @@
-#include "snapshot.h"
+#include "pretty_diagnostics/renderer.h"
 
-#include <fstream>
-#include <sstream>
+#include <bits/ostream.tcc>
 
-void expect_snapshot_eq(const std::string &name, const std::filesystem::path &path, const std::string &actual) {
-    const auto snapshot = Snapshot(name, path);
-    if (UPDATE_SNAPSHOTS) {
-        snapshot.save(actual);
-        SUCCEED() << "Snapshot updated: " << snapshot.path();
-    } else {
-        const auto expected = snapshot.load();
-        EXPECT_EQ(expected, actual) << "Snapshot mismatch: " << snapshot.path();
+using namespace pretty_diagnostics;
+
+std::string _severity_to_string(Severity severity) {
+    switch (severity) {
+        case Severity::Error: return "Error";
+        case Severity::Warning: return "Warning";
+        case Severity::Info: return "Info";
+        default: return "Unknown";
     }
 }
 
-void Snapshot::save(const std::string &data) const {
-    std::ofstream file(_path);
-    file << data;
+void TextRenderer::render(const Report &report, std::ostream &stream) const {
+    stream << _severity_to_string(report.severity());
+    if (report.code().has_value()) {
+        stream << "(" << report.code().value() << "): ";
+    }
+    stream << report.message() << std::endl;
 }
 
-std::string Snapshot::load() const {
-    std::ifstream file(_path);
-    std::stringstream buffer;
-
-    if (file) buffer << file.rdbuf();
-
-    return buffer.str();
-}
 
 // BSD 3-Clause License
 //

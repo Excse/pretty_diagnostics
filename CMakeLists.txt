@@ -24,11 +24,8 @@ include(FetchContent)              # For downloading and using external dependen
 # Create the main library from source file
 add_library(${PROJECT_NAME}
         src/file.cpp
-        src/file_group.cpp
-        src/label.cpp
-        src/label_group.cpp
         src/report.cpp
-        src/span.cpp)
+        src/renderer.cpp)
 # Create an alias for the library: your_project::your_project
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
@@ -41,12 +38,8 @@ target_include_directories(
 
 # Define public headers
 set(PUBLIC_HEADERS
-        include/${PROJECT_NAME}/file.h
-        include/${PROJECT_NAME}/file_group.h
-        include/${PROJECT_NAME}/label.h
-        include/${PROJECT_NAME}/label_group.h
-        include/${PROJECT_NAME}/report.h
-        include/${PROJECT_NAME}/span.h)
+        include/pretty_diagnostics/file.h
+        include/pretty_diagnostics/report.h)
 
 # Set the properties of the resulting library
 set_target_properties(${PROJECT_NAME}
