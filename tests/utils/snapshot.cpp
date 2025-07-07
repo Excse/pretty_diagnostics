@@ -15,7 +15,16 @@ void expect_snapshot_eq(const std::string &name, const std::filesystem::path &pa
 }
 
 void Snapshot::save(const std::string &data) const {
+    const auto directory = _path.parent_path();
+    if (!std::filesystem::exists(directory)) {
+        std::filesystem::create_directories(directory);
+    }
+
     std::ofstream file(_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Snapshot::save(): failed to open file: " + _path.string());
+    }
+
     file << data;
 }
 
