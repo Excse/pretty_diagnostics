@@ -10,7 +10,7 @@ on:
 env:
   BUILD_TYPE: Release
   BUILD_SHARED_LIBS: ON
-  MAKE_INSTALLABLE: OFF
+  MAKE_INSTALLABLE: ON
   BUILD_EXECUTABLE: ON
   BUILD_TESTING: ON
 
@@ -20,16 +20,25 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Install Dependencies
-      run: sudo apt-get update && sudo apt-get install -y cmake ninja-build
       
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -G Ninja -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTING=${{env.BUILD_TESTING}} -DBUILD_EXECUTABLE=${{env.BUILD_EXECUTABLE}} -DMAKE_INSTALLABLE=${{env.MAKE_INSTALLABLE}} -DBUILD_SHARED_LIBS=${{env.BUILD_SHARED_LIBS}}
+      run: |
+        cmake -S . -B ${{github.workspace}}/build                    \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}                     \
+          -DBUILD_TESTING=${{env.BUILD_TESTING}}                     \
+          -DBUILD_EXECUTABLE=${{env.BUILD_EXECUTABLE}}               \
+          -DMAKE_INSTALLABLE=${{env.MAKE_INSTALLABLE}}               \
+          -DBUILD_SHARED_LIBS=${{env.BUILD_SHARED_LIBS}}             \
+          -DCMAKE_INSTALL_PREFIX:PATH=$GITHUB_WORKSPACE/test_install
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j2
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${{env.BUILD_TYPE}}
 
     - name: Test
       working-directory: ${{github.workspace}}/build/tests
       run: ./pretty_diagnostics_tests --update_snapshots
+
+    - name: Test Install
+      working-directory: ${{github.workspace}}/build
+      run: cmake --install . --config ${{env.BUILD_TYPE}}
