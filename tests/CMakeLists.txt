@@ -32,7 +32,5 @@ add_custom_command(
 )
 # Link the test binary with the main library and GoogleTest
 target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} gtest_main)
-# Set the TEST_PATH variable
-target_compile_definitions(${PROJECT_NAME}_tests PRIVATE TEST_PATH="${CMAKE_SOURCE_DIR}/tests")
 # Automatically discover and register tests with CTest
 gtest_discover_tests(${PROJECT_NAME}_tests)

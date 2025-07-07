@@ -6,9 +6,9 @@
 #include <string>
 
 #define EXPECT_SNAPSHOT_EQ(name, actual) \
-    static_assert(sizeof(GTEST_STRINGIFY_(name)) > 1,                                          \
-    "name must not be empty");                                                                 \
-    expect_snapshot_eq(#name, std::string(TEST_PATH "/snapshots/") + #name + ".snap", actual); \
+    static_assert(sizeof(GTEST_STRINGIFY_(name)) > 1,                               \
+    "name must not be empty");                                                      \
+    expect_snapshot_eq(#name, std::string("snapshots/") + #name + ".snap", actual); \
 
 inline bool UPDATE_SNAPSHOTS = false;
 

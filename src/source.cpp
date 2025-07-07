@@ -1,5 +1,6 @@
 #include "pretty_diagnostics/source.h"
 
+#include <algorithm>
 #include <fstream>
 
 using namespace pretty_diagnostics;
