@@ -31,5 +31,5 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j2
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure --update_snapshots
+      working-directory: ${{github.workspace}}/build/tests
+      run: ./pretty_diagnostics_tests --update_snapshots
