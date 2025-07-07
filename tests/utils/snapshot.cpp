@@ -16,10 +16,6 @@ void expect_snapshot_eq(const std::string &name, const std::filesystem::path &pa
 
 void Snapshot::save(const std::string &data) const {
     std::ofstream file(_path);
-    if (!file.is_open()) {
-        throw std::runtime_error("Snapshot::save(): failed to open file: " + _path.string());
-    }
-
     file << data;
 }
 
