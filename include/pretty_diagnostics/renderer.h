@@ -7,6 +7,8 @@ namespace pretty_diagnostics {
 class TextRenderer final : public IReporterRenderer {
 public:
     void render(const Report &report, std::ostream &stream) const override;
+
+    void render(const Severity &severity, std::ostream &stream) const override;
 };
 
 } // namespace pretty_diagnostics

@@ -1,25 +1,40 @@
 #include "pretty_diagnostics/renderer.h"
 
-#include <bits/ostream.tcc>
+#include <unordered_map>
+#include <vector>
 
 using namespace pretty_diagnostics;
 
-std::string _severity_to_string(const Severity severity) {
-    switch (severity) {
-        case Severity::Error: return "Error";
-        case Severity::Warning: return "Warning";
-        case Severity::Info: return "Info";
-        case Severity::Unknown:
-        default: return "Unknown";
+void TextRenderer::render(const Report &report, std::ostream &stream) const {
+    this->render(report.severity(), stream);
+
+    if (report.code().has_value()) {
+        stream << "(" << report.code().value() << ")";
     }
+
+    stream << ": " << report.message() << std::endl;
 }
 
-void TextRenderer::render(const Report &report, std::ostream &stream) const {
-    stream << _severity_to_string(report.severity());
-    if (report.code().has_value()) {
-        stream << "(" << report.code().value() << "): ";
+void TextRenderer::render(const Severity &severity, std::ostream &stream) const {
+    switch (severity) {
+        case Severity::Error: {
+            stream << "Error";
+            break;
+        }
+        case Severity::Warning: {
+            stream << "Warning";
+            break;
+        }
+        case Severity::Info: {
+            stream << "Info";
+            break;
+        }
+        case Severity::Unknown:
+        default: {
+            stream << "Unknown";
+            break;
+        }
     }
-    stream << report.message() << std::endl;
 }
 
 // BSD 3-Clause License

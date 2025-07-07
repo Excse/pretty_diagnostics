@@ -5,14 +5,14 @@
 
 #include "pretty_diagnostics/renderer.h"
 #include "pretty_diagnostics/report.h"
-#include "pretty_diagnostics/file.h"
+#include "pretty_diagnostics/source.h"
 
 #include "../utils/snapshot.h"
 
 using namespace pretty_diagnostics;
 
 TEST(Report, BuilderCorrect) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    const auto file = std::make_shared<FileSource>(TEST_PATH "/resources/example");
 
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";
@@ -38,7 +38,7 @@ TEST(Report, BuilderCorrect) {
 }
 
 TEST(Report, CorrectTextRender) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    const auto file = std::make_shared<FileSource>(TEST_PATH "/resources/example");
 
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";

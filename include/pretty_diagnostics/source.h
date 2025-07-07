@@ -4,19 +4,47 @@
 
 namespace pretty_diagnostics {
 
-class File {
+class Source {
 public:
-    File(std::filesystem::path path, std::string contents);
+    virtual ~Source() = default;
 
-    File(std::filesystem::path path);
+    [[nodiscard]] virtual std::string substr(size_t start, size_t end) const = 0;
 
-    [[nodiscard]] auto &contents() const { return _contents; }
+    [[nodiscard]] virtual size_t line_number(size_t start) const = 0;
+
+    [[nodiscard]] virtual std::string line(size_t line) const = 0;
+
+    [[nodiscard]] virtual std::string contents() const = 0;
+
+    [[nodiscard]] virtual size_t size() const = 0;
+};
+
+class FileSource final : public Source {
+public:
+    FileSource(std::filesystem::path path);
+
+    [[nodiscard]] std::string substr(size_t start, size_t end) const override;
+
+    [[nodiscard]] size_t line_number(size_t start) const override;
+
+    [[nodiscard]] std::string line(size_t line) const override;
+
+    [[nodiscard]] std::string contents() const override;
+
+    [[nodiscard]] size_t size() const override;
+
+    friend bool operator==(const FileSource &lhs, const FileSource &rhs) {
+        return lhs._path == rhs._path;
+    }
+
+    friend bool operator!=(const FileSource &lhs, const FileSource &rhs) {
+        return !(lhs == rhs);
+    }
 
     [[nodiscard]] auto &path() const { return _path; }
 
 private:
     std::filesystem::path _path;
-    std::string _contents;
 };
 
 } // namespace pretty_diagnostics

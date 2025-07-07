@@ -5,10 +5,10 @@
 using namespace pretty_diagnostics;
 
 TEST(Span, ValidExample) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    const auto file = std::make_shared<FileSource>(TEST_PATH "/resources/example");
     const auto span = Span(file, 0, 16);
 
-    ASSERT_EQ(span.file(), file);
+    ASSERT_EQ(span.source(), file);
     ASSERT_EQ(span.start(), 0);
     ASSERT_EQ(span.end(), 16);
     ASSERT_EQ(span.width(), 16);
@@ -17,10 +17,10 @@ TEST(Span, ValidExample) {
 }
 
 TEST(Span, SecondLine) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    const auto file = std::make_shared<FileSource>(TEST_PATH "/resources/example");
     const auto span = Span(file, 17, 38);
 
-    ASSERT_EQ(span.file(), file);
+    ASSERT_EQ(span.source(), file);
     ASSERT_EQ(span.start(), 17);
     ASSERT_EQ(span.end(), 38);
     ASSERT_EQ(span.width(), 21);
@@ -29,7 +29,7 @@ TEST(Span, SecondLine) {
 }
 
 TEST(Span, InvalidRange) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    const auto file = std::make_shared<FileSource>(TEST_PATH "/resources/example");
 
     ASSERT_THROW(Span(file, 16, 0), std::runtime_error);
     ASSERT_THROW(Span(file, 16, 16), std::runtime_error);

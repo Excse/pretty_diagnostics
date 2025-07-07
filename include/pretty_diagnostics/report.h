@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include <optional>
 #include <iostream>
 #include <vector>
@@ -47,6 +48,8 @@ public:
     virtual ~IReporterRenderer() = default;
 
     virtual void render(const Report &report, std::ostream &stream) const = 0;
+
+    virtual void render(const Severity &severity, std::ostream &stream) const = 0;
 };
 
 class Report::Builder {

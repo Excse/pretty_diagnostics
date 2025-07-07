@@ -1,14 +1,14 @@
 #pragma once
-#include "file.h"
+#include "source.h"
 
 namespace pretty_diagnostics {
 
 class Span {
 public:
-    Span(const std::shared_ptr<File> &source, size_t start, size_t end);
+    Span(const std::shared_ptr<Source> &source, size_t start, size_t end);
 
     friend bool operator==(const Span &lhs, const Span &rhs) {
-        return lhs._file == rhs._file
+        return lhs._source == rhs._source
                && lhs._start == rhs._start
                && lhs._end == rhs._end;
     }
@@ -23,14 +23,14 @@ public:
 
     [[nodiscard]] size_t line() const;
 
-    [[nodiscard]] auto &file() const { return _file; }
+    [[nodiscard]] auto &source() const { return _source; }
 
     [[nodiscard]] auto start() const { return _start; }
 
     [[nodiscard]] auto end() const { return _end; }
 
 private:
-    std::shared_ptr<File> _file;
+    std::shared_ptr<Source> _source;
     size_t _start;
     size_t _end;
 };

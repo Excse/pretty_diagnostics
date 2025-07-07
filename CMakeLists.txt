@@ -23,7 +23,7 @@ include(FetchContent)              # For downloading and using external dependen
 
 # Create the main library from source file
 add_library(${PROJECT_NAME}
-        src/file.cpp
+        src/source.cpp
         src/report.cpp
         src/renderer.cpp
         src/span.cpp
@@ -40,7 +40,7 @@ target_include_directories(
 
 # Define public headers
 set(PUBLIC_HEADERS
-        include/pretty_diagnostics/file.h
+        include/pretty_diagnostics/source.h
         include/pretty_diagnostics/report.h
         include/pretty_diagnostics/renderer.h
         include/pretty_diagnostics/span.h

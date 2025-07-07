@@ -1,21 +1,26 @@
-#include "pretty_diagnostics/file.h"
+#include "gtest/gtest.h"
 
+#include <filesystem>
 #include <fstream>
+
+#include "pretty_diagnostics/source.h"
+
+#include "../utils/snapshot.h"
 
 using namespace pretty_diagnostics;
 
-File::File(std::filesystem::path path, std::string contents)
-    : _path(std::move(path)), _contents(std::move(contents)) {
+TEST(Source, FileSourceWorking) {
+    const auto path = TEST_PATH "/resources/example";
+    const auto file = std::make_shared<FileSource>(path);
+
+    EXPECT_SNAPSHOT_EQ(ReadCorrectly, file->contents());
+    ASSERT_EQ(file->path(), path);
 }
 
-File::File(std::filesystem::path path) {
-    std::ifstream source(path, std::ios::in | std::ios::binary);
-    _path = std::move(path);
+TEST(Source, FileSourceFailing) {
+    const auto path = TEST_PATH "/resources/does_not_exist";
 
-    std::ostringstream stream;
-    stream << source.rdbuf();
-
-    _contents = stream.str();
+    EXPECT_THROW((FileSource(path)), std::runtime_error);
 }
 
 // BSD 3-Clause License
