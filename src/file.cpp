@@ -10,7 +10,7 @@ File::File(std::filesystem::path path, std::string contents)
 
 File::File(std::filesystem::path path) {
     std::ifstream source(path, std::ios::in | std::ios::binary);
-    _path = path;
+    _path = std::move(path);
 
     std::ostringstream stream;
     stream << source.rdbuf();

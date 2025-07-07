@@ -13,6 +13,7 @@ enum class Severity {
     Error,
     Warning,
     Info,
+    Unknown,
 };
 
 class IReporterRenderer;

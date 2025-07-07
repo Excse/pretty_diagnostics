@@ -4,11 +4,12 @@
 
 using namespace pretty_diagnostics;
 
-std::string _severity_to_string(Severity severity) {
+std::string _severity_to_string(const Severity severity) {
     switch (severity) {
         case Severity::Error: return "Error";
         case Severity::Warning: return "Warning";
         case Severity::Info: return "Info";
+        case Severity::Unknown:
         default: return "Unknown";
     }
 }
@@ -20,7 +21,6 @@ void TextRenderer::render(const Report &report, std::ostream &stream) const {
     }
     stream << report.message() << std::endl;
 }
-
 
 // BSD 3-Clause License
 //

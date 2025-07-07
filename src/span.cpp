@@ -2,7 +2,7 @@
 
 using namespace pretty_diagnostics;
 
-Span::Span(const std::shared_ptr<File> &source, size_t start, size_t end)
+Span::Span(const std::shared_ptr<File> &source, const size_t start, const size_t end)
     : _file(source), _start(start), _end(end) {
     if (start >= end) {
         throw std::runtime_error("Span::Span(): start must be less than end");

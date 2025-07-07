@@ -7,7 +7,7 @@ using namespace pretty_diagnostics;
 Report::Report(std::string message, std::optional<std::string> code, Severity severity,
                std::vector<Label> labels)
     : _code(std::move(code)), _labels(std::move(labels)), _message(std::move(message)),
-      _severity(severity) {
+      _severity(std::move(severity)) {
 }
 
 void Report::render(const IReporterRenderer &renderer, std::ostream &stream) const {
