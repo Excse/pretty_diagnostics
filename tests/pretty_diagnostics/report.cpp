@@ -12,7 +12,7 @@
 using namespace pretty_diagnostics;
 
 TEST(Report, BuilderCorrect) {
-    const auto file = std::make_shared<FileSource>(TEST_PATH "/resources/example");
+    const auto file = std::make_shared<FileSource>("resources/example");
 
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";
@@ -30,15 +30,21 @@ TEST(Report, BuilderCorrect) {
     ASSERT_EQ(report.severity(), Severity::Error);
     ASSERT_EQ(report.message(), message);
     ASSERT_EQ(report.code(), code);
-    ASSERT_EQ(report.labels().size(), 1);
-    const auto &label = report.labels().front();
+
+    ASSERT_EQ(report.label_groups().size(), 1);
+    const auto &[source, labels] = *report.label_groups().begin();
+    ASSERT_EQ(source, file);
+
+    ASSERT_EQ(labels.size(), 1);
+    const auto &label = *labels.begin();
+
     ASSERT_EQ(label.text(), label_text);
     ASSERT_EQ(label.span(), label_span);
     ASSERT_EQ(label.span().contents(), "ist");
 }
 
 TEST(Report, CorrectTextRender) {
-    const auto file = std::make_shared<FileSource>(TEST_PATH "/resources/example");
+    const auto file = std::make_shared<FileSource>("resources/example");
 
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";

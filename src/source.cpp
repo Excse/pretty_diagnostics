@@ -4,39 +4,35 @@
 
 using namespace pretty_diagnostics;
 
-FileSource::FileSource(std::filesystem::path path) {
-    if (!std::filesystem::exists(path)) {
-        throw std::runtime_error("FileSource::FileSource(): file does not exist");
-    }
-
-    _path = std::move(path);
+FileSource::FileSource(std::filesystem::path path)
+    : _path(std::move(path)) {
+    if (!std::filesystem::exists(_path))
+        throw std::runtime_error("FileSource::FileSource(): file does not exist: " + _path.string());
 }
 
 std::string FileSource::substr(const size_t start, const size_t end) const {
     std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) {
-        throw std::runtime_error("File::substr(): could not open file");
-    }
+    if (!stream.is_open()) throw std::runtime_error("File::substr(): could not open file: " + _path.string());
 
     stream.seekg(start);
     std::string result(end - start, '\0');
     stream.read(&result[0], end - start);
+    result.resize(stream.gcount());
 
     return result;
 }
 
 size_t FileSource::line_number(const size_t start) const {
     std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) {
-        throw std::runtime_error("File::line_number(): could not open file");
-    }
+    if (!stream.is_open()) throw std::runtime_error("File::line_number(): could not open file: " + _path.string());
 
-    constexpr size_t BUFFER_SIZE = 4096;
+    static constexpr size_t BUFFER_SIZE = 4096;
     char buffer[BUFFER_SIZE];
 
     size_t read = 0;
     size_t line = 0;
 
+    // Returns 0-based line number corresponding to byte offset `start`
     while (read < start && stream) {
         const size_t to_read = std::min(BUFFER_SIZE, start - read);
         stream.read(buffer, to_read);
@@ -51,35 +47,29 @@ size_t FileSource::line_number(const size_t start) const {
 
 std::string FileSource::line(const size_t line) const {
     std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) {
-        throw std::runtime_error("File::line(): could not open file");
-    }
+    if (!stream.is_open()) throw std::runtime_error("File::line(): could not open file: " + _path.string());
 
     std::string result;
-    for (size_t index = 0; index < line && std::getline(stream, result); ++index) {
-    }
+    for (size_t index = 0; index < line && std::getline(stream, result); ++index) {}
+
     return result;
+}
+
+size_t FileSource::size() const {
+    std::ifstream stream(_path, std::ios::binary | std::ios::ate);
+    if (!stream.is_open()) throw std::runtime_error("File::size(): could not open file: " + _path.string());
+
+    return stream.tellg();
 }
 
 std::string FileSource::contents() const {
     std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) {
-        throw std::runtime_error("File::contents(): could not open file");
-    }
+    if (!stream.is_open()) throw std::runtime_error("File::contents(): could not open file: " + _path.string());
 
     std::ostringstream result;
     result << stream.rdbuf();
+
     return result.str();
-}
-
-size_t FileSource::size() const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) {
-        throw std::runtime_error("File::size(): could not open file");
-    }
-
-    stream.seekg(0, std::ios::end);
-    return stream.tellg();
 }
 
 // BSD 3-Clause License

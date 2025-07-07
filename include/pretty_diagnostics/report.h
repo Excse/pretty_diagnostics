@@ -21,24 +21,25 @@ class IReporterRenderer;
 
 class Report {
 public:
+    using GroupedLabels = std::unordered_map<std::shared_ptr<Source>, std::vector<Label>>;
     class Builder;
 
 public:
-    Report(std::string message, std::optional<std::string> code, Severity severity, std::vector<Label> labels);
+    Report(std::string message, std::optional<std::string> code, Severity severity, GroupedLabels label_groups);
 
     void render(const IReporterRenderer &renderer, std::ostream &stream = std::cout) const;
+
+    [[nodiscard]] auto &label_groups() const { return _label_groups; }
 
     [[nodiscard]] auto &severity() const { return _severity; }
 
     [[nodiscard]] auto &message() const { return _message; }
 
-    [[nodiscard]] auto &labels() const { return _labels; }
-
     [[nodiscard]] auto &code() const { return _code; }
 
 private:
     std::optional<std::string> _code;
-    std::vector<Label> _labels;
+    GroupedLabels _label_groups;
     std::string _message;
     Severity _severity;
 };
@@ -68,7 +69,7 @@ private:
     std::optional<std::string> _message;
     std::optional<Severity> _severity;
     std::optional<std::string> _code;
-    std::vector<Label> _labels;
+    GroupedLabels _labels;
 };
 
 } // namespace pretty_diagnostics

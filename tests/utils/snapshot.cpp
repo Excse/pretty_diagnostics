@@ -16,14 +16,21 @@ void expect_snapshot_eq(const std::string &name, const std::filesystem::path &pa
 
 void Snapshot::save(const std::string &data) const {
     std::ofstream file(_path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Snapshot::save(): failed to open file: " + _path.string());
+    }
+
     file << data;
 }
 
 std::string Snapshot::load() const {
     std::ifstream file(_path);
-    std::stringstream buffer;
+    if (!file.is_open()) {
+        throw std::runtime_error("Snapshot::load(): failed to open file: " + _path.string());
+    }
 
-    if (file) buffer << file.rdbuf();
+    std::stringstream buffer;
+    buffer << file.rdbuf();
 
     return buffer.str();
 }

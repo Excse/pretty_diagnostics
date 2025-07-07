@@ -1,5 +1,6 @@
 #include "pretty_diagnostics/renderer.h"
 
+#include <ranges>
 #include <unordered_map>
 #include <vector>
 
@@ -8,11 +9,13 @@ using namespace pretty_diagnostics;
 void TextRenderer::render(const Report &report, std::ostream &stream) const {
     this->render(report.severity(), stream);
 
-    if (report.code().has_value()) {
-        stream << "(" << report.code().value() << ")";
-    }
+    if (report.code().has_value()) stream << "(" << report.code().value() << ")";
 
     stream << ": " << report.message() << std::endl;
+
+    for (const auto &source: report.label_groups() | std::views::keys) {
+        stream << source->path() << ":" << std::endl;
+    }
 }
 
 void TextRenderer::render(const Severity &severity, std::ostream &stream) const {

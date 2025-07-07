@@ -5,8 +5,8 @@
 using namespace pretty_diagnostics;
 
 Report::Report(std::string message, std::optional<std::string> code, Severity severity,
-               std::vector<Label> labels)
-    : _code(std::move(code)), _labels(std::move(labels)), _message(std::move(message)),
+               GroupedLabels label_groups)
+    : _code(std::move(code)), _label_groups(std::move(label_groups)), _message(std::move(message)),
       _severity(std::move(severity)) {
 }
 
@@ -30,7 +30,7 @@ Report::Builder &Report::Builder::code(std::string code) {
 }
 
 Report::Builder &Report::Builder::label(std::string text, Span span) {
-    _labels.emplace_back(std::move(text), std::move(span));
+    _labels[span.source()].emplace_back(std::move(text), std::move(span));
     return *this;
 }
 

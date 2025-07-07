@@ -14,9 +14,11 @@ public:
 
     [[nodiscard]] virtual std::string line(size_t line) const = 0;
 
-    [[nodiscard]] virtual std::string contents() const = 0;
-
     [[nodiscard]] virtual size_t size() const = 0;
+
+    [[nodiscard]] virtual std::string path() const = 0;
+
+    [[nodiscard]] virtual std::string contents() const = 0;
 };
 
 class FileSource final : public Source {
@@ -29,9 +31,11 @@ public:
 
     [[nodiscard]] std::string line(size_t line) const override;
 
+    [[nodiscard]] size_t size() const override;
+
     [[nodiscard]] std::string contents() const override;
 
-    [[nodiscard]] size_t size() const override;
+    [[nodiscard]] std::string path() const override { return _path.string(); }
 
     friend bool operator==(const FileSource &lhs, const FileSource &rhs) {
         return lhs._path == rhs._path;
@@ -40,8 +44,6 @@ public:
     friend bool operator!=(const FileSource &lhs, const FileSource &rhs) {
         return !(lhs == rhs);
     }
-
-    [[nodiscard]] auto &path() const { return _path; }
 
 private:
     std::filesystem::path _path;
