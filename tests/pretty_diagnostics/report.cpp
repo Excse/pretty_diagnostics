@@ -17,16 +17,24 @@ TEST(Report, BuilderCorrect) {
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";
     constexpr auto code = "E1337";
+    constexpr auto label_text = "Giving some tips or extra details about what is wrong here";
+    const auto label_span = Span{file, 5, 8};
 
     const auto report = Report::Builder()
             .severity(severity)
             .message(message)
             .code(code)
+            .label(label_text, label_span)
             .build();
 
     ASSERT_EQ(report.severity(), Severity::Error);
     ASSERT_EQ(report.message(), message);
     ASSERT_EQ(report.code(), code);
+    ASSERT_EQ(report.labels().size(), 1);
+    const auto &label = report.labels().front();
+    ASSERT_EQ(label.text(), label_text);
+    ASSERT_EQ(label.span(), label_span);
+    ASSERT_EQ(label.span().contents(), "ist");
 }
 
 TEST(Report, CorrectTextRender) {
@@ -35,11 +43,14 @@ TEST(Report, CorrectTextRender) {
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";
     constexpr auto code = "E1337";
+    constexpr auto label_text = "Giving some tips or extra details about what is wrong here";
+    const auto label_span = Span{file, 5, 8};
 
     const auto report = Report::Builder()
             .severity(severity)
             .message(message)
             .code(code)
+            .label(label_text, label_span)
             .build();
 
     const auto renderer = TextRenderer();

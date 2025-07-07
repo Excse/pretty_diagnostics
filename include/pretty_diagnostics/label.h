@@ -1,70 +1,19 @@
 #pragma once
-
-#include <optional>
-#include <iostream>
-#include <vector>
-#include <string>
-
-#include "label.h"
+#include "span.h"
 
 namespace pretty_diagnostics {
 
-enum class Severity {
-    Error,
-    Warning,
-    Info,
-};
-
-class IReporterRenderer;
-
-class Report {
+class Label {
 public:
-    class Builder;
+    Label(std::string text, Span span);
 
-public:
-    Report(std::string message, std::optional<std::string> code, Severity severity, std::vector<Label> labels);
+    [[nodiscard]] auto &text() const { return _text; }
 
-    void render(const IReporterRenderer &renderer, std::ostream &stream = std::cout) const;
-
-    [[nodiscard]] auto &severity() const { return _severity; }
-
-    [[nodiscard]] auto &message() const { return _message; }
-
-    [[nodiscard]] auto &labels() const { return _labels; }
-
-    [[nodiscard]] auto &code() const { return _code; }
+    [[nodiscard]] auto &span() const { return _span; }
 
 private:
-    std::optional<std::string> _code;
-    std::vector<Label> _labels;
-    std::string _message;
-    Severity _severity;
-};
-
-class IReporterRenderer {
-public:
-    virtual ~IReporterRenderer() = default;
-
-    virtual void render(const Report &report, std::ostream &stream) const = 0;
-};
-
-class Report::Builder {
-public:
-    Builder &severity(Severity severity);
-
-    Builder &message(std::string message);
-
-    Builder &code(std::string code);
-
-    Builder &label(std::string text, Span span);
-
-    [[nodiscard]] Report build() const;
-
-private:
-    std::optional<std::string> _message;
-    std::optional<Severity> _severity;
-    std::optional<std::string> _code;
-    std::vector<Label> _labels;
+    std::string _text;
+    Span _span;
 };
 
 } // namespace pretty_diagnostics

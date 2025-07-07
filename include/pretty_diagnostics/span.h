@@ -7,6 +7,16 @@ class Span {
 public:
     Span(const std::shared_ptr<File> &source, size_t start, size_t end);
 
+    friend bool operator==(const Span &lhs, const Span &rhs) {
+        return lhs._file == rhs._file
+               && lhs._start == rhs._start
+               && lhs._end == rhs._end;
+    }
+
+    friend bool operator!=(const Span &lhs, const Span &rhs) {
+        return !(lhs == rhs);
+    }
+
     [[nodiscard]] std::string contents() const;
 
     [[nodiscard]] size_t width() const;

@@ -1,50 +1,9 @@
-#include "pretty_diagnostics/report.h"
-
-#include <stdexcept>
+#include "pretty_diagnostics/label.h"
 
 using namespace pretty_diagnostics;
 
-Report::Report(std::string message, std::optional<std::string> code, Severity severity,
-               std::vector<Label> labels)
-    : _code(std::move(code)), _labels(std::move(labels)), _message(std::move(message)),
-      _severity(severity) {
-}
-
-void Report::render(const IReporterRenderer &renderer, std::ostream &stream) const {
-    renderer.render(*this, stream);
-}
-
-Report::Builder &Report::Builder::severity(Severity severity) {
-    _severity = severity;
-    return *this;
-}
-
-Report::Builder &Report::Builder::message(std::string message) {
-    _message = std::move(message);
-    return *this;
-}
-
-Report::Builder &Report::Builder::code(std::string code) {
-    _code = std::move(code);
-    return *this;
-}
-
-Report::Builder &Report::Builder::label(std::string text, Span span) {
-    _labels.emplace_back(std::move(text), std::move(span));
-    return *this;
-}
-
-Report Report::Builder::build() const {
-    if (!_message.has_value()) {
-        throw std::runtime_error("Report::Builder::build(): message is not set");
-    }
-
-    return {
-        _message.value(),
-        _code,
-        _severity.value_or(Severity::Error),
-        _labels
-    };
+Label::Label(std::string text, Span span)
+    : _text(std::move(text)), _span(std::move(span)) {
 }
 
 // BSD 3-Clause License
