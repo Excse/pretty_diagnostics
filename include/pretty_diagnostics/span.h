@@ -1,53 +1,31 @@
-#include "gtest/gtest.h"
+#pragma once
+#include "file.h"
 
-#include <filesystem>
-#include <fstream>
+namespace pretty_diagnostics {
 
-#include "pretty_diagnostics/renderer.h"
-#include "pretty_diagnostics/report.h"
-#include "pretty_diagnostics/file.h"
+class Span {
+public:
+    Span(const std::shared_ptr<File> &source, size_t start, size_t end);
 
-#include "../utils/snapshot.h"
+    [[nodiscard]] std::string contents() const;
 
-using namespace pretty_diagnostics;
+    [[nodiscard]] size_t width() const;
 
-TEST(Report, BuilderCorrect) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    [[nodiscard]] size_t line() const;
 
-    constexpr auto severity = Severity::Error;
-    constexpr auto message = "Displaying a brief summary of what happened";
-    constexpr auto code = "E1337";
+    [[nodiscard]] auto &file() const { return _file; }
 
-    const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .build();
+    [[nodiscard]] auto start() const { return _start; }
 
-    ASSERT_EQ(report.severity(), Severity::Error);
-    ASSERT_EQ(report.message(), message);
-    ASSERT_EQ(report.code(), code);
-}
+    [[nodiscard]] auto end() const { return _end; }
 
-TEST(Report, CorrectTextRender) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+private:
+    std::shared_ptr<File> _file;
+    size_t _start;
+    size_t _end;
+};
 
-    constexpr auto severity = Severity::Error;
-    constexpr auto message = "Displaying a brief summary of what happened";
-    constexpr auto code = "E1337";
-
-    const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .build();
-
-    const auto renderer = TextRenderer();
-    auto stream = std::ostringstream();
-    report.render(renderer, stream);
-
-    EXPECT_SNAPSHOT_EQ(TextRender, stream.str());
-}
+} // namespace pretty_diagnostics
 
 // BSD 3-Clause License
 //

@@ -1,52 +1,39 @@
 #include "gtest/gtest.h"
 
-#include <filesystem>
-#include <fstream>
-
-#include "pretty_diagnostics/renderer.h"
-#include "pretty_diagnostics/report.h"
-#include "pretty_diagnostics/file.h"
-
-#include "../utils/snapshot.h"
+#include "pretty_diagnostics/span.h"
 
 using namespace pretty_diagnostics;
 
-TEST(Report, BuilderCorrect) {
+TEST(Span, ValidExample) {
     const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    const auto span = Span(file, 0, 16);
 
-    constexpr auto severity = Severity::Error;
-    constexpr auto message = "Displaying a brief summary of what happened";
-    constexpr auto code = "E1337";
-
-    const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .build();
-
-    ASSERT_EQ(report.severity(), Severity::Error);
-    ASSERT_EQ(report.message(), message);
-    ASSERT_EQ(report.code(), code);
+    ASSERT_EQ(span.file(), file);
+    ASSERT_EQ(span.start(), 0);
+    ASSERT_EQ(span.end(), 16);
+    ASSERT_EQ(span.width(), 16);
+    ASSERT_EQ(span.line(), 0);
+    ASSERT_EQ(span.contents(), "Thes ist a test!");
 }
 
-TEST(Report, CorrectTextRender) {
+TEST(Span, SecondLine) {
+    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+    const auto span = Span(file, 17, 38);
+
+    ASSERT_EQ(span.file(), file);
+    ASSERT_EQ(span.start(), 17);
+    ASSERT_EQ(span.end(), 38);
+    ASSERT_EQ(span.width(), 21);
+    ASSERT_EQ(span.line(), 1);
+    ASSERT_EQ(span.contents(), "This is another line.");
+}
+
+TEST(Span, InvalidRange) {
     const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
 
-    constexpr auto severity = Severity::Error;
-    constexpr auto message = "Displaying a brief summary of what happened";
-    constexpr auto code = "E1337";
-
-    const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .build();
-
-    const auto renderer = TextRenderer();
-    auto stream = std::ostringstream();
-    report.render(renderer, stream);
-
-    EXPECT_SNAPSHOT_EQ(TextRender, stream.str());
+    ASSERT_THROW(Span(file, 16, 0), std::runtime_error);
+    ASSERT_THROW(Span(file, 16, 16), std::runtime_error);
+    ASSERT_THROW(Span(file, 0, 53), std::runtime_error);
 }
 
 // BSD 3-Clause License

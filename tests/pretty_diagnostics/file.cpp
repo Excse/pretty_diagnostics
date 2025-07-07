@@ -4,16 +4,17 @@
 #include <fstream>
 
 #include "pretty_diagnostics/file.h"
+
 #include "../utils/snapshot.h"
 
 using namespace pretty_diagnostics;
 
 TEST(File, ReadCorrectly) {
     const auto path = TEST_PATH "/resources/example";
-    const auto file = File(path);
+    const auto file = std::make_shared<File>(path);
 
-    EXPECT_SNAPSHOT_EQ(ReadCorrectly, file.contents());
-    ASSERT_EQ(file.path(), path);
+    EXPECT_SNAPSHOT_EQ(ReadCorrectly, file->contents());
+    ASSERT_EQ(file->path(), path);
 }
 
 // BSD 3-Clause License

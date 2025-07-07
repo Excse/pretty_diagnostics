@@ -1,52 +1,37 @@
-#include "gtest/gtest.h"
-
-#include <filesystem>
-#include <fstream>
-
-#include "pretty_diagnostics/renderer.h"
-#include "pretty_diagnostics/report.h"
-#include "pretty_diagnostics/file.h"
-
-#include "../utils/snapshot.h"
+#include "pretty_diagnostics/span.h"
 
 using namespace pretty_diagnostics;
 
-TEST(Report, BuilderCorrect) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+Span::Span(const std::shared_ptr<File> &source, size_t start, size_t end)
+    : _file(source), _start(start), _end(end) {
+    if (start >= end) {
+        throw std::runtime_error("Span::Span(): start must be less than end");
+    }
 
-    constexpr auto severity = Severity::Error;
-    constexpr auto message = "Displaying a brief summary of what happened";
-    constexpr auto code = "E1337";
+    const auto size = _file->contents().size();
+    if (start > size) {
+        throw std::runtime_error("Span::Span(): start must be less than or equal to file size");
+    }
 
-    const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .build();
-
-    ASSERT_EQ(report.severity(), Severity::Error);
-    ASSERT_EQ(report.message(), message);
-    ASSERT_EQ(report.code(), code);
+    if (end > size) {
+        throw std::runtime_error("Span::Span(): end must be less than or equal to file size");
+    }
 }
 
-TEST(Report, CorrectTextRender) {
-    const auto file = std::make_shared<File>(TEST_PATH "/resources/example");
+std::string Span::contents() const {
+    const auto &contents = _file->contents();
+    return contents.substr(_start, this->width());
+}
 
-    constexpr auto severity = Severity::Error;
-    constexpr auto message = "Displaying a brief summary of what happened";
-    constexpr auto code = "E1337";
+size_t Span::width() const {
+    return _end - _start;
+}
 
-    const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .build();
-
-    const auto renderer = TextRenderer();
-    auto stream = std::ostringstream();
-    report.render(renderer, stream);
-
-    EXPECT_SNAPSHOT_EQ(TextRender, stream.str());
+size_t Span::line() const {
+    const auto &contents = _file->contents();
+    const auto begin = contents.begin();
+    const auto end = contents.begin() + static_cast<long>(_start);
+    return std::count(begin, end, '\n');
 }
 
 // BSD 3-Clause License
