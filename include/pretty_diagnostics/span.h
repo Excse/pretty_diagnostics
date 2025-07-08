@@ -17,11 +17,13 @@ public:
         return !(lhs == rhs);
     }
 
-    [[nodiscard]] std::string contents() const;
+    [[nodiscard]] bool intersects(const Span &other) const;
+
+    [[nodiscard]] std::string substr() const;
+
+    [[nodiscard]] size_t line_number() const;
 
     [[nodiscard]] size_t width() const;
-
-    [[nodiscard]] size_t line() const;
 
     [[nodiscard]] auto &source() const { return _source; }
 

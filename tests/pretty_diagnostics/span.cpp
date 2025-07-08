@@ -12,8 +12,8 @@ TEST(Span, ValidExample) {
     ASSERT_EQ(span.start(), 0);
     ASSERT_EQ(span.end(), 18);
     ASSERT_EQ(span.width(), 18);
-    ASSERT_EQ(span.line(), 0);
-    ASSERT_EQ(span.contents(), "#include <stdio.h>");
+    ASSERT_EQ(span.line_number(), 1);
+    ASSERT_EQ(span.substr(), "#include <stdio.h>");
 }
 
 TEST(Span, SecondLine) {
@@ -24,8 +24,8 @@ TEST(Span, SecondLine) {
     ASSERT_EQ(span.start(), 37);
     ASSERT_EQ(span.end(), 43);
     ASSERT_EQ(span.width(), 6);
-    ASSERT_EQ(span.line(), 3);
-    ASSERT_EQ(span.contents(), "printf");
+    ASSERT_EQ(span.line_number(), 4);
+    ASSERT_EQ(span.substr(), "printf");
 }
 
 TEST(Span, InvalidRange) {

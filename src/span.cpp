@@ -17,7 +17,11 @@ Span::Span(const std::shared_ptr<Source> &source, const size_t start, const size
     }
 }
 
-std::string Span::contents() const {
+bool Span::intersects(const Span &other) const {
+    return _start <= other._end && _end >= other._start;
+}
+
+std::string Span::substr() const {
     return _source->substr(_start, _end);
 }
 
@@ -25,7 +29,7 @@ size_t Span::width() const {
     return _end - _start;
 }
 
-size_t Span::line() const {
+size_t Span::line_number() const {
     return _source->line_number(_start);
 }
 

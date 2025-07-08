@@ -7,7 +7,7 @@ using namespace pretty_diagnostics;
 Report::Report(std::string message, std::optional<std::string> code, Severity severity,
                GroupedLabels label_groups)
     : _code(std::move(code)), _label_groups(std::move(label_groups)), _message(std::move(message)),
-      _severity(std::move(severity)) {
+      _severity(severity) {
 }
 
 void Report::render(const IReporterRenderer &renderer, std::ostream &stream) const {
@@ -30,7 +30,15 @@ Report::Builder &Report::Builder::code(std::string code) {
 }
 
 Report::Builder &Report::Builder::label(std::string text, Span span) {
-    _labels[span.source()].emplace_back(std::move(text), std::move(span));
+    auto &labels = _labels[span.source()];
+
+    for (const auto &label : labels) {
+        if (!label.span().intersects(span)) continue;
+
+        throw std::runtime_error("Report::Builder::label(): there is an intersection with a different label");
+    }
+
+    labels.emplace_back(std::move(text), std::move(span));
     return *this;
 }
 

@@ -40,13 +40,13 @@ void TextRenderer::render(const Severity &severity, std::ostream &stream) const 
  *     filler  ╶─┤    ·
  *     snippet ╶─┤  3 │ int main() {
  *     snippet ╶─┤  4 │    printf("Hello World!\n");
- *              ╭┤    ·    ╰────┤ ╰──────────────┴─▶ This is the string that is getting
- *     label   ╶┤│    ·         │                    printed to the console
- *              ╰┤    ·         ╰─▶ And this is the function actually makes the magic happen
+ *              ╭┤    ·    ╰────┤ ╰──────────────┴─▶ This is the string that is getting printed
+ *     label   ╶┤│    ·         │                    to the console
+ *              ╰┤    ·         ╰─▶ And this is the function that actually makes the magic happen
  *     snippet ╶─┤  5 │     return 0;
  *     spacer  ╶─┤    ⋯
- *     note    ╶┬┤    │ Note: This example showcases every little detail of the library, also
- *              ╰┤    │       with the capability of line wrapping.
+ *     note    ╶┬┤    │ Note: This example showcases every little detail of the library, also with
+ *              ╰┤    │       the capability of line wrapping.
  *     help      │    │ Help: Visit https://github.com/Excse/pretty_diagnostics for more help.
  *     bottom ╶─╴│ ───╯
  */
@@ -60,17 +60,24 @@ void TextRenderer::render(const Report &report, std::ostream &stream) const {
     const auto &groups = report.label_groups();
 
     const auto padding = widest_line_number(groups, LINE_PADDING) + 2;
+    const auto &snippet_width = static_cast<int>(padding - 1);
     const auto whitespaces = std::string(padding, ' ');
 
-    for (auto it = groups.begin(); it != groups.end(); ++it) {
-        const auto &[source, labels] = *it;
+    for (auto group_it = groups.begin(); group_it != groups.end(); ++group_it) {
+        const auto &[source, labels] = *group_it;
 
-        if (it == groups.begin())          stream << whitespaces << "╭";
-        else                               stream << whitespaces << "├";
+        if (group_it == groups.begin()) stream << whitespaces << "╭";
+        else                            stream << whitespaces << "├";
 
         stream << "╴" << source->path() << "╶" << std::endl;
 
-        if (std::next(it) == groups.end()) stream << whitespaces << "╯" << std::endl;
+        for (const auto &label: labels) {
+            const auto line_number = label.span().line_number();
+            const auto line = source->line(line_number);
+            stream << std::setw(snippet_width) << line_number << " │ " << line << std::endl;
+        }
+
+        if (std::next(group_it) == groups.end()) stream << whitespaces << "╯" << std::endl;
     }
 }
 
@@ -79,7 +86,7 @@ size_t TextRenderer::widest_line_number(const Report::GroupedLabels &groups, con
 
     for (const auto &labels: groups | std::views::values) {
         for (const auto &label: labels) {
-            const size_t line_number = label.span().line() + padding;
+            const size_t line_number = label.span().line_number() + padding;
             if (line_number > line) line = line_number;
         }
     }

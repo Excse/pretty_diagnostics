@@ -31,7 +31,7 @@ size_t FileSource::line_number(const size_t start) const {
     char buffer[BUFFER_SIZE];
 
     size_t read = 0;
-    size_t line = 0;
+    size_t line = 1;
 
     // Returns 0-based line number corresponding to byte offset `start`
     while (read < start && stream) {
