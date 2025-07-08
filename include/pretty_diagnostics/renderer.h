@@ -9,6 +9,10 @@ public:
     void render(const Severity &severity, std::ostream &stream) const override;
 
     void render(const Report &report, std::ostream &stream) const override;
+
+    [[nodiscard]] static size_t widest_line_number(const Report::GroupedLabels &groups, size_t padding);
+
+    [[nodiscard]] static std::vector<std::string> wrap_text(const std::string &text, size_t max_width);
 };
 
 } // namespace pretty_diagnostics

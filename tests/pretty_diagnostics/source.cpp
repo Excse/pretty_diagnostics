@@ -10,7 +10,7 @@
 using namespace pretty_diagnostics;
 
 TEST(Source, FileSourceWorking) {
-    const auto path = "resources/example";
+    const auto path = "resources/main.c";
     const auto file = std::make_shared<FileSource>(path);
 
     EXPECT_SNAPSHOT_EQ(ReadCorrectly, file->contents());
@@ -18,7 +18,7 @@ TEST(Source, FileSourceWorking) {
 }
 
 TEST(Source, FileSourceFailing) {
-    const auto path = "resources/does_not_exist";
+    const auto path = "resources/does_not_exist.c";
 
     EXPECT_THROW((FileSource(path)), std::runtime_error);
 }

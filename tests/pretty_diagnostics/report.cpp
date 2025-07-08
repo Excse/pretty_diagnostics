@@ -12,51 +12,41 @@
 using namespace pretty_diagnostics;
 
 TEST(Report, BuilderCorrect) {
-    const auto file = std::make_shared<FileSource>("resources/example");
+    const auto file = std::make_shared<FileSource>("resources/main.c");
 
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";
     constexpr auto code = "E1337";
-    constexpr auto label_text = "Giving some tips or extra details about what is wrong here";
-    const auto label_span = Span{file, 5, 8};
 
     const auto report = Report::Builder()
             .severity(severity)
             .message(message)
             .code(code)
-            .label(label_text, label_span)
+            .label("Relevant include to enable the usage of printf", {file, 0, 17})
+            .label("This is the string that is getting printed to the console", {file, 37, 43})
+            .label("And this is the function that actually makes the magic happen", {file, 45, 60})
             .build();
 
-    ASSERT_EQ(report.severity(), Severity::Error);
+    ASSERT_EQ(report.severity(), severity);
     ASSERT_EQ(report.message(), message);
     ASSERT_EQ(report.code(), code);
 
     ASSERT_EQ(report.label_groups().size(), 1);
     const auto &[source, labels] = *report.label_groups().begin();
     ASSERT_EQ(source, file);
-
-    ASSERT_EQ(labels.size(), 1);
-    const auto &label = *labels.begin();
-
-    ASSERT_EQ(label.text(), label_text);
-    ASSERT_EQ(label.span(), label_span);
-    ASSERT_EQ(label.span().contents(), "ist");
+    ASSERT_EQ(labels.size(), 3);
 }
 
 TEST(Report, CorrectTextRender) {
-    const auto file = std::make_shared<FileSource>("resources/example");
-
-    constexpr auto severity = Severity::Error;
-    constexpr auto message = "Displaying a brief summary of what happened";
-    constexpr auto code = "E1337";
-    constexpr auto label_text = "Giving some tips or extra details about what is wrong here";
-    const auto label_span = Span{file, 5, 8};
+    const auto file = std::make_shared<FileSource>("resources/main.c");
 
     const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .label(label_text, label_span)
+            .severity(Severity::Error)
+            .message("Displaying a brief summary of what happened")
+            .code("E1337")
+            .label("Relevant include to enable the usage of printf", {file, 0, 18})
+            .label("This is the string that is getting printed to the console", {file, 37, 43})
+            .label("And this is the function that actually makes the magic happen", {file, 45, 60})
             .build();
 
     const auto renderer = TextRenderer();

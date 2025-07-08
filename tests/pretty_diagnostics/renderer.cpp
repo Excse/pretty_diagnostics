@@ -1,39 +1,35 @@
 #include "gtest/gtest.h"
 
-#include "pretty_diagnostics/span.h"
+#include <filesystem>
+#include <fstream>
+
+#include "pretty_diagnostics/renderer.h"
 
 using namespace pretty_diagnostics;
 
-TEST(Span, ValidExample) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 0, 18);
-
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), 0);
-    ASSERT_EQ(span.end(), 18);
-    ASSERT_EQ(span.width(), 18);
-    ASSERT_EQ(span.line(), 0);
-    ASSERT_EQ(span.contents(), "#include <stdio.h>");
+TEST(Renderer, CorrectTextWrap) {
+    const auto result = TextRenderer::wrap_text("Hello World!\nHow are you, today?", 10);
+    ASSERT_EQ(result, std::vector<std::string>({"Hello", "World!", "How are", "you,", "today?"}));
 }
 
-TEST(Span, SecondLine) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 37, 43);
-
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), 37);
-    ASSERT_EQ(span.end(), 43);
-    ASSERT_EQ(span.width(), 6);
-    ASSERT_EQ(span.line(), 3);
-    ASSERT_EQ(span.contents(), "printf");
+TEST(Renderer, SingleCharWrap) {
+    const auto result = TextRenderer::wrap_text("Hello!", 1);
+    ASSERT_EQ(result, std::vector<std::string>({"H", "e", "l", "l", "o", "!"}));
 }
 
-TEST(Span, InvalidRange) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
+TEST(Renderer, LongHardSplit) {
+    const auto result = TextRenderer::wrap_text("AAAAAAAAAA BBBBBBBBBB", 5);
+    ASSERT_EQ(result, std::vector<std::string>({"AAAAA", "AAAAA", "BBBBB", "BBBBB"}));
+}
 
-    ASSERT_THROW(Span(file, 16, 0), std::runtime_error);
-    ASSERT_THROW(Span(file, 16, 16), std::runtime_error);
-    ASSERT_THROW(Span(file, 0, 80), std::runtime_error);
+TEST(Renderer, RealExample) {
+    const auto result = TextRenderer::wrap_text(
+        "This example showcases every little detail of the library, also with the capability of line wrapping.",
+        69);
+    ASSERT_EQ(result, std::vector<std::string>({
+                  "This example showcases every little detail of the library, also with",
+                  "the capability of line wrapping."
+                  }));
 }
 
 // BSD 3-Clause License

@@ -28,7 +28,7 @@ add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
 # Add resources to the build path
 add_custom_command(
     TARGET ${PROJECT_NAME}_tests PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${PROJECT_NAME}_tests>/resources
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${PROJECT_NAME}_tests>/resources
 )
 # Link the test binary with the main library and GoogleTest
 target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} gtest_main)
