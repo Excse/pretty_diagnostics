@@ -44,24 +44,20 @@ target_link_libraries(!!PROJECT_NAME!! PRIVATE pretty_diagnostics::pretty_diagno
 ## Example Usage
 
 ```cpp
-auto details = pretty_diagnostics::File{"This is a test text\n"
-                                            "Maybe you could have guessed that.",
-                                            "some/weird/path"};
+const auto file = std::make_shared<FileSource>("resources/main.c");
 
-auto report = pretty_diagnostics::ReportBuilder ()
-    .type (pretty_diagnostics::Type::ERROR)
-    .message ("Displaying a brief summary of what happend.")
-    .code (1337)
-    .label (pretty_diagnostics::LabelBuilder ()
-                    .message ("Giving some {RED}tips{/} or {ORANGE}extra details{/} about "
-                                    "what is wrong here.")
-                    .span ({&details, 10, 13})
-                    .color (pretty_diagnostics::ColorType::RED)
-                    .build ())
-    .note ("Can be used to give a hint about what you could do better.")
-    .build ();
+const auto report = Report::Builder()
+        .severity(Severity::Error)
+        .message("Displaying a brief summary of what happened")
+        .code("E1337")
+        .label("And this is the function that actually makes the magic happen", {file, 37, 43})
+        .label("This is the string that is getting printed to the console", {file, 44, 60})
+        .label("Relevant include to enable the usage of printf", {file, 10, 17})
+        .build();
 
-report.print (std::cout);
+auto renderer = TextRenderer(report);
+auto stream = std::ostringstream();
+report.render(renderer, stream);
 ```
 
 The output looks like:</br>
