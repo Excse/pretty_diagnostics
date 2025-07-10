@@ -5,62 +5,91 @@
 
 using namespace pretty_diagnostics;
 
+Location::Location(const size_t row, const size_t column, const size_t index)
+    : _row(row), _column(column), _index(index) {
+}
+
 FileSource::FileSource(std::filesystem::path path)
     : _path(std::move(path)) {
     if (!std::filesystem::exists(_path))
         throw std::runtime_error("FileSource::FileSource(): file does not exist: " + _path.string());
 }
 
-std::string FileSource::substr(const size_t start, const size_t end) const {
+Location FileSource::from_coords(size_t row, size_t column) const {
+    std::ifstream stream(_path, std::ios::binary);
+    if (!stream.is_open()) throw std::runtime_error("FileSource::from_coords(): could not open file: " + _path.string());
+
+    size_t current_row = 0;
+    size_t index = 0;
+
+    std::string line;
+    while (std::getline(stream, line)) {
+        if (current_row != row) {
+            // We have to adjust for the newline character, so add one.
+            index += line.length() + 1;
+            current_row++;
+            continue;
+        }
+
+        if (column >= line.size()) throw std::runtime_error("FileSource::from_coords(): invalid coordinates, column is out of line bounds");
+
+        return {row, column, index + column};
+    }
+
+    throw std::runtime_error("FileSource::from_coords(): invalid coordinates, there are not enough rows present");
+}
+
+Location FileSource::from_index(size_t index) const {
+    std::ifstream stream(_path, std::ios::binary);
+    if (!stream.is_open()) throw std::runtime_error("FileSource::from_index(): could not open file: " + _path.string());
+
+    size_t current_index = 0;
+    size_t row = 0;
+
+    std::string line;
+    while (std::getline(stream, line)) {
+        const auto added_length = line.length() + 1;
+        if (current_index + added_length <= index) {
+            current_index += added_length;
+            row++;
+            continue;
+        }
+
+        const auto column = index - current_index;
+        if (column > line.size()) throw std::runtime_error("FileSource::from_index(): invalid index, column is out of line bounds");
+
+        return {row, index - current_index, index};
+    }
+
+    throw std::runtime_error("FileSource::from_index(): invalid index, there are not enough rows present");
+}
+
+std::string FileSource::substr(const Location &start, const Location &end) const {
     std::ifstream stream(_path, std::ios::binary);
     if (!stream.is_open()) throw std::runtime_error("File::substr(): could not open file: " + _path.string());
 
-    stream.seekg(start);
-    std::string result(end - start, '\0');
-    stream.read(&result[0], end - start);
+    const auto start_index = static_cast<long>(start.index());
+    const auto width = static_cast<long>(end.index()) - static_cast<long>(start.index());
+
+    stream.seekg(start_index);
+    std::string result(width, '\0');
+    stream.read(&result[0], width);
     result.resize(stream.gcount());
 
     return result;
 }
 
-size_t FileSource::line_number(const size_t start) const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("File::line_number(): could not open file: " + _path.string());
-
-    static constexpr size_t BUFFER_SIZE = 4096;
-    char buffer[BUFFER_SIZE];
-
-    size_t read = 0;
-    size_t line = 1;
-
-    // Returns 0-based line number corresponding to byte offset `start`
-    while (read < start && stream) {
-        const size_t to_read = std::min(BUFFER_SIZE, start - read);
-        stream.read(buffer, to_read);
-        const size_t actual_read = stream.gcount();
-
-        line += std::count(buffer, buffer + actual_read, '\n');
-        read += actual_read;
-    }
-
-    return line;
-}
-
-std::string FileSource::line(const size_t line) const {
+std::string FileSource::line(const Location &location) const {
     std::ifstream stream(_path, std::ios::binary);
     if (!stream.is_open()) throw std::runtime_error("File::line(): could not open file: " + _path.string());
 
     std::string result;
-    for (size_t index = 0; index < line && std::getline(stream, result); ++index) {}
+
+    const size_t target_line = (location.row() + 1);
+    for (size_t index = 0; index < target_line && std::getline(stream, result); ++index) {
+    }
 
     return result;
-}
-
-size_t FileSource::size() const {
-    std::ifstream stream(_path, std::ios::binary | std::ios::ate);
-    if (!stream.is_open()) throw std::runtime_error("File::size(): could not open file: " + _path.string());
-
-    return stream.tellg();
 }
 
 std::string FileSource::contents() const {
@@ -71,6 +100,17 @@ std::string FileSource::contents() const {
     result << stream.rdbuf();
 
     return result.str();
+}
+
+std::string FileSource::path() const {
+    return _path.string();
+}
+
+size_t FileSource::size() const {
+    std::ifstream stream(_path, std::ios::binary | std::ios::ate);
+    if (!stream.is_open()) throw std::runtime_error("File::size(): could not open file: " + _path.string());
+
+    return stream.tellg();
 }
 
 // BSD 3-Clause License

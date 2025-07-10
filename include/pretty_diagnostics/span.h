@@ -1,11 +1,21 @@
 #pragma once
+
 #include "source.h"
 
 namespace pretty_diagnostics {
 
 class Span {
+private:
+    Span(const std::shared_ptr<Source> &source, const Location &start, const Location &end);
+
 public:
-    Span(const std::shared_ptr<Source> &source, size_t start, size_t end);
+    Span(const std::shared_ptr<Source> &source,
+         size_t start_row, size_t start_column,
+         size_t end_row, size_t end_column);
+
+    Span(const std::shared_ptr<Source> &source,
+         size_t start_index,
+         size_t end_index);
 
     friend bool operator==(const Span &lhs, const Span &rhs) {
         return lhs._source == rhs._source
@@ -21,9 +31,9 @@ public:
 
     [[nodiscard]] std::string substr() const;
 
-    [[nodiscard]] size_t line_number() const;
-
     [[nodiscard]] size_t width() const;
+
+    [[nodiscard]] size_t line() const;
 
     [[nodiscard]] auto &source() const { return _source; }
 
@@ -33,8 +43,7 @@ public:
 
 private:
     std::shared_ptr<Source> _source;
-    size_t _start;
-    size_t _end;
+    Location _start, _end;
 };
 
 } // namespace pretty_diagnostics

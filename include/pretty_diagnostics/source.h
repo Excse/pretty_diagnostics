@@ -4,38 +4,67 @@
 
 namespace pretty_diagnostics {
 
+class Location {
+public:
+    Location(size_t row, size_t column, size_t index);
+
+    friend bool operator==(const Location &lhs, const Location &rhs) {
+        return lhs._row == rhs._row
+               && lhs._column == rhs._column
+               && lhs._index == rhs._index;
+    }
+
+    friend bool operator!=(const Location &lhs, const Location &rhs) {
+        return !(lhs == rhs);
+    }
+
+    [[nodiscard]] auto column() const { return _column; }
+
+    [[nodiscard]] auto index() const { return _index; }
+
+    [[nodiscard]] auto row() const { return _row; }
+
+private:
+    size_t _row, _column;
+    size_t _index;
+};
+
 class Source {
 public:
     virtual ~Source() = default;
 
-    [[nodiscard]] virtual std::string substr(size_t start, size_t end) const = 0;
+    [[nodiscard]] virtual Location from_coords(size_t row, size_t column) const = 0;
 
-    [[nodiscard]] virtual size_t line_number(size_t start) const = 0;
+    [[nodiscard]] virtual Location from_index(size_t index) const = 0;
 
-    [[nodiscard]] virtual std::string line(size_t line) const = 0;
+    [[nodiscard]] virtual std::string substr(const Location &start, const Location &end) const = 0;
 
-    [[nodiscard]] virtual size_t size() const = 0;
+    [[nodiscard]] virtual std::string line(const Location &location) const = 0;
+
+    [[nodiscard]] virtual std::string contents() const = 0;
 
     [[nodiscard]] virtual std::string path() const = 0;
 
-    [[nodiscard]] virtual std::string contents() const = 0;
+    [[nodiscard]] virtual size_t size() const = 0;
 };
 
 class FileSource final : public Source {
 public:
-    FileSource(std::filesystem::path path);
+    explicit FileSource(std::filesystem::path path);
 
-    [[nodiscard]] std::string substr(size_t start, size_t end) const override;
+    [[nodiscard]] Location from_coords(size_t row, size_t column) const override;
 
-    [[nodiscard]] size_t line_number(size_t start) const override;
+    [[nodiscard]] Location from_index(size_t index) const override;
 
-    [[nodiscard]] std::string line(size_t line) const override;
+    [[nodiscard]] std::string substr(const Location &start, const Location &end) const override;
 
-    [[nodiscard]] size_t size() const override;
+    [[nodiscard]] std::string line(const Location &location) const override;
 
     [[nodiscard]] std::string contents() const override;
 
-    [[nodiscard]] std::string path() const override { return _path.string(); }
+    [[nodiscard]] std::string path() const override;
+
+    [[nodiscard]] size_t size() const override;
 
     friend bool operator==(const FileSource &lhs, const FileSource &rhs) {
         return lhs._path == rhs._path;

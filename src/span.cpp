@@ -2,23 +2,31 @@
 
 using namespace pretty_diagnostics;
 
-Span::Span(const std::shared_ptr<Source> &source, const size_t start, const size_t end)
+Span::Span(const std::shared_ptr<Source> &source, const Location &start, const Location &end)
     : _source(source), _start(start), _end(end) {
-    if (start >= end) {
-        throw std::runtime_error("Span::Span(): start must be less than end");
+    if (start.row() != end.row()) {
+        throw std::runtime_error("Span::Span(): start and end must be on the same line");
     }
 
-    if (start > _source->size()) {
-        throw std::runtime_error("Span::Span(): start must be less than or equal to file size");
-    }
-
-    if (end > _source->size()) {
-        throw std::runtime_error("Span::Span(): end must be less than or equal to file size");
+    if (start.index() >= end.index()) {
+        throw std::runtime_error("Span::Span(): start location must be smaller than the end location");
     }
 }
 
+Span::Span(const std::shared_ptr<Source> &source,
+           const size_t start_row, const size_t start_column,
+           const size_t end_row, const size_t end_column)
+    : Span(source, source->from_coords(start_row, start_column), source->from_coords(end_row, end_column)) {
+}
+
+Span::Span(const std::shared_ptr<Source> &source,
+           const size_t start_index,
+           const size_t end_index)
+    : Span(source, source->from_index(start_index), source->from_index(end_index)) {
+}
+
 bool Span::intersects(const Span &other) const {
-    return _start <= other._end && _end >= other._start;
+    return _start.index() <= other._end.index() && _end.index() >= other._start.index();
 }
 
 std::string Span::substr() const {
@@ -26,11 +34,11 @@ std::string Span::substr() const {
 }
 
 size_t Span::width() const {
-    return _end - _start;
+    return _end.index() - _start.index();
 }
 
-size_t Span::line_number() const {
-    return _source->line_number(_start);
+size_t Span::line() const {
+    return _start.row() + 1;
 }
 
 // BSD 3-Clause License

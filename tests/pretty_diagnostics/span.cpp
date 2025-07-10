@@ -9,10 +9,10 @@ TEST(Span, ValidExample) {
     const auto span = Span(file, 0, 18);
 
     ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), 0);
-    ASSERT_EQ(span.end(), 18);
+    ASSERT_EQ(span.start(), Location(0, 0, 0));
+    ASSERT_EQ(span.end(), Location(0, 18, 18));
     ASSERT_EQ(span.width(), 18);
-    ASSERT_EQ(span.line_number(), 1);
+    ASSERT_EQ(span.line(), 1);
     ASSERT_EQ(span.substr(), "#include <stdio.h>");
 }
 
@@ -21,10 +21,10 @@ TEST(Span, SecondLine) {
     const auto span = Span(file, 37, 43);
 
     ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), 37);
-    ASSERT_EQ(span.end(), 43);
+    ASSERT_EQ(span.start(), Location(3, 4, 37));
+    ASSERT_EQ(span.end(), Location(3, 10, 43));
     ASSERT_EQ(span.width(), 6);
-    ASSERT_EQ(span.line_number(), 4);
+    ASSERT_EQ(span.line(), 4);
     ASSERT_EQ(span.substr(), "printf");
 }
 
