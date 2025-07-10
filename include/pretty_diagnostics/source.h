@@ -59,6 +59,8 @@ public:
 
     [[nodiscard]] virtual std::string line(size_t line_number) const = 0;
 
+    [[nodiscard]] virtual size_t line_count() const = 0;
+
     [[nodiscard]] virtual std::string contents() const = 0;
 
     [[nodiscard]] virtual std::string path() const = 0;
@@ -79,6 +81,8 @@ public:
     [[nodiscard]] std::string line(const Location &location) const override;
 
     [[nodiscard]] std::string line(size_t line_number) const override;
+
+    [[nodiscard]] size_t line_count() const override;
 
     [[nodiscard]] std::string contents() const override;
 

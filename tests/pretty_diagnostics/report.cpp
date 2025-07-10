@@ -51,7 +51,7 @@ TEST(Report, CorrectTextRender) {
             .code("E1337")
             .label("And this is the function that actually makes the magic happen", {file, 37, 43})
             .label("This is the string that is getting printed to the console", {file, 44, 60})
-            .label("Relevant include to enable the usage of printf", {file, 9, 17})
+            .label("Relevant include to enable the usage of printf", {file, 10, 17})
             .build();
 
     auto renderer = TextRenderer(report);

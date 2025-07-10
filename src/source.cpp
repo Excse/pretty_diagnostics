@@ -89,7 +89,9 @@ std::string FileSource::line(const size_t line_number) const {
 
     std::string result;
 
-    for (size_t index = 0; index < line_number && std::getline(stream, result); ++index) {
+    for (size_t index = 0; index < line_number; ++index) {
+        if (std::getline(stream, result)) continue;
+        throw new std::runtime_error("File::line(): invalid line number, there are not enough lines present");
     }
 
     return result;
@@ -103,6 +105,18 @@ std::string FileSource::contents() const {
     result << stream.rdbuf();
 
     return result.str();
+}
+
+size_t FileSource::line_count() const {
+    std::ifstream stream(_path, std::ios::binary);
+    if (!stream.is_open()) throw std::runtime_error("FileSource::line_count(): could not open file: " + _path.string());
+
+    size_t count = 0;
+
+    std::string line;
+    while (std::getline(stream, line)) count++;
+
+    return count;
 }
 
 std::string FileSource::path() const {

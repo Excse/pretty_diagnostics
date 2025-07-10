@@ -15,6 +15,9 @@ TEST(Source, FileSourceWorking) {
 
     EXPECT_SNAPSHOT_EQ(ReadCorrectly, file->contents());
     ASSERT_EQ(file->path(), path);
+    ASSERT_EQ(file->line_count(), 6);
+    ASSERT_EQ(file->size(), 78);
+    ASSERT_EQ(file->line(4), "    printf(\"Hello World!\\n\");");
 }
 
 TEST(Source, FileSourceFailing) {
