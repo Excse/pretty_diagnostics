@@ -90,7 +90,7 @@ void TextRenderer::render(const Report &report, std::ostream &stream) const {
 
             for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
                 stream << whitespaces << "· ";
-                render(label, stream, text_lines, text_index, 0);
+                render(label, stream, text_lines, text_index, true);
                 stream << std::endl;
             }
         }
@@ -101,28 +101,33 @@ void TextRenderer::render(const Report &report, std::ostream &stream) const {
 
 void TextRenderer::render(const Label &label, std::ostream &stream,
                           const std::vector<std::string> &text_lines, const size_t text_index,
-                          const size_t column_start) {
+                          const bool active_render, const size_t column_start) {
     const auto start_column = label.span().start().column();
     const auto end_column = label.span().end().column();
 
     const auto &current_text = text_lines[text_index];
-    const auto is_first_line = (text_index == 0);
 
     for (size_t column = column_start; column <= end_column; ++column) {
         if (column == end_column - 1) {
-            if (is_first_line) stream << "┴─▶ ";
+            if (!active_render) {
+                stream << "│";
+                continue;
+            }
+
+            if (text_index == 0) stream << "┴─▶ ";
             else               stream << "    ";
 
             stream << current_text;
             break;
         }
 
-        if (!is_first_line) {
-            stream << " ";
-        } else if (column == start_column) {
-            stream << "╰";
+        if (column == start_column) {
+            if (active_render && text_index == 0) stream << "╰";
+            else if (!active_render)              stream << "│";
+            else                                  stream << " ";
         } else if (column > start_column && column < end_column) {
-            stream << "─";
+            if (active_render && text_index == 0) stream << "─";
+            else                                  stream << " ";
         } else {
             stream << " ";
         }

@@ -12,7 +12,7 @@ public:
 
     static void render(const Label &label, std::ostream &stream,
                        const std::vector<std::string> &text_lines, size_t text_index,
-                       size_t column_start = 0);
+                       bool active_render, size_t column_start = 0);
 
     [[nodiscard]] static size_t widest_line_number(const Report::GroupedLabels &groups, size_t padding);
 
