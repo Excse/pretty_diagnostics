@@ -1,11 +1,13 @@
 #include "pretty_diagnostics/renderer.h"
 
-#include <ranges>
 #include <unordered_map>
+#include <ranges>
 #include <vector>
 
 using namespace pretty_diagnostics;
 
+// TODO: Make this variable more dynamic
+constexpr size_t MAX_TERMINAL_WIDTH = 80;
 constexpr size_t LINE_PADDING = 3;
 
 void TextRenderer::render(const Severity &severity, std::ostream &stream) const {
@@ -72,12 +74,58 @@ void TextRenderer::render(const Report &report, std::ostream &stream) const {
         stream << "╴" << source->path() << "╶" << std::endl;
 
         for (const auto &label: labels) {
-            const auto line_number = label.span().line_number();
-            const auto line = source->line(line_number);
+            const auto line = source->line(label.span().start());
+            const auto end_column = label.span().end().column();
+            const auto line_number = label.span().line();
+
             stream << std::setw(snippet_width) << line_number << " │ " << line << std::endl;
+
+            // TODO: Figure a way out to make this more dynamic
+            // This equation consists of the following parts:
+            //  (padding + 1)      -> "  · " (the dynamic prefix)
+            //  (end_column - 4)   -> "┴─▶ " (4 characters have to be drawn at end_column)
+            //  MAX_TERMINAL_WIDTH -> a (for now) static variable that determines the terminal width
+            const auto max_text_width = MAX_TERMINAL_WIDTH - (end_column - 4) - (padding + 1);
+            const auto text_lines = wrap_text(label.text(), max_text_width);
+
+            for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
+                stream << whitespaces << "· ";
+                render(label, stream, text_lines, text_index, 0);
+                stream << std::endl;
+            }
         }
 
         if (std::next(group_it) == groups.end()) stream << whitespaces << "╯" << std::endl;
+    }
+}
+
+void TextRenderer::render(const Label &label, std::ostream &stream,
+                          const std::vector<std::string> &text_lines, const size_t text_index,
+                          const size_t column_start) {
+    const auto start_column = label.span().start().column();
+    const auto end_column = label.span().end().column();
+
+    const auto &current_text = text_lines[text_index];
+    const auto is_first_line = (text_index == 0);
+
+    for (size_t column = column_start; column <= end_column; ++column) {
+        if (column == end_column - 1) {
+            if (is_first_line) stream << "┴─▶ ";
+            else               stream << "    ";
+
+            stream << current_text;
+            break;
+        }
+
+        if (!is_first_line) {
+            stream << " ";
+        } else if (column == start_column) {
+            stream << "╰";
+        } else if (column > start_column && column < end_column) {
+            stream << "─";
+        } else {
+            stream << " ";
+        }
     }
 }
 
@@ -86,7 +134,7 @@ size_t TextRenderer::widest_line_number(const Report::GroupedLabels &groups, con
 
     for (const auto &labels: groups | std::views::values) {
         for (const auto &label: labels) {
-            const size_t line_number = label.span().line_number() + padding;
+            const size_t line_number = label.span().line() + padding;
             if (line_number > line) line = line_number;
         }
     }

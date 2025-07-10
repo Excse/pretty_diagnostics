@@ -30,6 +30,8 @@ Report::Builder &Report::Builder::code(std::string code) {
 }
 
 Report::Builder &Report::Builder::label(std::string text, Span span) {
+    if (text.empty()) throw std::runtime_error("Report::Builder::label(): label text is empty");
+
     auto &labels = _labels[span.source()];
 
     for (const auto &label : labels) {
