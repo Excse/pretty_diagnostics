@@ -8,6 +8,22 @@ class Location {
 public:
     Location(size_t row, size_t column, size_t index);
 
+    friend bool operator<(const Location &lhs, const Location &rhs) {
+        return lhs._index < rhs._index;
+    }
+
+    friend bool operator<=(const Location &lhs, const Location &rhs) {
+        return rhs >= lhs;
+    }
+
+    friend bool operator>(const Location &lhs, const Location &rhs) {
+        return rhs < lhs;
+    }
+
+    friend bool operator>=(const Location &lhs, const Location &rhs) {
+        return !(lhs < rhs);
+    }
+
     friend bool operator==(const Location &lhs, const Location &rhs) {
         return lhs._row == rhs._row
                && lhs._column == rhs._column

@@ -22,9 +22,9 @@ TEST(Report, BuilderCorrect) {
             .severity(severity)
             .message(message)
             .code(code)
-            .label("Relevant include to enable the usage of printf", {file, 10, 17})
             .label("And this is the function that actually makes the magic happen", {file, 37, 43})
             .label("This is the string that is getting printed to the console", {file, 44, 60})
+            .label("Relevant include to enable the usage of printf", {file, 10, 17})
             .build();
 
     ASSERT_EQ(report.severity(), severity);
@@ -49,9 +49,9 @@ TEST(Report, CorrectTextRender) {
             .severity(Severity::Error)
             .message("Displaying a brief summary of what happened")
             .code("E1337")
-            .label("Relevant include to enable the usage of printf", {file, 9, 17})
             .label("And this is the function that actually makes the magic happen", {file, 37, 43})
             .label("This is the string that is getting printed to the console", {file, 44, 60})
+            .label("Relevant include to enable the usage of printf", {file, 9, 17})
             .build();
 
     auto renderer = TextRenderer(report);

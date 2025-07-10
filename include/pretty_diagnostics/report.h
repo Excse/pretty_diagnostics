@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <optional>
 #include <iostream>
+#include <map>
+#include <set>
 #include <vector>
 #include <string>
 
@@ -21,7 +23,7 @@ enum class Severity {
 
 class LineGroup {
 public:
-    LineGroup(size_t line_number, std::vector<Label> labels);
+    LineGroup(size_t line_number, std::set<Label> labels);
 
     [[nodiscard]] auto &line_number() const { return _line_number; }
 
@@ -30,13 +32,13 @@ public:
     [[nodiscard]] auto &labels() { return _labels; }
 
 private:
-    std::vector<Label> _labels;
+    std::set<Label> _labels;
     size_t _line_number;
 };
 
 class FileGroup {
 public:
-    using MappedLineGroups = std::unordered_map<size_t, LineGroup>;
+    using MappedLineGroups = std::map<size_t, LineGroup>;
 
 public:
     FileGroup(const std::shared_ptr<Source> &source, MappedLineGroups line_groups);

@@ -4,7 +4,7 @@
 
 using namespace pretty_diagnostics;
 
-LineGroup::LineGroup(const size_t line_number, std::vector<Label> labels)
+LineGroup::LineGroup(const size_t line_number, std::set<Label> labels)
     : _labels(std::move(labels)), _line_number(line_number) {
 }
 
@@ -49,7 +49,7 @@ Report::Builder &Report::Builder::label(std::string text, Span span) {
         throw std::runtime_error("Report::Builder::label(): there is an intersection with a different label");
     }
 
-    line_group.labels().emplace_back(std::move(text), std::move(span));
+    line_group.labels().insert(Label(std::move(text), std::move(span)));
 
     return *this;
 }

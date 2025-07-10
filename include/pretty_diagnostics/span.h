@@ -17,6 +17,22 @@ public:
          size_t start_index,
          size_t end_index);
 
+    friend bool operator<(const Span &lhs, const Span &rhs) {
+        return lhs._start < rhs._start;
+    }
+
+    friend bool operator<=(const Span &lhs, const Span &rhs) {
+        return rhs >= lhs;
+    }
+
+    friend bool operator>(const Span &lhs, const Span &rhs) {
+        return rhs < lhs;
+    }
+
+    friend bool operator>=(const Span &lhs, const Span &rhs) {
+        return !(lhs < rhs);
+    }
+
     friend bool operator==(const Span &lhs, const Span &rhs) {
         return lhs._source == rhs._source
                && lhs._start == rhs._start
