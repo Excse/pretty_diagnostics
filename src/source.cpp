@@ -80,13 +80,16 @@ std::string FileSource::substr(const Location &start, const Location &end) const
 }
 
 std::string FileSource::line(const Location &location) const {
+    return FileSource::line(location.row() + 1);
+}
+
+std::string FileSource::line(const size_t line_number) const {
     std::ifstream stream(_path, std::ios::binary);
     if (!stream.is_open()) throw std::runtime_error("File::line(): could not open file: " + _path.string());
 
     std::string result;
 
-    const size_t target_line = (location.row() + 1);
-    for (size_t index = 0; index < target_line && std::getline(stream, result); ++index) {
+    for (size_t index = 0; index < line_number && std::getline(stream, result); ++index) {
     }
 
     return result;

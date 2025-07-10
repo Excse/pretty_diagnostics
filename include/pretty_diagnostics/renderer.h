@@ -6,17 +6,27 @@ namespace pretty_diagnostics {
 
 class TextRenderer final : public IReporterRenderer {
 public:
-    void render(const Severity &severity, std::ostream &stream) const override;
+    explicit TextRenderer(const Report &report);
 
-    void render(const Report &report, std::ostream &stream) const override;
+    void render(const Severity &severity, std::ostream &stream) override;
+
+    void render(const Report &report, std::ostream &stream) override;
+
+    void render(const FileGroup &file_group, std::ostream &stream) override;
+
+    void render(const LineGroup &line_group, std::ostream &stream) override;
 
     static void render(const Label &label, std::ostream &stream,
                        const std::vector<std::string> &text_lines, size_t text_index,
                        bool active_render, size_t column_start = 0);
 
-    [[nodiscard]] static size_t widest_line_number(const Report::GroupedLabels &groups, size_t padding);
+    [[nodiscard]] static size_t widest_line_number(const Report::MappedFileGroups &groups, size_t padding);
 
     [[nodiscard]] static std::vector<std::string> wrap_text(const std::string &text, size_t max_width);
+
+private:
+    size_t _padding, _snippet_width;
+    std::string _whitespaces;
 };
 
 } // namespace pretty_diagnostics

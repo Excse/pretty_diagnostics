@@ -4,13 +4,21 @@
 
 using namespace pretty_diagnostics;
 
-Report::Report(std::string message, std::optional<std::string> code, Severity severity,
-               GroupedLabels label_groups)
-    : _code(std::move(code)), _label_groups(std::move(label_groups)), _message(std::move(message)),
+LineGroup::LineGroup(const size_t line_number, std::vector<Label> labels)
+    : _labels(std::move(labels)), _line_number(line_number) {
+}
+
+FileGroup::FileGroup(const std::shared_ptr<Source> &source, MappedLineGroups line_groups)
+    : _source(source), _line_groups(std::move(line_groups)) {
+}
+
+Report::Report(std::string message, std::optional<std::string> code, const Severity severity,
+               MappedFileGroups file_groups)
+    : _code(std::move(code)), _file_groups(std::move(file_groups)), _message(std::move(message)),
       _severity(severity) {
 }
 
-void Report::render(const IReporterRenderer &renderer, std::ostream &stream) const {
+void Report::render(IReporterRenderer &renderer, std::ostream &stream) const {
     renderer.render(*this, stream);
 }
 
@@ -32,15 +40,17 @@ Report::Builder &Report::Builder::code(std::string code) {
 Report::Builder &Report::Builder::label(std::string text, Span span) {
     if (text.empty()) throw std::runtime_error("Report::Builder::label(): label text is empty");
 
-    auto &labels = _labels[span.source()];
+    auto &file_group = _file_groups.try_emplace(span.source(), FileGroup(span.source(), FileGroup::MappedLineGroups())).first->second;
+    auto &line_group = file_group.line_groups().try_emplace(span.line(), LineGroup(span.line(), {})).first->second;
 
-    for (const auto &label : labels) {
+    for (const auto &label : line_group.labels()) {
         if (!label.span().intersects(span)) continue;
 
         throw std::runtime_error("Report::Builder::label(): there is an intersection with a different label");
     }
 
-    labels.emplace_back(std::move(text), std::move(span));
+    line_group.labels().emplace_back(std::move(text), std::move(span));
+
     return *this;
 }
 
@@ -53,7 +63,7 @@ Report Report::Builder::build() const {
         _message.value(),
         _code,
         _severity.value_or(Severity::Error),
-        _labels
+        _file_groups
     };
 }
 

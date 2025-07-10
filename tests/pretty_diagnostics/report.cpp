@@ -31,10 +31,15 @@ TEST(Report, BuilderCorrect) {
     ASSERT_EQ(report.message(), message);
     ASSERT_EQ(report.code(), code);
 
-    ASSERT_EQ(report.label_groups().size(), 1);
-    const auto &[source, labels] = *report.label_groups().begin();
-    ASSERT_EQ(source, file);
-    ASSERT_EQ(labels.size(), 3);
+    ASSERT_EQ(report.file_groups().size(), 1);
+    const auto &file_group = report.file_groups().at(file);
+    ASSERT_EQ(file_group.source(), file);
+
+    ASSERT_EQ(file_group.line_groups().size(), 2);
+    const auto &line_1_group = file_group.line_groups().at(1);
+    ASSERT_EQ(line_1_group.labels().size(), 1);
+    const auto &line_4_group = file_group.line_groups().at(4);
+    ASSERT_EQ(line_4_group.labels().size(), 2);
 }
 
 TEST(Report, CorrectTextRender) {
@@ -49,7 +54,7 @@ TEST(Report, CorrectTextRender) {
             .label("This is the string that is getting printed to the console", {file, 44, 60})
             .build();
 
-    const auto renderer = TextRenderer();
+    auto renderer = TextRenderer(report);
     auto stream = std::ostringstream();
     report.render(renderer, stream);
 

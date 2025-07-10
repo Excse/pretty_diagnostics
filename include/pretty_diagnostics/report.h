@@ -10,6 +10,8 @@
 
 namespace pretty_diagnostics {
 
+class IReporterRenderer;
+
 enum class Severity {
     Error,
     Warning,
@@ -17,19 +19,52 @@ enum class Severity {
     Unknown,
 };
 
-class IReporterRenderer;
+class LineGroup {
+public:
+    LineGroup(size_t line_number, std::vector<Label> labels);
+
+    [[nodiscard]] auto &line_number() const { return _line_number; }
+
+    [[nodiscard]] auto &labels() const { return _labels; }
+
+    [[nodiscard]] auto &labels() { return _labels; }
+
+private:
+    std::vector<Label> _labels;
+    size_t _line_number;
+};
+
+class FileGroup {
+public:
+    using MappedLineGroups = std::unordered_map<size_t, LineGroup>;
+
+public:
+    FileGroup(const std::shared_ptr<Source> &source, MappedLineGroups line_groups);
+
+    [[nodiscard]] auto &line_groups() const { return _line_groups; }
+
+    [[nodiscard]] auto &line_groups() { return _line_groups; }
+
+    [[nodiscard]] auto &source() const { return _source; }
+
+private:
+    std::shared_ptr<Source> _source;
+    MappedLineGroups _line_groups;
+};
 
 class Report {
 public:
-    using GroupedLabels = std::unordered_map<std::shared_ptr<Source>, std::vector<Label>>;
+    using MappedFileGroups = std::unordered_map<std::shared_ptr<Source>, FileGroup>;
     class Builder;
 
 public:
-    Report(std::string message, std::optional<std::string> code, Severity severity, GroupedLabels label_groups);
+    Report(std::string message, std::optional<std::string> code, Severity severity, MappedFileGroups file_groups);
 
-    void render(const IReporterRenderer &renderer, std::ostream &stream = std::cout) const;
+    void render(IReporterRenderer &renderer, std::ostream &stream = std::cout) const;
 
-    [[nodiscard]] auto &label_groups() const { return _label_groups; }
+    [[nodiscard]] auto &file_groups() const { return _file_groups; }
+
+    [[nodiscard]] auto &file_groups() { return _file_groups; }
 
     [[nodiscard]] auto &severity() const { return _severity; }
 
@@ -39,7 +74,7 @@ public:
 
 private:
     std::optional<std::string> _code;
-    GroupedLabels _label_groups;
+    MappedFileGroups _file_groups;
     std::string _message;
     Severity _severity;
 };
@@ -48,9 +83,13 @@ class IReporterRenderer {
 public:
     virtual ~IReporterRenderer() = default;
 
-    virtual void render(const Severity &severity, std::ostream &stream) const = 0;
+    virtual void render(const Severity &severity, std::ostream &stream) = 0;
 
-    virtual void render(const Report &report, std::ostream &stream) const = 0;
+    virtual void render(const Report &report, std::ostream &stream) = 0;
+
+    virtual void render(const FileGroup &file_group, std::ostream &stream) = 0;
+
+    virtual void render(const LineGroup &line_group, std::ostream &stream) = 0;
 };
 
 class Report::Builder {
@@ -69,7 +108,7 @@ private:
     std::optional<std::string> _message;
     std::optional<Severity> _severity;
     std::optional<std::string> _code;
-    GroupedLabels _labels;
+    MappedFileGroups _file_groups;
 };
 
 } // namespace pretty_diagnostics

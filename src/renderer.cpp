@@ -10,7 +10,13 @@ using namespace pretty_diagnostics;
 constexpr size_t MAX_TERMINAL_WIDTH = 80;
 constexpr size_t LINE_PADDING = 3;
 
-void TextRenderer::render(const Severity &severity, std::ostream &stream) const {
+TextRenderer::TextRenderer(const Report &report) {
+    _padding = TextRenderer::widest_line_number(report.file_groups(), LINE_PADDING) + 2;
+    _snippet_width = static_cast<int>(_padding - 1);
+    _whitespaces = std::string(_padding, ' ');
+}
+
+void TextRenderer::render(const Severity &severity, std::ostream &stream) {
     switch (severity) {
         case Severity::Error: {
             stream << "error";
@@ -33,69 +39,74 @@ void TextRenderer::render(const Severity &severity, std::ostream &stream) const 
 }
 
 /*
- *     header  ╶─┤ error[E1337]: Displaying a brief summary of what happened
- *     group   ╶─┤    ╭╴resources/example╶─
- *     filler  ╶─┤    ·
- *     snippet ╶─┤  1 │ #include <stdio.h>
- *     label   ╶─┤    ·           ╰─────┴─▶ Relevant include to enable the usage of printf
- *     spacer  ╶─┤    ⋯
- *     filler  ╶─┤    ·
- *     snippet ╶─┤  3 │ int main() {
- *     snippet ╶─┤  4 │    printf("Hello World!\n");
- *              ╭┤    ·    ╰────┤ ╰──────────────┴─▶ This is the string that is getting printed
- *     label   ╶┤│    ·         │                    to the console
- *              ╰┤    ·         ╰─▶ And this is the function that actually makes the magic happen
- *     snippet ╶─┤  5 │     return 0;
- *     spacer  ╶─┤    ⋯
- *     note    ╶┬┤    │ Note: This example showcases every little detail of the library, also with
- *              ╰┤    │       the capability of line wrapping.
- *     help      │    │ Help: Visit https://github.com/Excse/pretty_diagnostics for more help.
- *     bottom ╶─╴│ ───╯
+ *     header     ╶─┤ error[E1337]: Displaying a brief summary of what happened
+ *     file_group ╶─┤    ╭╴resources/example╶─
+ *     filler     ╶─┤    ·
+ *     line_group ╶┬┤  1 │ #include <stdio.h>
+ *     w. labels   ╰┤    ·           ╰─────┴─▶ Relevant include to enable the usage of printf
+ *     spacer     ╶─┤    ⋯
+ *     context    ╶─┤  3 │ int main() {
+ *     line_group ╶┬┤  4 │    printf("Hello World!\n");
+ *     w. labels   ││    ·    ╰────┤ ╰──────────────┴─▶ This is the string that is getting printed
+ *                 ││    ·         │                    to the console
+ *                 ╰┤    ·         ╰─▶ And this is the function that actually makes the magic happen
+ *     context    ╶─┤  5 │     return 0;
+ *     spacer     ╶─┤    ⋯
+ *     note       ╶┬┤    │ Note: This example showcases every little detail of the library, also with
+ *                 ╰┤    │       the capability of line wrapping.
+ *     help         │    │ Help: Visit https://github.com/Excse/pretty_diagnostics for more help.
+ *     bottom     ╶─┤ ───╯
  */
-void TextRenderer::render(const Report &report, std::ostream &stream) const {
+void TextRenderer::render(const Report &report, std::ostream &stream) {
+    const auto &groups = report.file_groups();
+
     this->render(report.severity(), stream);
 
     if (report.code().has_value()) stream << "[" << report.code().value() << "]";
 
     stream << ": " << report.message() << std::endl;
 
-    const auto &groups = report.label_groups();
-
-    const auto padding = widest_line_number(groups, LINE_PADDING) + 2;
-    const auto &snippet_width = static_cast<int>(padding - 1);
-    const auto whitespaces = std::string(padding, ' ');
-
     for (auto group_it = groups.begin(); group_it != groups.end(); ++group_it) {
         const auto &[source, labels] = *group_it;
 
-        if (group_it == groups.begin()) stream << whitespaces << "╭";
-        else                            stream << whitespaces << "├";
+        if (group_it == groups.begin()) stream << _whitespaces << "╭";
+        else                            stream << _whitespaces << "├";
 
         stream << "╴" << source->path() << "╶" << std::endl;
 
-        for (const auto &label: labels) {
-            const auto line = source->line(label.span().start());
-            const auto end_column = label.span().end().column();
-            const auto line_number = label.span().line();
+        render(labels, stream);
 
-            stream << std::setw(snippet_width) << line_number << " │ " << line << std::endl;
+        if (std::next(group_it) == groups.end()) stream << _whitespaces << "╯" << std::endl;
+    }
+}
 
-            // TODO: Figure a way out to make this more dynamic
-            // This equation consists of the following parts:
-            //  (padding + 1)      -> "  · " (the dynamic prefix)
-            //  (end_column - 4)   -> "┴─▶ " (4 characters have to be drawn at end_column)
-            //  MAX_TERMINAL_WIDTH -> a (for now) static variable that determines the terminal width
-            const auto max_text_width = MAX_TERMINAL_WIDTH - (end_column - 4) - (padding + 1);
-            const auto text_lines = wrap_text(label.text(), max_text_width);
+void TextRenderer::render(const FileGroup &file_group, std::ostream &stream) {
+    for (const auto &label_group: file_group.line_groups() | std::views::values) {
+        const auto line_number = label_group.line_number();
+        const auto line = file_group.source()->line(line_number);
+        stream << std::setw(static_cast<int>(_snippet_width)) << line_number << " │ " << line << std::endl;
 
-            for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
-                stream << whitespaces << "· ";
-                render(label, stream, text_lines, text_index, true);
-                stream << std::endl;
-            }
+        TextRenderer::render(label_group, stream);
+    }
+}
+
+void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
+    for (const auto &label: line_group.labels()) {
+        const auto end_column = label.span().end().column();
+
+        // TODO: Figure a way out to make this more dynamic
+        // This equation consists of the following parts:
+        //  (padding + 1)      -> "  · " (the dynamic prefix)
+        //  (end_column - 4)   -> "┴─▶ " (4 characters have to be drawn at end_column)
+        //  MAX_TERMINAL_WIDTH -> a (for now) static variable that determines the terminal width
+        const auto max_text_width = MAX_TERMINAL_WIDTH - (end_column - 4) - (_padding + 1);
+        const auto text_lines = wrap_text(label.text(), max_text_width);
+
+        for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
+            stream << _whitespaces << "· ";
+            render(label, stream, text_lines, text_index, true);
+            stream << std::endl;
         }
-
-        if (std::next(group_it) == groups.end()) stream << whitespaces << "╯" << std::endl;
     }
 }
 
@@ -127,24 +138,21 @@ void TextRenderer::render(const Label &label, std::ostream &stream,
             else                                  stream << " ";
         } else if (column > start_column && column < end_column) {
             if (active_render && text_index == 0) stream << "─";
-            else                                  stream << " ";
+            else stream << " ";
         } else {
             stream << " ";
         }
     }
 }
 
-size_t TextRenderer::widest_line_number(const Report::GroupedLabels &groups, const size_t padding) {
-    size_t line = 0;
-
-    for (const auto &labels: groups | std::views::values) {
-        for (const auto &label: labels) {
-            const size_t line_number = label.span().line() + padding;
-            if (line_number > line) line = line_number;
+size_t TextRenderer::widest_line_number(const Report::MappedFileGroups &groups, const size_t padding) {
+    long line = 0;
+    for (const auto &group: groups | std::views::values) {
+        for (const auto &line_number: group.line_groups() | std::views::keys) {
+            if (line_number > line) line = static_cast<long>(line_number);
         }
     }
-
-    return std::to_string(line).size();
+    return std::to_string(line + padding).size();
 }
 
 std::vector<std::string> TextRenderer::wrap_text(const std::string &text, const size_t max_width) {
