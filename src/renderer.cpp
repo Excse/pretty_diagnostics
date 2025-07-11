@@ -78,9 +78,43 @@ void TextRenderer::render(const Report &report, std::ostream &stream) {
         if (group_it == groups.begin()) stream << _whitespaces << "·" << std::endl;
 
         render(labels, stream);
-
-        if (std::next(group_it) == groups.end()) stream << _whitespaces << "╯" << std::endl;
     }
+
+    if (report.note().has_value()) {
+        const auto note_prefix   = _whitespaces + "│ Note: ";
+        const auto normal_prefix = _whitespaces + "│       ";
+
+        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
+                                     - static_cast<long>(note_prefix.size());
+        const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
+
+        const auto &text = report.note().value();
+        const auto lines = wrap_text(text, max_text_width);
+        stream << note_prefix << lines[0] << std::endl;
+
+        for (size_t index = 1; index < lines.size(); ++index) {
+            stream << normal_prefix << lines[index] << std::endl;
+        }
+    }
+
+    if (report.help().has_value()) {
+        const auto help_prefix   = _whitespaces + "│ Help: ";
+        const auto normal_prefix = _whitespaces + "│       ";
+
+        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
+                                     - static_cast<long>(help_prefix.size());
+        const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
+
+        const auto &text = report.help().value();
+        const auto lines = wrap_text(text, max_text_width);
+        stream << help_prefix << lines[0] << std::endl;
+
+        for (size_t index = 1; index < lines.size(); ++index) {
+            stream << normal_prefix << lines[index] << std::endl;
+        }
+    }
+
+    stream << _whitespaces << "╯" << std::endl;
 }
 
 void TextRenderer::render(const FileGroup &file_group, std::ostream &stream) {
@@ -120,7 +154,6 @@ void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
         const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
                                      - static_cast<long>(end_column + 4)
                                      - static_cast<long>(_padding + 1);
-        // Prevent available_width to be less than or equal 0
         const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
         const auto text_lines = wrap_text(label.text(), max_text_width);
 
@@ -184,9 +217,8 @@ size_t TextRenderer::render(const Label &label, std::ostream &stream,
 size_t TextRenderer::widest_line_number(const Report::MappedFileGroups &groups, const size_t padding) {
     long line = 0;
     for (const auto &group: groups | std::views::values) {
-        for (const auto &line_number: group.line_groups() | std::views::keys) {
-            if (line_number > line) line = static_cast<long>(line_number);
-        }
+        const auto biggest_line = group.line_groups().rbegin()->first;
+        if (biggest_line > line) line = static_cast<long>(biggest_line);
     }
     return std::to_string(line + padding).size();
 }

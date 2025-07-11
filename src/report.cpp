@@ -13,9 +13,9 @@ FileGroup::FileGroup(const std::shared_ptr<Source> &source, MappedLineGroups lin
 }
 
 Report::Report(std::string message, std::optional<std::string> code, const Severity severity,
-               MappedFileGroups file_groups)
-    : _code(std::move(code)), _file_groups(std::move(file_groups)), _message(std::move(message)),
-      _severity(severity) {
+               MappedFileGroups file_groups, std::optional<std::string> note, std::optional<std::string> help)
+    : _code(std::move(code)), _note(std::move(note)), _help(std::move(help)),
+      _file_groups(std::move(file_groups)), _message(std::move(message)), _severity(severity) {
 }
 
 void Report::render(IReporterRenderer &renderer, std::ostream &stream) const {
@@ -54,6 +54,16 @@ Report::Builder &Report::Builder::label(std::string text, Span span) {
     return *this;
 }
 
+Report::Builder & Report::Builder::note(std::string note) {
+    _note = std::move(note);
+    return *this;
+}
+
+Report::Builder & Report::Builder::help(std::string help) {
+    _help = std::move(help);
+    return *this;
+}
+
 Report Report::Builder::build() const {
     if (!_message.has_value()) {
         throw std::runtime_error("Report::Builder::build(): message is not set");
@@ -63,7 +73,9 @@ Report Report::Builder::build() const {
         _message.value(),
         _code,
         _severity.value_or(Severity::Error),
-        _file_groups
+        _file_groups,
+        _note,
+        _help,
     };
 }
 

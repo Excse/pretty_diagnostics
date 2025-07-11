@@ -60,7 +60,8 @@ public:
     class Builder;
 
 public:
-    Report(std::string message, std::optional<std::string> code, Severity severity, MappedFileGroups file_groups);
+    Report(std::string message, std::optional<std::string> code, Severity severity, MappedFileGroups file_groups,
+           std::optional<std::string> note, std::optional<std::string> help);
 
     void render(IReporterRenderer &renderer, std::ostream &stream = std::cout) const;
 
@@ -72,10 +73,14 @@ public:
 
     [[nodiscard]] auto &message() const { return _message; }
 
+    [[nodiscard]] auto &note() const { return _note; }
+
+    [[nodiscard]] auto &help() const { return _help; }
+
     [[nodiscard]] auto &code() const { return _code; }
 
 private:
-    std::optional<std::string> _code;
+    std::optional<std::string> _code, _note, _help;
     MappedFileGroups _file_groups;
     std::string _message;
     Severity _severity;
@@ -104,12 +109,15 @@ public:
 
     Builder &label(std::string text, Span span);
 
+    Builder &note(std::string note);
+
+    Builder &help(std::string help);
+
     [[nodiscard]] Report build() const;
 
 private:
-    std::optional<std::string> _message;
+    std::optional<std::string> _message, _note, _help, _code;
     std::optional<Severity> _severity;
-    std::optional<std::string> _code;
     MappedFileGroups _file_groups;
 };
 

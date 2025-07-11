@@ -44,6 +44,8 @@ TEST(Renderer, SimpleTextRender) {
             .label("And this is the function that actually makes the magic happen", {file, 37, 43})
             .label("This is the string that is getting printed to the console", {file, 44, 60})
             .label("Relevant include to enable the usage of printf", {file, 10, 17})
+            .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
+            .help("Visit https://github.com/Excse/pretty_diagnostics for more help.")
             .build();
 
     auto renderer = TextRenderer(report);
@@ -71,6 +73,8 @@ TEST(Renderer, HardTextRender) {
             .label(LOREM, {file, 10, 13})
             .label(LOREM, {file, 13, 14})
             .label(LOREM, {file, 14, 17})
+            .note(LOREM)
+            .help(LOREM)
             .build();
 
     auto renderer = TextRenderer(report);
