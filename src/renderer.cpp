@@ -105,8 +105,10 @@ void TextRenderer::render(const FileGroup &file_group, std::ostream &stream) {
 }
 
 void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
-    for (auto it = line_group.labels().rbegin(); it != line_group.labels().rend(); ++it) {
-        const auto &label = *it;
+    const auto &labels = line_group.labels();
+
+    for (auto last_it = labels.rbegin(); last_it != labels.rend(); ++last_it) {
+        const auto &label = *last_it;
         const auto end_column = label.span().end().column();
 
         // TODO: Figure a way out to make this more dynamic
@@ -119,7 +121,15 @@ void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
 
         for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
             stream << _whitespaces << "· ";
-            render(label, stream, text_lines, text_index, true);
+
+            size_t start_column = 0;
+            for (auto other_it = labels.begin(); other_it != std::prev(last_it.base()); ++other_it) {
+                const auto &other_label = *other_it;
+                const auto &finished_column = render(other_label, stream, text_lines, text_index, false, start_column);
+                start_column = finished_column + 1;
+            }
+
+            render(label, stream, text_lines, text_index, true, start_column);
             stream << std::endl;
         }
     }
@@ -134,7 +144,7 @@ size_t TextRenderer::render(const Label &label, std::ostream &stream,
     const auto &current_text = text_lines[text_index];
 
     size_t column = column_start;
-    for (; column < end_column; ++column) {
+    for (; column < end_column; column++) {
         if (column == end_column - 1) {
             if (!active_render) {
                 stream << "│";
@@ -142,7 +152,7 @@ size_t TextRenderer::render(const Label &label, std::ostream &stream,
             }
 
             if (text_index == 0) stream << "┴─▶ ";
-            else               stream << "    ";
+            else                 stream << "    ";
 
             stream << current_text;
             break;

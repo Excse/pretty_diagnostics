@@ -4,7 +4,7 @@
 
 using namespace pretty_diagnostics;
 
-TEST(Span, ValidExample) {
+TEST(Span, FirstLabel) {
     const auto file = std::make_shared<FileSource>("resources/main.c");
     const auto span = Span(file, 0, 18);
 
@@ -16,7 +16,7 @@ TEST(Span, ValidExample) {
     ASSERT_EQ(span.substr(), "#include <stdio.h>");
 }
 
-TEST(Span, SecondLine) {
+TEST(Span, SecondLabel) {
     const auto file = std::make_shared<FileSource>("resources/main.c");
     const auto span = Span(file, 37, 43);
 
@@ -26,6 +26,18 @@ TEST(Span, SecondLine) {
     ASSERT_EQ(span.width(), 6);
     ASSERT_EQ(span.line(), 4);
     ASSERT_EQ(span.substr(), "printf");
+}
+
+TEST(Span, ThirdLabel) {
+    const auto file = std::make_shared<FileSource>("resources/main.c");
+    const auto span = Span(file, 44, 60);
+
+    ASSERT_EQ(span.source(), file);
+    ASSERT_EQ(span.start(), Location(3, 11, 44));
+    ASSERT_EQ(span.end(), Location(3, 27, 60));
+    ASSERT_EQ(span.width(), 16);
+    ASSERT_EQ(span.line(), 4);
+    ASSERT_EQ(span.substr(), "\"Hello World!\\n\"");
 }
 
 TEST(Span, InvalidRange) {
