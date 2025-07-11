@@ -3,11 +3,8 @@
 #include <filesystem>
 #include <fstream>
 
-#include "pretty_diagnostics/renderer.h"
 #include "pretty_diagnostics/report.h"
 #include "pretty_diagnostics/source.h"
-
-#include "../utils/snapshot.h"
 
 using namespace pretty_diagnostics;
 
@@ -40,25 +37,6 @@ TEST(Report, BuilderCorrect) {
     ASSERT_EQ(line_1_group.labels().size(), 1);
     const auto &line_4_group = file_group.line_groups().at(4);
     ASSERT_EQ(line_4_group.labels().size(), 2);
-}
-
-TEST(Report, CorrectTextRender) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-
-    const auto report = Report::Builder()
-            .severity(Severity::Error)
-            .message("Displaying a brief summary of what happened")
-            .code("E1337")
-            .label("And this is the function that actually makes the magic happen", {file, 37, 43})
-            .label("This is the string that is getting printed to the console", {file, 44, 60})
-            .label("Relevant include to enable the usage of printf", {file, 10, 17})
-            .build();
-
-    auto renderer = TextRenderer(report);
-    auto stream = std::ostringstream();
-    report.render(renderer, stream);
-
-    EXPECT_SNAPSHOT_EQ(TextRender, stream.str());
 }
 
 // BSD 3-Clause License

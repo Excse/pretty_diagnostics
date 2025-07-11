@@ -5,6 +5,8 @@
 
 #include "pretty_diagnostics/renderer.h"
 
+#include "../utils/snapshot.h"
+
 using namespace pretty_diagnostics;
 
 TEST(Renderer, CorrectTextWrap) {
@@ -30,6 +32,52 @@ TEST(Renderer, RealExample) {
                   "This example showcases every little detail of the library, also with",
                   "the capability of line wrapping."
                   }));
+}
+
+TEST(Renderer, SimpleTextRender) {
+    const auto file = std::make_shared<FileSource>("resources/main.c");
+
+    const auto report = Report::Builder()
+            .severity(Severity::Error)
+            .message("Displaying a brief summary of what happened")
+            .code("E1337")
+            .label("And this is the function that actually makes the magic happen", {file, 37, 43})
+            .label("This is the string that is getting printed to the console", {file, 44, 60})
+            .label("Relevant include to enable the usage of printf", {file, 10, 17})
+            .build();
+
+    auto renderer = TextRenderer(report);
+    auto stream = std::ostringstream();
+    report.render(renderer, stream);
+
+    EXPECT_SNAPSHOT_EQ(SimpleText, stream.str());
+}
+
+TEST(Renderer, HardTextRender) {
+    const auto file = std::make_shared<FileSource>("resources/main.c");
+
+    static constexpr auto LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse semper hendrerit iaculis. Integer suscipit facilisis libero sed consectetur. Fusce turpis risus, elementum nec fermentum quis, ultricies a libero. Aliquam et nisi quis elit pulvinar vestibulum sit amet id est. Integer.";
+
+    const auto report = Report::Builder()
+            .severity(Severity::Error)
+            .message("Displaying a brief summary of what happened")
+            .code("E1337")
+            .label(LOREM, {file, 37, 40})
+            .label(LOREM, {file, 40, 41})
+            .label(LOREM, {file, 41, 43})
+            .label(LOREM, {file, 44, 51})
+            .label(LOREM, {file, 51, 52})
+            .label(LOREM, {file, 52, 60})
+            .label(LOREM, {file, 10, 13})
+            .label(LOREM, {file, 13, 14})
+            .label(LOREM, {file, 14, 17})
+            .build();
+
+    auto renderer = TextRenderer(report);
+    auto stream = std::ostringstream();
+    report.render(renderer, stream);
+
+    EXPECT_SNAPSHOT_EQ(HardText, stream.str());
 }
 
 // BSD 3-Clause License

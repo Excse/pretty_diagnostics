@@ -8,6 +8,7 @@ using namespace pretty_diagnostics;
 
 // TODO: Make this variable more dynamic
 constexpr size_t MAX_TERMINAL_WIDTH = 80;
+constexpr long MIN_TEXT_WRAP = 10;
 constexpr long LINE_PADDING = 1;
 
 TextRenderer::TextRenderer(const Report &report) {
@@ -111,25 +112,29 @@ void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
         const auto &label = *last_it;
         const auto end_column = label.span().end().column();
 
-        // TODO: Figure a way out to make this more dynamic
         // This equation consists of the following parts:
+        // [prefix][padding until label end][arrow][wrapped_text]
         //  (padding + 1)      -> "  · " (the dynamic prefix)
-        //  (end_column - 4)   -> "┴─▶ " (4 characters have to be drawn at end_column)
+        //  (end_column + 4)   -> "┴─▶ " (4 characters have to be drawn at end_column)
         //  MAX_TERMINAL_WIDTH -> a (for now) static variable that determines the terminal width
-        const auto max_text_width = MAX_TERMINAL_WIDTH - (end_column - 4) - (_padding + 1);
+        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
+                                     - static_cast<long>(end_column + 4)
+                                     - static_cast<long>(_padding + 1);
+        // Prevent available_width to be less than or equal 0
+        const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
         const auto text_lines = wrap_text(label.text(), max_text_width);
 
         for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
             stream << _whitespaces << "· ";
 
-            size_t start_column = 0;
+            size_t current = 0;
             for (auto other_it = labels.begin(); other_it != std::prev(last_it.base()); ++other_it) {
                 const auto &other_label = *other_it;
-                const auto &finished_column = render(other_label, stream, text_lines, text_index, false, start_column);
-                start_column = finished_column + 1;
+                const auto &finished = render(other_label, stream, text_lines, text_index, false, current);
+                current = finished + 1;
             }
 
-            render(label, stream, text_lines, text_index, true, start_column);
+            render(label, stream, text_lines, text_index, true, current);
             stream << std::endl;
         }
     }
@@ -151,8 +156,11 @@ size_t TextRenderer::render(const Label &label, std::ostream &stream,
                 break;
             }
 
-            if (text_index == 0) stream << "┴─▶ ";
-            else                 stream << "    ";
+            if (text_index == 0) {
+                if (start_column == end_column - 1) stream << "╰─▶ ";
+                else stream << "┴─▶ ";
+            } else                                  stream << "    ";
+
 
             stream << current_text;
             break;

@@ -26,7 +26,7 @@ Span::Span(const std::shared_ptr<Source> &source,
 }
 
 bool Span::intersects(const Span &other) const {
-    return _start.index() <= other._end.index() && _end.index() >= other._start.index();
+    return _start.index() <= other._end.index() && _end.index() > other._start.index();
 }
 
 std::string Span::substr() const {
