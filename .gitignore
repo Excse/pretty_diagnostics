@@ -80,15 +80,6 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-### CLion+all Patch ###
-# Ignore everything but code style settings and run configurations
-# that are supposed to be shared within teams.
-
-.idea/*
-
-!.idea/codeStyles
-!.idea/runConfigurations
-
 ### CMake ###
 CMakeLists.txt.user
 CMakeCache.txt
