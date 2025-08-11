@@ -1,5 +1,0 @@
-if(EXISTS "/home/runner/work/pretty_diagnostics/pretty_diagnostics/build/tests/pretty_diagnostics_tests[1]_tests.cmake")
-  include("/home/runner/work/pretty_diagnostics/pretty_diagnostics/build/tests/pretty_diagnostics_tests[1]_tests.cmake")
-else()
-  add_test(pretty_diagnostics_tests_NOT_BUILT pretty_diagnostics_tests_NOT_BUILT)
-endif()
