@@ -128,7 +128,6 @@ void TextRenderer::render(const FileGroup &file_group, std::ostream &stream) {
 
         for (size_t padded_line = min_padded_line; padded_line <= max_padded_line; ++padded_line) {
             const auto line = file_group.source()->line(padded_line);
-            if (line.empty()) continue;
 
             stream << std::setw(static_cast<int>(_snippet_width)) << padded_line << " │ " << line << std::endl;
 

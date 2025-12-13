@@ -5,10 +5,9 @@
 namespace pretty_diagnostics {
 
 class Span {
-private:
+public:
     Span(const std::shared_ptr<Source> &source, const Location &start, const Location &end);
 
-public:
     Span(const std::shared_ptr<Source> &source,
          size_t start_row, size_t start_column,
          size_t end_row, size_t end_column);
@@ -63,6 +62,8 @@ private:
 };
 
 } // namespace pretty_diagnostics
+
+std::ostream &operator<<(std::ostream &os, const pretty_diagnostics::Span &span);
 
 // BSD 3-Clause License
 //

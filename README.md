@@ -25,10 +25,13 @@ $ git clone https://github.com/Excse/pretty_diagnostics.git
 
 Navigate to the directory where the project is located and execute these commands:
 ```sh
-$ cmake -S . -B build -DBUILD_TESTING=OFF
-$ cmake --build build
-$ cmake --install build
-$ sudo make install
+$ cmake -S . -B own_build Release -DCMAKE_BUILD_TYPE=Release \
+                                  -DBUILD_TESTING=OFF        \
+                                  -DBUILD_EXECUTABLE=OFF     \
+                                  -DMAKE_INSTALLABLE=ON      \
+                                  -DBUILD_SHARED_LIBS=OFF
+$ cmake --build own_build --config Release
+$ sudo cmake --install own_build --config Release
 ```
 
 When you are finished, you are ready to use the library. If you want to use it in a

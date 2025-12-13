@@ -24,14 +24,16 @@ Location FileSource::from_coords(size_t row, size_t column) const {
 
     std::string line;
     while (std::getline(stream, line)) {
+        // We have to adjust for the newline character, so add one.
+        const auto line_length = line.length() + 1;
+
         if (current_row != row) {
-            // We have to adjust for the newline character, so add one.
-            index += line.length() + 1;
+            index += line_length;
             current_row++;
             continue;
         }
 
-        if (column >= line.size()) throw std::runtime_error("FileSource::from_coords(): invalid coordinates, column is out of line bounds");
+        if (column > line_length) throw std::runtime_error("FileSource::from_coords(): invalid coordinates, column is out of line bounds");
 
         return {row, column, index + column};
     }
@@ -48,15 +50,16 @@ Location FileSource::from_index(size_t index) const {
 
     std::string line;
     while (std::getline(stream, line)) {
-        const auto added_length = line.length() + 1;
-        if (current_index + added_length <= index) {
-            current_index += added_length;
+        const auto line_length = line.length() + 1;
+
+        if (current_index + line_length < index) {
+            current_index += line_length;
             row++;
             continue;
         }
 
         const auto column = index - current_index;
-        if (column > line.size()) throw std::runtime_error("FileSource::from_index(): invalid index, column is out of line bounds");
+        if (column > line_length) throw std::runtime_error("FileSource::from_index(): invalid index, column is out of line bounds");
 
         return {row, index - current_index, index};
     }
@@ -128,6 +131,31 @@ size_t FileSource::size() const {
     if (!stream.is_open()) throw std::runtime_error("File::size(): could not open file: " + _path.string());
 
     return stream.tellg();
+}
+
+std::ostream& operator<<(std::ostream& os, const Location& location) {
+    os << "Location(";
+    os << "row=\"" << location.row() << "\", ";
+    os << "column=\"" << location.column() << "\", ";
+    os << "index=\"" << location.index() << "\"";
+    os << ")";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const FileSource& source) {
+    os << "FileSource(";
+    os << "path=\"" << source.path() << "\", ";
+    os << "size=\"" << source.size() << "\"";
+    os << ")";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Source& source) {
+    os << "Source(";
+    os << "path=\"" << source.path() << "\", ";
+    os << "size=\"" << source.size() << "\"";
+    os << ")";
+    return os;
 }
 
 // BSD 3-Clause License

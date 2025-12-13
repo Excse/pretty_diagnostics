@@ -41,6 +41,16 @@ size_t Span::line() const {
     return _start.row() + 1;
 }
 
+std::ostream& operator<<(std::ostream& os, const Span& span) {
+    os << "Span(";
+    os << "source=\"" << *span.source() << "\", ";
+    os << "contents=\"" << span.substr() << "\", ";
+    os << "start=\"" << span.start() << "\", ";
+    os << "end=\"" << span.end() << "\"";
+    os << ")";
+    return os;
+}
+
 // BSD 3-Clause License
 //
 // Copyright (c) 2025, Timo Behrend

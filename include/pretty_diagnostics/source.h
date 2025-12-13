@@ -104,6 +104,12 @@ private:
 
 } // namespace pretty_diagnostics
 
+std::ostream &operator<<(std::ostream &os, const pretty_diagnostics::Location &location);
+
+std::ostream &operator<<(std::ostream &os, const pretty_diagnostics::FileSource &source);
+
+std::ostream &operator<<(std::ostream &os, const pretty_diagnostics::Source &source);
+
 // BSD 3-Clause License
 //
 // Copyright (c) 2025, Timo Behrend
