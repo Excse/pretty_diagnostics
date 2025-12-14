@@ -30,6 +30,6 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/resources $<TARGET_FILE_DIR:${PROJECT_NAME}_tests>/resources
 )
 # Link the test binary with the main library and GoogleTest
-target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} gtest_main)
+target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} gtest gtest_main)
 # Automatically discover and register tests with CTest
 gtest_discover_tests(${PROJECT_NAME}_tests)

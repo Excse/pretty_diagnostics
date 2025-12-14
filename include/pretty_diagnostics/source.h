@@ -7,6 +7,8 @@ class Location {
 public:
     Location(size_t row, size_t column, size_t index);
 
+    Location();
+
     friend bool operator<(const Location& lhs, const Location& rhs) {
         return lhs._index < rhs._index;
     }

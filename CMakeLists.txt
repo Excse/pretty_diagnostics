@@ -11,7 +11,7 @@ option(BUILD_TESTING "Enable testing" ON)
 # Option to enable/disable installation:
 option(MAKE_INSTALLABLE "Make the library installable" ON)
 # Option to control static vs shared library
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 ### --- CMake Modules for Installation and Fetching --- ###
 include(CMakePackageConfigHelpers) # Helper for creating config files for package managers
@@ -26,7 +26,8 @@ add_library(${PROJECT_NAME}
         src/pretty_diagnostics/report.cpp
         src/pretty_diagnostics/renderer.cpp
         src/pretty_diagnostics/span.cpp
-        src/pretty_diagnostics/label.cpp)
+        src/pretty_diagnostics/label.cpp
+        src/pretty_diagnostics/utils.cpp)
 # Create an alias for the library: your_project::your_project
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
@@ -43,7 +44,8 @@ set(PUBLIC_HEADERS
         include/pretty_diagnostics/report.h
         include/pretty_diagnostics/renderer.h
         include/pretty_diagnostics/span.h
-        include/pretty_diagnostics/label.h)
+        include/pretty_diagnostics/label.h
+        include/pretty_diagnostics/utils.h)
 
 # Set the properties of the resulting library
 set_target_properties(${PROJECT_NAME}

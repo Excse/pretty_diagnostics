@@ -1,54 +1,30 @@
-#include "pretty_diagnostics/span.h"
-
 #include "pretty_diagnostics/utils.h"
 
 using namespace pretty_diagnostics;
 
-Span::Span(const std::shared_ptr<Source>& source, const Location& start, const Location& end) :
-    _source(source), _start(start), _end(end) {
-    if (start.row() != end.row()) {
-        throw std::runtime_error("Span::Span(): start and end must be on the same line");
+std::string pretty_diagnostics::escape_string(const std::string_view str) {
+    std::ostringstream output;
+
+    for (const unsigned char current : str) {
+        switch (current) {
+            case '\n': output << "\\n"; break;
+            case '\t': output << "\\t"; break;
+            case '\r': output << "\\r"; break;
+            case '\"': output << "\\\""; break;
+            case '\\': output << "\\\\"; break;
+            default:
+                if (std::isprint(current)) {
+                    output << current;
+                } else {
+                    output << "\\x" << std::hex << std::uppercase
+                        << std::setw(2) << std::setfill('0') << static_cast<int>(current)
+                        << std::dec;
+                }
+                break;
+        }
     }
 
-    if (start.index() > end.index()) {
-        throw std::runtime_error("Span::Span(): start location must be smaller than the end location");
-    }
-}
-
-Span::Span(const std::shared_ptr<Source>& source,
-           const size_t start_row, const size_t start_column,
-           const size_t end_row, const size_t end_column) :
-    Span(source, source->from_coords(start_row, start_column), source->from_coords(end_row, end_column)) { }
-
-Span::Span(const std::shared_ptr<Source>& source,
-           const size_t start_index,
-           const size_t end_index) :
-    Span(source, source->from_index(start_index), source->from_index(end_index)) { }
-
-bool Span::intersects(const Span& other) const {
-    return _start.index() <= other._end.index() && _end.index() > other._start.index();
-}
-
-std::string Span::substr() const {
-    return _source->substr(_start, _end);
-}
-
-size_t Span::width() const {
-    return _end.index() - _start.index();
-}
-
-size_t Span::line() const {
-    return _start.row() + 1;
-}
-
-std::ostream& operator<<(std::ostream& os, const Span& span) {
-    os << "Span(";
-    os << "contents=\"" << escape_string(span.substr()) << "\", ";
-    os << "start=\"" << span.start() << "\", ";
-    os << "end=\"" << span.end() << "\", ";
-    os << "source=\"" << *span.source() << "\"";
-    os << ")";
-    return os;
+    return output.str();
 }
 
 // BSD 3-Clause License

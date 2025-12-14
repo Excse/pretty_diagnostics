@@ -1,51 +1,14 @@
-#include "gtest/gtest.h"
+#pragma once
 
-#include "pretty_diagnostics/span.h"
+#include <iomanip>
+#include <string>
+#include <string_view>
 
-using namespace pretty_diagnostics;
+namespace pretty_diagnostics {
 
-TEST(Span, FirstLabel) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 0, 18);
+std::string escape_string(std::string_view str);
 
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), Location(0, 0, 0));
-    ASSERT_EQ(span.end(), Location(0, 18, 18));
-    ASSERT_EQ(span.width(), 18);
-    ASSERT_EQ(span.line(), 1);
-    ASSERT_EQ(span.substr(), "#include <stdio.h>");
-}
-
-TEST(Span, SecondLabel) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 37, 43);
-
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), Location(3, 4, 37));
-    ASSERT_EQ(span.end(), Location(3, 10, 43));
-    ASSERT_EQ(span.width(), 6);
-    ASSERT_EQ(span.line(), 4);
-    ASSERT_EQ(span.substr(), "printf");
-}
-
-TEST(Span, ThirdLabel) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 44, 60);
-
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), Location(3, 11, 44));
-    ASSERT_EQ(span.end(), Location(3, 27, 60));
-    ASSERT_EQ(span.width(), 16);
-    ASSERT_EQ(span.line(), 4);
-    ASSERT_EQ(span.substr(), "\"Hello World!\\n\"");
-}
-
-TEST(Span, InvalidRange) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-
-    ASSERT_THROW(Span(file, 16, 0), std::runtime_error);
-    ASSERT_THROW(Span(file, 0, 80), std::runtime_error);
-}
+} // namespace pretty_diagnostics
 
 // BSD 3-Clause License
 //
