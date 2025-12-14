@@ -1,5 +1,5 @@
 ### --- Project Initialization and Configuration --- ###
-cmake_minimum_required(VERSION 3.20)                    # Require CMake 3.20 or later
+cmake_minimum_required(VERSION 4.2)                     # Require CMake 4.2 or later
 project(pretty_diagnostics VERSION 1.0.0 LANGUAGES CXX) # Define project name, version, and language
 
 # Use C++23 and enforce it
@@ -18,16 +18,15 @@ include(CMakePackageConfigHelpers) # Helper for creating config files for packag
 include(GNUInstallDirs)            # Define standard install directories (lib, include, etc.)
 include(FetchContent)              # For downloading and using external dependencies
 
-
 ### --- Define Library Target --- ##
 
 # Create the main library from source file
 add_library(${PROJECT_NAME}
-        src/source.cpp
-        src/report.cpp
-        src/renderer.cpp
-        src/span.cpp
-        src/label.cpp)
+        src/pretty_diagnostics/source.cpp
+        src/pretty_diagnostics/report.cpp
+        src/pretty_diagnostics/renderer.cpp
+        src/pretty_diagnostics/span.cpp
+        src/pretty_diagnostics/label.cpp)
 # Create an alias for the library: your_project::your_project
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 

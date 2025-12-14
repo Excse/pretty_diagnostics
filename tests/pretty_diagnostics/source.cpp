@@ -5,7 +5,7 @@
 
 #include "pretty_diagnostics/source.h"
 
-#include "../utils/snapshot.h"
+#include "../snapshot/snapshot.h"
 
 using namespace pretty_diagnostics;
 

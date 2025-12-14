@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "utils/snapshot.h"
+#include "snapshot/snapshot.h"
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
