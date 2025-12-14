@@ -16,6 +16,10 @@ FileSource::FileSource(std::filesystem::path path) :
     if (!std::filesystem::exists(_path)) throw std::runtime_error("FileSource::FileSource(): file does not exist: " + _path.string());
 }
 
+void FileSource::set_working_path(const std::filesystem::path& path) {
+    _working_path = path;
+}
+
 Location FileSource::from_coords(size_t row, size_t column) const {
     std::ifstream stream(_path, std::ios::binary);
     if (!stream.is_open()) throw std::runtime_error("FileSource::from_coords(): could not open file: " + _path.string());
@@ -95,20 +99,10 @@ std::string FileSource::line(const size_t line_number) const {
 
     for (size_t index = 0; index < line_number; ++index) {
         if (std::getline(stream, result)) continue;
-        throw new std::runtime_error("File::line(): invalid line number, there are not enough lines present");
+        throw std::runtime_error("File::line(): invalid line number, there are not enough lines present");
     }
 
     return result;
-}
-
-std::string FileSource::contents() const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("File::contents(): could not open file: " + _path.string());
-
-    std::ostringstream result;
-    result << stream.rdbuf();
-
-    return result.str();
 }
 
 size_t FileSource::line_count() const {
@@ -123,8 +117,19 @@ size_t FileSource::line_count() const {
     return count;
 }
 
+std::string FileSource::contents() const {
+    std::ifstream stream(_path, std::ios::binary);
+    if (!stream.is_open()) throw std::runtime_error("File::contents(): could not open file: " + _path.string());
+
+    std::ostringstream result;
+    result << stream.rdbuf();
+
+    return result.str();
+}
+
 std::string FileSource::path() const {
-    return _path.string();
+    if (!_working_path) return _path.string();
+    return std::filesystem::relative(_path, _working_path.value()).string();
 }
 
 size_t FileSource::size() const {
@@ -145,8 +150,7 @@ std::ostream& operator<<(std::ostream& os, const Location& location) {
 
 std::ostream& operator<<(std::ostream& os, const FileSource& source) {
     os << "FileSource(";
-    // TODO: This causes issues with snapshot testing (because there is now an absolute path), resolve it somehow.
-    // os << "path=\"" << source.path() << "\", ";
+    os << "path=\"" << source.path() << "\", ";
     os << "size=\"" << source.size() << "\"";
     os << ")";
     return os;
@@ -154,8 +158,7 @@ std::ostream& operator<<(std::ostream& os, const FileSource& source) {
 
 std::ostream& operator<<(std::ostream& os, const Source& source) {
     os << "Source(";
-    // TODO: This causes issues with snapshot testing (because there is now an absolute path), resolve it somehow.
-    // os << "path=\"" << source.path() << "\", ";
+    os << "path=\"" << source.path() << "\", ";
     os << "size=\"" << source.size() << "\"";
     os << ")";
     return os;

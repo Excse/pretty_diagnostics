@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <optional>
 
 namespace pretty_diagnostics {
 class Location {
@@ -73,6 +74,8 @@ class FileSource final : public Source {
 public:
     explicit FileSource(std::filesystem::path path);
 
+    void set_working_path(const std::filesystem::path& path);
+
     [[nodiscard]] Location from_coords(size_t row, size_t column) const override;
 
     [[nodiscard]] Location from_index(size_t index) const override;
@@ -100,6 +103,7 @@ public:
     }
 
 private:
+    std::optional<std::filesystem::path> _working_path;
     std::filesystem::path _path;
 };
 } // namespace pretty_diagnostics
