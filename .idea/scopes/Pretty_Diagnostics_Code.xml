@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Pretty Diagnostics Code" pattern="(!file[pretty_diagnostics]:.github//*&amp;&amp;!file[pretty_diagnostics]:.idea//*&amp;&amp;!file[pretty_diagnostics]:build//*&amp;&amp;!file[pretty_diagnostics]:cmake//*&amp;&amp;!file[pretty_diagnostics]:resources//*&amp;&amp;!file:.clang-format&amp;&amp;!file:.gitignore&amp;&amp;!file:CMakeLists.txt&amp;&amp;!file:LICENSE.txt&amp;&amp;!file:README.md||file[pretty_diagnostics]:include//*||file[pretty_diagnostics]:src//*||file[pretty_diagnostics]:tests//*)&amp;&amp;!ext:*/" />
+</component>

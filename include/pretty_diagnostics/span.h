@@ -3,7 +3,6 @@
 #include "source.h"
 
 namespace pretty_diagnostics {
-
 class Span {
 public:
     Span(const std::shared_ptr<Source>& source, const Location& start, const Location& end);
@@ -60,7 +59,6 @@ private:
     std::shared_ptr<Source> _source;
     Location _start, _end;
 };
-
 } // namespace pretty_diagnostics
 
 std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::Span& span);

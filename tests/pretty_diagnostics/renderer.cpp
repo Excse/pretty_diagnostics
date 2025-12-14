@@ -11,27 +11,27 @@ using namespace pretty_diagnostics;
 
 TEST(Renderer, CorrectTextWrap) {
     const auto result = TextRenderer::wrap_text("Hello World!\nHow are you, today?", 10);
-    ASSERT_EQ(result, std::vector<std::string>({"Hello", "World!", "How are", "you,", "today?"}));
+    ASSERT_EQ(result, std::vector<std::string>({ "Hello", "World!", "How are", "you,", "today?" }));
 }
 
 TEST(Renderer, SingleCharWrap) {
     const auto result = TextRenderer::wrap_text("Hello!", 1);
-    ASSERT_EQ(result, std::vector<std::string>({"H", "e", "l", "l", "o", "!"}));
+    ASSERT_EQ(result, std::vector<std::string>({ "H", "e", "l", "l", "o", "!" }));
 }
 
 TEST(Renderer, LongHardSplit) {
     const auto result = TextRenderer::wrap_text("AAAAAAAAAA BBBBBBBBBB", 5);
-    ASSERT_EQ(result, std::vector<std::string>({"AAAAA", "AAAAA", "BBBBB", "BBBBB"}));
+    ASSERT_EQ(result, std::vector<std::string>({ "AAAAA", "AAAAA", "BBBBB", "BBBBB" }));
 }
 
 TEST(Renderer, RealExample) {
     const auto result = TextRenderer::wrap_text(
-            "This example showcases every little detail of the library, also with the capability of line wrapping.",
-            69);
+        "This example showcases every little detail of the library, also with the capability of line wrapping.",
+        69);
     ASSERT_EQ(result, std::vector<std::string>({
                   "This example showcases every little detail of the library, also with",
                   "the capability of line wrapping."
-                  }));
+              }));
 }
 
 TEST(Renderer, SimpleTextRender) {

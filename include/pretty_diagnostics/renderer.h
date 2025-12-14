@@ -3,7 +3,6 @@
 #include "report.h"
 
 namespace pretty_diagnostics {
-
 class TextRenderer final : public IReporterRenderer {
 public:
     explicit TextRenderer(const Report& report);
@@ -28,7 +27,6 @@ private:
     size_t _padding, _snippet_width;
     std::string _whitespaces;
 };
-
 } // namespace pretty_diagnostics
 
 // BSD 3-Clause License

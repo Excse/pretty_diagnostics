@@ -2,7 +2,6 @@
 #include "span.h"
 
 namespace pretty_diagnostics {
-
 class Label {
 public:
     Label(std::string text, Span span);
@@ -31,7 +30,6 @@ private:
     std::string _text;
     Span _span;
 };
-
 } // namespace pretty_diagnostics
 
 // BSD 3-Clause License

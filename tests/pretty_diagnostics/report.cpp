@@ -16,16 +16,16 @@ TEST(Report, BuilderCorrect) {
     constexpr auto code = "E1337";
 
     const auto report = Report::Builder()
-                        .severity(severity)
-                        .message(message)
-                        .code(code)
-                        .label("And this is the function that actually makes the magic happen", { file, 37, 43 })
-                        .label("This is the string that is getting printed to the console", { file, 44, 60 })
-                        .label("Relevant include to enable the usage of printf", { file, 10, 17 })
-                        .label("This is a new line", { file, 1, 0, 1, 1 })
-                        .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
-                        .note("Visit https://github.com/Excse/pretty_diagnostics for more help.")
-                        .build();
+                       .severity(severity)
+                       .message(message)
+                       .code(code)
+                       .label("And this is the function that actually makes the magic happen", { file, 37, 43 })
+                       .label("This is the string that is getting printed to the console", { file, 44, 60 })
+                       .label("Relevant include to enable the usage of printf", { file, 10, 17 })
+                       .label("This is a new line", { file, 1, 0, 1, 1 })
+                       .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
+                       .note("Visit https://github.com/Excse/pretty_diagnostics for more help.")
+                       .build();
 
     ASSERT_EQ(report.severity(), severity);
     ASSERT_EQ(report.message(), message);

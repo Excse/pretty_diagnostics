@@ -3,7 +3,6 @@
 #include <filesystem>
 
 namespace pretty_diagnostics {
-
 class Location {
 public:
     Location(size_t row, size_t column, size_t index);
@@ -101,7 +100,6 @@ public:
 private:
     std::filesystem::path _path;
 };
-
 } // namespace pretty_diagnostics
 
 std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::Location& location);

@@ -11,7 +11,6 @@
 #include "label.h"
 
 namespace pretty_diagnostics {
-
 class IReporterRenderer;
 
 enum class Severity {
@@ -120,7 +119,6 @@ private:
     std::optional<Severity> _severity;
     MappedFileGroups _file_groups;
 };
-
 } // namespace pretty_diagnostics
 
 // BSD 3-Clause License
