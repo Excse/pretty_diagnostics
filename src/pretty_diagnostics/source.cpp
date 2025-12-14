@@ -145,7 +145,8 @@ std::ostream& operator<<(std::ostream& os, const Location& location) {
 
 std::ostream& operator<<(std::ostream& os, const FileSource& source) {
     os << "FileSource(";
-    os << "path=\"" << source.path() << "\", ";
+    // TODO: This causes issues with snapshot testing (because there is now an absolute path), resolve it somehow.
+    // os << "path=\"" << source.path() << "\", ";
     os << "size=\"" << source.size() << "\"";
     os << ")";
     return os;
@@ -153,7 +154,8 @@ std::ostream& operator<<(std::ostream& os, const FileSource& source) {
 
 std::ostream& operator<<(std::ostream& os, const Source& source) {
     os << "Source(";
-    os << "path=\"" << source.path() << "\", ";
+    // TODO: This causes issues with snapshot testing (because there is now an absolute path), resolve it somehow.
+    // os << "path=\"" << source.path() << "\", ";
     os << "size=\"" << source.size() << "\"";
     os << ")";
     return os;
