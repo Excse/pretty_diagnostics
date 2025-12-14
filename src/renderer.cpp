@@ -11,13 +11,13 @@ constexpr size_t MAX_TERMINAL_WIDTH = 80;
 constexpr long MIN_TEXT_WRAP = 10;
 constexpr long LINE_PADDING = 1;
 
-TextRenderer::TextRenderer(const Report &report) {
+TextRenderer::TextRenderer(const Report& report) {
     _padding = TextRenderer::widest_line_number(report.file_groups(), LINE_PADDING) + 2;
     _snippet_width = static_cast<int>(_padding - 1);
     _whitespaces = std::string(_padding, ' ');
 }
 
-void TextRenderer::render(const Severity &severity, std::ostream &stream) {
+void TextRenderer::render(const Severity& severity, std::ostream& stream) {
     switch (severity) {
         case Severity::Error: {
             stream << "error";
@@ -58,8 +58,8 @@ void TextRenderer::render(const Severity &severity, std::ostream &stream) {
  *     help         │    │ Help: Visit https://github.com/Excse/pretty_diagnostics for more help.
  *     bottom     ╶─┤ ───╯
  */
-void TextRenderer::render(const Report &report, std::ostream &stream) {
-    const auto &groups = report.file_groups();
+void TextRenderer::render(const Report& report, std::ostream& stream) {
+    const auto& groups = report.file_groups();
 
     this->render(report.severity(), stream);
 
@@ -68,10 +68,10 @@ void TextRenderer::render(const Report &report, std::ostream &stream) {
     stream << ": " << report.message() << std::endl;
 
     for (auto group_it = groups.begin(); group_it != groups.end(); ++group_it) {
-        const auto &[source, labels] = *group_it;
+        const auto& [source, labels] = *group_it;
 
         if (group_it == groups.begin()) stream << _whitespaces << "╭";
-        else                            stream << _whitespaces << "├";
+        else stream << _whitespaces << "├";
 
         stream << "╴" << source->path() << "╶─" << std::endl;
 
@@ -81,14 +81,14 @@ void TextRenderer::render(const Report &report, std::ostream &stream) {
     }
 
     if (report.note().has_value()) {
-        const auto note_prefix   = _whitespaces + "│ Note: ";
+        const auto note_prefix = _whitespaces + "│ Note: ";
         const auto normal_prefix = _whitespaces + "│       ";
 
         const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
                                      - static_cast<long>(note_prefix.size());
         const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
 
-        const auto &text = report.note().value();
+        const auto& text = report.note().value();
         const auto lines = wrap_text(text, max_text_width);
         stream << note_prefix << lines[0] << std::endl;
 
@@ -98,14 +98,14 @@ void TextRenderer::render(const Report &report, std::ostream &stream) {
     }
 
     if (report.help().has_value()) {
-        const auto help_prefix   = _whitespaces + "│ Help: ";
+        const auto help_prefix = _whitespaces + "│ Help: ";
         const auto normal_prefix = _whitespaces + "│       ";
 
         const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
                                      - static_cast<long>(help_prefix.size());
         const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
 
-        const auto &text = report.help().value();
+        const auto& text = report.help().value();
         const auto lines = wrap_text(text, max_text_width);
         stream << help_prefix << lines[0] << std::endl;
 
@@ -117,10 +117,10 @@ void TextRenderer::render(const Report &report, std::ostream &stream) {
     stream << _whitespaces << "╯" << std::endl;
 }
 
-void TextRenderer::render(const FileGroup &file_group, std::ostream &stream) {
+void TextRenderer::render(const FileGroup& file_group, std::ostream& stream) {
     const auto max_line = static_cast<long>(file_group.source()->line_count());
 
-    for (const auto &label_group: file_group.line_groups() | std::views::values) {
+    for (const auto& label_group : file_group.line_groups() | std::views::values) {
         const auto line_number = label_group.line_number();
 
         const auto min_padded_line = std::max(1L, static_cast<long>(line_number) - LINE_PADDING);
@@ -138,11 +138,11 @@ void TextRenderer::render(const FileGroup &file_group, std::ostream &stream) {
     }
 }
 
-void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
-    const auto &labels = line_group.labels();
+void TextRenderer::render(const LineGroup& line_group, std::ostream& stream) {
+    const auto& labels = line_group.labels();
 
     for (auto last_it = labels.rbegin(); last_it != labels.rend(); ++last_it) {
-        const auto &label = *last_it;
+        const auto& label = *last_it;
         const auto end_column = label.span().end().column();
 
         // This equation consists of the following parts:
@@ -161,8 +161,8 @@ void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
 
             size_t current = 0;
             for (auto other_it = labels.begin(); other_it != std::prev(last_it.base()); ++other_it) {
-                const auto &other_label = *other_it;
-                const auto &finished = render(other_label, stream, text_lines, text_index, false, current);
+                const auto& other_label = *other_it;
+                const auto& finished = render(other_label, stream, text_lines, text_index, false, current);
                 current = finished + 1;
             }
 
@@ -172,13 +172,13 @@ void TextRenderer::render(const LineGroup &line_group, std::ostream &stream) {
     }
 }
 
-size_t TextRenderer::render(const Label &label, std::ostream &stream,
-                            const std::vector<std::string> &text_lines, const size_t text_index,
+size_t TextRenderer::render(const Label& label, std::ostream& stream,
+                            const std::vector<std::string>& text_lines, const size_t text_index,
                             const bool active_render, const size_t column_start) {
     const auto start_column = label.span().start().column();
     const auto end_column = label.span().end().column();
 
-    const auto &current_text = text_lines[text_index];
+    const auto& current_text = text_lines[text_index];
 
     size_t column = column_start;
     for (; column < end_column; column++) {
@@ -191,8 +191,7 @@ size_t TextRenderer::render(const Label &label, std::ostream &stream,
             if (text_index == 0) {
                 if (start_column == end_column - 1) stream << "╰─▶ ";
                 else stream << "┴─▶ ";
-            } else                                  stream << "    ";
-
+            } else stream << "    ";
 
             stream << current_text;
             break;
@@ -200,8 +199,8 @@ size_t TextRenderer::render(const Label &label, std::ostream &stream,
 
         if (column == start_column) {
             if (active_render && text_index == 0) stream << "╰";
-            else if (!active_render)              stream << "│";
-            else                                  stream << " ";
+            else if (!active_render) stream << "│";
+            else stream << " ";
         } else if (column > start_column && column < end_column) {
             if (active_render && text_index == 0) stream << "─";
             else stream << " ";
@@ -213,16 +212,16 @@ size_t TextRenderer::render(const Label &label, std::ostream &stream,
     return column;
 }
 
-size_t TextRenderer::widest_line_number(const Report::MappedFileGroups &groups, const size_t padding) {
+size_t TextRenderer::widest_line_number(const Report::MappedFileGroups& groups, const size_t padding) {
     long line = 0;
-    for (const auto &group: groups | std::views::values) {
+    for (const auto& group : groups | std::views::values) {
         const auto biggest_line = group.line_groups().rbegin()->first;
         if (biggest_line > line) line = static_cast<long>(biggest_line);
     }
     return std::to_string(line + padding).size();
 }
 
-std::vector<std::string> TextRenderer::wrap_text(const std::string &text, const size_t max_width) {
+std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const size_t max_width) {
     std::vector<std::string> lines;
     std::istringstream line_stream(text);
     std::string current_paragraph;
@@ -256,7 +255,7 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string &text, const 
                 // If the one single word is larger than the entire max width, hard-split it until it fits.
                 while (current_word.length() > max_width) {
                     // Extract exactly one line worth out of the current word.
-                    const auto &substring = current_word.substr(0, max_width);
+                    const auto& substring = current_word.substr(0, max_width);
                     lines.push_back(substring);
 
                     // Remove the added substring part from the current word.

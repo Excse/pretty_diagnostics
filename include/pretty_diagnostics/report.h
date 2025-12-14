@@ -25,11 +25,11 @@ class LineGroup {
 public:
     LineGroup(size_t line_number, std::set<Label> labels);
 
-    [[nodiscard]] auto &line_number() const { return _line_number; }
+    [[nodiscard]] auto& line_number() const { return _line_number; }
 
-    [[nodiscard]] auto &labels() const { return _labels; }
+    [[nodiscard]] auto& labels() const { return _labels; }
 
-    [[nodiscard]] auto &labels() { return _labels; }
+    [[nodiscard]] auto& labels() { return _labels; }
 
 private:
     std::set<Label> _labels;
@@ -41,13 +41,13 @@ public:
     using MappedLineGroups = std::map<size_t, LineGroup>;
 
 public:
-    FileGroup(const std::shared_ptr<Source> &source, MappedLineGroups line_groups);
+    FileGroup(const std::shared_ptr<Source>& source, MappedLineGroups line_groups);
 
-    [[nodiscard]] auto &line_groups() const { return _line_groups; }
+    [[nodiscard]] auto& line_groups() const { return _line_groups; }
 
-    [[nodiscard]] auto &line_groups() { return _line_groups; }
+    [[nodiscard]] auto& line_groups() { return _line_groups; }
 
-    [[nodiscard]] auto &source() const { return _source; }
+    [[nodiscard]] auto& source() const { return _source; }
 
 private:
     std::shared_ptr<Source> _source;
@@ -63,21 +63,21 @@ public:
     Report(std::string message, std::optional<std::string> code, Severity severity, MappedFileGroups file_groups,
            std::optional<std::string> note, std::optional<std::string> help);
 
-    void render(IReporterRenderer &renderer, std::ostream &stream = std::cout) const;
+    void render(IReporterRenderer& renderer, std::ostream& stream = std::cout) const;
 
-    [[nodiscard]] auto &file_groups() const { return _file_groups; }
+    [[nodiscard]] auto& file_groups() const { return _file_groups; }
 
-    [[nodiscard]] auto &file_groups() { return _file_groups; }
+    [[nodiscard]] auto& file_groups() { return _file_groups; }
 
-    [[nodiscard]] auto &severity() const { return _severity; }
+    [[nodiscard]] auto& severity() const { return _severity; }
 
-    [[nodiscard]] auto &message() const { return _message; }
+    [[nodiscard]] auto& message() const { return _message; }
 
-    [[nodiscard]] auto &note() const { return _note; }
+    [[nodiscard]] auto& note() const { return _note; }
 
-    [[nodiscard]] auto &help() const { return _help; }
+    [[nodiscard]] auto& help() const { return _help; }
 
-    [[nodiscard]] auto &code() const { return _code; }
+    [[nodiscard]] auto& code() const { return _code; }
 
 private:
     std::optional<std::string> _code, _note, _help;
@@ -90,28 +90,28 @@ class IReporterRenderer {
 public:
     virtual ~IReporterRenderer() = default;
 
-    virtual void render(const Severity &severity, std::ostream &stream) = 0;
+    virtual void render(const Severity& severity, std::ostream& stream) = 0;
 
-    virtual void render(const Report &report, std::ostream &stream) = 0;
+    virtual void render(const Report& report, std::ostream& stream) = 0;
 
-    virtual void render(const FileGroup &file_group, std::ostream &stream) = 0;
+    virtual void render(const FileGroup& file_group, std::ostream& stream) = 0;
 
-    virtual void render(const LineGroup &line_group, std::ostream &stream) = 0;
+    virtual void render(const LineGroup& line_group, std::ostream& stream) = 0;
 };
 
 class Report::Builder {
 public:
-    Builder &severity(Severity severity);
+    Builder& severity(Severity severity);
 
-    Builder &message(std::string message);
+    Builder& message(std::string message);
 
-    Builder &code(std::string code);
+    Builder& code(std::string code);
 
-    Builder &label(std::string text, Span span);
+    Builder& label(std::string text, Span span);
 
-    Builder &note(std::string note);
+    Builder& note(std::string note);
 
-    Builder &help(std::string help);
+    Builder& help(std::string help);
 
     [[nodiscard]] Report build() const;
 

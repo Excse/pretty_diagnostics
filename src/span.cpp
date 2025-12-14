@@ -2,8 +2,8 @@
 
 using namespace pretty_diagnostics;
 
-Span::Span(const std::shared_ptr<Source> &source, const Location &start, const Location &end)
-    : _source(source), _start(start), _end(end) {
+Span::Span(const std::shared_ptr<Source>& source, const Location& start, const Location& end) :
+    _source(source), _start(start), _end(end) {
     if (start.row() != end.row()) {
         throw std::runtime_error("Span::Span(): start and end must be on the same line");
     }
@@ -13,19 +13,17 @@ Span::Span(const std::shared_ptr<Source> &source, const Location &start, const L
     }
 }
 
-Span::Span(const std::shared_ptr<Source> &source,
+Span::Span(const std::shared_ptr<Source>& source,
            const size_t start_row, const size_t start_column,
-           const size_t end_row, const size_t end_column)
-    : Span(source, source->from_coords(start_row, start_column), source->from_coords(end_row, end_column)) {
-}
+           const size_t end_row, const size_t end_column) :
+    Span(source, source->from_coords(start_row, start_column), source->from_coords(end_row, end_column)) { }
 
-Span::Span(const std::shared_ptr<Source> &source,
+Span::Span(const std::shared_ptr<Source>& source,
            const size_t start_index,
-           const size_t end_index)
-    : Span(source, source->from_index(start_index), source->from_index(end_index)) {
-}
+           const size_t end_index) :
+    Span(source, source->from_index(start_index), source->from_index(end_index)) { }
 
-bool Span::intersects(const Span &other) const {
+bool Span::intersects(const Span& other) const {
     return _start.index() <= other._end.index() && _end.index() > other._start.index();
 }
 

@@ -8,29 +8,29 @@ class Location {
 public:
     Location(size_t row, size_t column, size_t index);
 
-    friend bool operator<(const Location &lhs, const Location &rhs) {
+    friend bool operator<(const Location& lhs, const Location& rhs) {
         return lhs._index < rhs._index;
     }
 
-    friend bool operator<=(const Location &lhs, const Location &rhs) {
+    friend bool operator<=(const Location& lhs, const Location& rhs) {
         return rhs >= lhs;
     }
 
-    friend bool operator>(const Location &lhs, const Location &rhs) {
+    friend bool operator>(const Location& lhs, const Location& rhs) {
         return rhs < lhs;
     }
 
-    friend bool operator>=(const Location &lhs, const Location &rhs) {
+    friend bool operator>=(const Location& lhs, const Location& rhs) {
         return !(lhs < rhs);
     }
 
-    friend bool operator==(const Location &lhs, const Location &rhs) {
+    friend bool operator==(const Location& lhs, const Location& rhs) {
         return lhs._row == rhs._row
                && lhs._column == rhs._column
                && lhs._index == rhs._index;
     }
 
-    friend bool operator!=(const Location &lhs, const Location &rhs) {
+    friend bool operator!=(const Location& lhs, const Location& rhs) {
         return !(lhs == rhs);
     }
 
@@ -53,9 +53,9 @@ public:
 
     [[nodiscard]] virtual Location from_index(size_t index) const = 0;
 
-    [[nodiscard]] virtual std::string substr(const Location &start, const Location &end) const = 0;
+    [[nodiscard]] virtual std::string substr(const Location& start, const Location& end) const = 0;
 
-    [[nodiscard]] virtual std::string line(const Location &location) const = 0;
+    [[nodiscard]] virtual std::string line(const Location& location) const = 0;
 
     [[nodiscard]] virtual std::string line(size_t line_number) const = 0;
 
@@ -76,9 +76,9 @@ public:
 
     [[nodiscard]] Location from_index(size_t index) const override;
 
-    [[nodiscard]] std::string substr(const Location &start, const Location &end) const override;
+    [[nodiscard]] std::string substr(const Location& start, const Location& end) const override;
 
-    [[nodiscard]] std::string line(const Location &location) const override;
+    [[nodiscard]] std::string line(const Location& location) const override;
 
     [[nodiscard]] std::string line(size_t line_number) const override;
 
@@ -90,11 +90,11 @@ public:
 
     [[nodiscard]] size_t size() const override;
 
-    friend bool operator==(const FileSource &lhs, const FileSource &rhs) {
+    friend bool operator==(const FileSource& lhs, const FileSource& rhs) {
         return lhs._path == rhs._path;
     }
 
-    friend bool operator!=(const FileSource &lhs, const FileSource &rhs) {
+    friend bool operator!=(const FileSource& lhs, const FileSource& rhs) {
         return !(lhs == rhs);
     }
 
@@ -104,11 +104,11 @@ private:
 
 } // namespace pretty_diagnostics
 
-std::ostream &operator<<(std::ostream &os, const pretty_diagnostics::Location &location);
+std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::Location& location);
 
-std::ostream &operator<<(std::ostream &os, const pretty_diagnostics::FileSource &source);
+std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::FileSource& source);
 
-std::ostream &operator<<(std::ostream &os, const pretty_diagnostics::Source &source);
+std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::Source& source);
 
 // BSD 3-Clause License
 //

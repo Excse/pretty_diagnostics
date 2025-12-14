@@ -5,14 +5,12 @@
 
 using namespace pretty_diagnostics;
 
-Location::Location(const size_t row, const size_t column, const size_t index)
-    : _row(row), _column(column), _index(index) {
-}
+Location::Location(const size_t row, const size_t column, const size_t index) :
+    _row(row), _column(column), _index(index) { }
 
-FileSource::FileSource(std::filesystem::path path)
-    : _path(std::move(path)) {
-    if (!std::filesystem::exists(_path))
-        throw std::runtime_error("FileSource::FileSource(): file does not exist: " + _path.string());
+FileSource::FileSource(std::filesystem::path path) :
+    _path(std::move(path)) {
+    if (!std::filesystem::exists(_path)) throw std::runtime_error("FileSource::FileSource(): file does not exist: " + _path.string());
 }
 
 Location FileSource::from_coords(size_t row, size_t column) const {
@@ -35,7 +33,7 @@ Location FileSource::from_coords(size_t row, size_t column) const {
 
         if (column > line_length) throw std::runtime_error("FileSource::from_coords(): invalid coordinates, column is out of line bounds");
 
-        return {row, column, index + column};
+        return { row, column, index + column };
     }
 
     throw std::runtime_error("FileSource::from_coords(): invalid coordinates, there are not enough rows present");
@@ -61,13 +59,13 @@ Location FileSource::from_index(size_t index) const {
         const auto column = index - current_index;
         if (column > line_length) throw std::runtime_error("FileSource::from_index(): invalid index, column is out of line bounds");
 
-        return {row, index - current_index, index};
+        return { row, index - current_index, index };
     }
 
     throw std::runtime_error("FileSource::from_index(): invalid index, there are not enough rows present");
 }
 
-std::string FileSource::substr(const Location &start, const Location &end) const {
+std::string FileSource::substr(const Location& start, const Location& end) const {
     std::ifstream stream(_path, std::ios::binary);
     if (!stream.is_open()) throw std::runtime_error("File::substr(): could not open file: " + _path.string());
 
@@ -82,7 +80,7 @@ std::string FileSource::substr(const Location &start, const Location &end) const
     return result;
 }
 
-std::string FileSource::line(const Location &location) const {
+std::string FileSource::line(const Location& location) const {
     return FileSource::line(location.row() + 1);
 }
 

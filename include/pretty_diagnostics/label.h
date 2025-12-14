@@ -7,25 +7,25 @@ class Label {
 public:
     Label(std::string text, Span span);
 
-    friend bool operator<(const Label &lhs, const Label &rhs) {
+    friend bool operator<(const Label& lhs, const Label& rhs) {
         return lhs._span < rhs._span;
     }
 
-    friend bool operator<=(const Label &lhs, const Label &rhs) {
+    friend bool operator<=(const Label& lhs, const Label& rhs) {
         return rhs >= lhs;
     }
 
-    friend bool operator>(const Label &lhs, const Label &rhs) {
+    friend bool operator>(const Label& lhs, const Label& rhs) {
         return rhs < lhs;
     }
 
-    friend bool operator>=(const Label &lhs, const Label &rhs) {
+    friend bool operator>=(const Label& lhs, const Label& rhs) {
         return !(lhs < rhs);
     }
 
-    [[nodiscard]] auto &text() const { return _text; }
+    [[nodiscard]] auto& text() const { return _text; }
 
-    [[nodiscard]] auto &span() const { return _span; }
+    [[nodiscard]] auto& span() const { return _span; }
 
 private:
     std::string _text;

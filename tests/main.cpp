@@ -2,7 +2,7 @@
 
 #include "utils/snapshot.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
 
     for (size_t index = 0; index < argc; ++index) {

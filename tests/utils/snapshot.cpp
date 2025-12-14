@@ -3,7 +3,7 @@
 #include <fstream>
 #include <sstream>
 
-void expect_snapshot_eq(const std::string &name, const std::filesystem::path &path, const std::string &actual) {
+void expect_snapshot_eq(const std::string& name, const std::filesystem::path& path, const std::string& actual) {
     const auto snapshot = Snapshot(name, path);
     if (UPDATE_SNAPSHOTS) {
         snapshot.save(actual);
@@ -14,7 +14,7 @@ void expect_snapshot_eq(const std::string &name, const std::filesystem::path &pa
     }
 }
 
-void Snapshot::save(const std::string &data) const {
+void Snapshot::save(const std::string& data) const {
     const auto directory = _path.parent_path();
     if (!std::filesystem::exists(directory)) {
         std::filesystem::create_directories(directory);

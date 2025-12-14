@@ -2,9 +2,8 @@
 
 using namespace pretty_diagnostics;
 
-Label::Label(std::string text, Span span)
-    : _text(std::move(text)), _span(std::move(span)) {
-}
+Label::Label(std::string text, Span span) :
+    _text(std::move(text)), _span(std::move(span)) { }
 
 // BSD 3-Clause License
 //

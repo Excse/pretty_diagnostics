@@ -16,31 +16,31 @@ TEST(Report, BuilderCorrect) {
     constexpr auto code = "E1337";
 
     const auto report = Report::Builder()
-            .severity(severity)
-            .message(message)
-            .code(code)
-            .label("And this is the function that actually makes the magic happen", {file, 37, 43})
-            .label("This is the string that is getting printed to the console", {file, 44, 60})
-            .label("Relevant include to enable the usage of printf", {file, 10, 17})
-            .label("This is a new line", {file, 1, 0, 1, 1})
-            .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
-            .note("Visit https://github.com/Excse/pretty_diagnostics for more help.")
-            .build();
+                        .severity(severity)
+                        .message(message)
+                        .code(code)
+                        .label("And this is the function that actually makes the magic happen", { file, 37, 43 })
+                        .label("This is the string that is getting printed to the console", { file, 44, 60 })
+                        .label("Relevant include to enable the usage of printf", { file, 10, 17 })
+                        .label("This is a new line", { file, 1, 0, 1, 1 })
+                        .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
+                        .note("Visit https://github.com/Excse/pretty_diagnostics for more help.")
+                        .build();
 
     ASSERT_EQ(report.severity(), severity);
     ASSERT_EQ(report.message(), message);
     ASSERT_EQ(report.code(), code);
 
     ASSERT_EQ(report.file_groups().size(), 1);
-    const auto &file_group = report.file_groups().at(file);
+    const auto& file_group = report.file_groups().at(file);
     ASSERT_EQ(file_group.source(), file);
 
     ASSERT_EQ(file_group.line_groups().size(), 3);
-    const auto &line_1_group = file_group.line_groups().at(1);
+    const auto& line_1_group = file_group.line_groups().at(1);
     ASSERT_EQ(line_1_group.labels().size(), 1);
-    const auto &line_2_group = file_group.line_groups().at(2);
+    const auto& line_2_group = file_group.line_groups().at(2);
     ASSERT_EQ(line_2_group.labels().size(), 1);
-    const auto &line_4_group = file_group.line_groups().at(4);
+    const auto& line_4_group = file_group.line_groups().at(4);
     ASSERT_EQ(line_4_group.labels().size(), 2);
 }
 
