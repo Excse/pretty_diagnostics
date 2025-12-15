@@ -1,6 +1,6 @@
 #pragma once
 
-#include "report.h"
+#include "report.hpp"
 
 namespace pretty_diagnostics {
 class TextRenderer final : public IReporterRenderer {

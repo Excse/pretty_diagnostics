@@ -12,6 +12,8 @@ option(BUILD_TESTING "Enable testing" ON)
 option(MAKE_INSTALLABLE "Make the library installable" ON)
 # Option to control static vs shared library
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+# Option to update all the snapshots
+option(UPDATE_SNAPSHOTS "Regenerate snapshot tests" OFF)
 
 ### --- CMake Modules for Installation and Fetching --- ###
 include(CMakePackageConfigHelpers) # Helper for creating config files for package managers
@@ -40,12 +42,12 @@ target_include_directories(
 
 # Define public headers
 set(PUBLIC_HEADERS
-        include/pretty_diagnostics/source.h
-        include/pretty_diagnostics/report.h
-        include/pretty_diagnostics/renderer.h
-        include/pretty_diagnostics/span.h
-        include/pretty_diagnostics/label.h
-        include/pretty_diagnostics/utils.h)
+        include/pretty_diagnostics/source.hpp
+        include/pretty_diagnostics/report.hpp
+        include/pretty_diagnostics/renderer.hpp
+        include/pretty_diagnostics/span.hpp
+        include/pretty_diagnostics/label.hpp
+        include/pretty_diagnostics/utils.hpp)
 
 # Set the properties of the resulting library
 set_target_properties(${PROJECT_NAME}

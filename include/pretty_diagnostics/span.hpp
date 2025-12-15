@@ -1,36 +1,67 @@
 #pragma once
-#include "span.h"
+
+#include "source.hpp"
 
 namespace pretty_diagnostics {
-class Label {
+class Span {
 public:
-    Label(std::string text, Span span);
+    Span(const std::shared_ptr<Source>& source, const Location& start, const Location& end);
 
-    friend bool operator<(const Label& lhs, const Label& rhs) {
-        return lhs._span < rhs._span;
+    Span(const std::shared_ptr<Source>& source,
+         size_t start_row, size_t start_column,
+         size_t end_row, size_t end_column);
+
+    Span(const std::shared_ptr<Source>& source,
+         size_t start_index,
+         size_t end_index);
+
+    friend bool operator<(const Span& lhs, const Span& rhs) {
+        return lhs._start < rhs._start;
     }
 
-    friend bool operator<=(const Label& lhs, const Label& rhs) {
+    friend bool operator<=(const Span& lhs, const Span& rhs) {
         return rhs >= lhs;
     }
 
-    friend bool operator>(const Label& lhs, const Label& rhs) {
+    friend bool operator>(const Span& lhs, const Span& rhs) {
         return rhs < lhs;
     }
 
-    friend bool operator>=(const Label& lhs, const Label& rhs) {
+    friend bool operator>=(const Span& lhs, const Span& rhs) {
         return !(lhs < rhs);
     }
 
-    [[nodiscard]] auto& text() const { return _text; }
+    friend bool operator==(const Span& lhs, const Span& rhs) {
+        return lhs._source == rhs._source
+               && lhs._start == rhs._start
+               && lhs._end == rhs._end;
+    }
 
-    [[nodiscard]] auto& span() const { return _span; }
+    friend bool operator!=(const Span& lhs, const Span& rhs) {
+        return !(lhs == rhs);
+    }
+
+    [[nodiscard]] bool intersects(const Span& other) const;
+
+    [[nodiscard]] std::string substr() const;
+
+    [[nodiscard]] size_t width() const;
+
+    [[nodiscard]] size_t line() const;
+
+    [[nodiscard]] auto& source() const { return _source; }
+
+    [[nodiscard]] auto start() const { return _start; }
+
+    [[nodiscard]] auto end() const { return _end; }
 
 private:
-    std::string _text;
-    Span _span;
+    std::shared_ptr<Source> _source;
+    Location _start, _end;
 };
 } // namespace pretty_diagnostics
+
+std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::Span& span);
 
 // BSD 3-Clause License
 //

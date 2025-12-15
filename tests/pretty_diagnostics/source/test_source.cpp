@@ -1,35 +1,35 @@
-#pragma once
-
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
 
 #include <filesystem>
-#include <string>
+#include <fstream>
 
-#define EXPECT_SNAPSHOT_EQ(name, actual) \
-    static_assert(sizeof(GTEST_STRINGIFY_(name)) > 1,                               \
-    "name must not be empty");                                                      \
-    expect_snapshot_eq(#name, std::string("snapshots/") + #name + ".snap", actual);
-inline bool UPDATE_SNAPSHOTS = false;
+#include "pretty_diagnostics/source.hpp"
 
-void expect_snapshot_eq(const std::string& name, const std::filesystem::path& path, const std::string& actual);
+#include "../../snapshot/snapshot.hpp"
 
-class Snapshot {
-public:
-    Snapshot(std::string name, std::filesystem::path path) :
-        _path(std::move(path)), _name(std::move(name)) { }
+using namespace pretty_diagnostics;
 
-    void save(const std::string& data) const;
+static const std::filesystem::path SNAPSHOTS_DIRECTORY(TEST_PATH "/pretty_diagnostics/source/snapshots/");
 
-    [[nodiscard]] std::string load() const;
+TEST(Source, FileSourceWorking) {
+    const auto snapshot_path = SNAPSHOTS_DIRECTORY / "01-source.snapshot";
+    const auto file_path = SNAPSHOTS_DIRECTORY / "01-source.c";
 
-    [[nodiscard]] auto& path() const { return _path; }
+    const auto file_name = file_path.filename().stem().string();
+    const auto file_source = std::make_shared<FileSource>(file_path);
 
-    [[nodiscard]] auto& name() const { return _name; }
+    EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, file_source->contents());
 
-private:
-    std::filesystem::path _path;
-    std::string _name;
-};
+    ASSERT_EQ(file_source->path(), file_path.string());
+    ASSERT_EQ(file_source->line_count(), 6);
+    ASSERT_EQ(file_source->size(), 78);
+    ASSERT_EQ(file_source->line(4), "    printf(\"Hello World!\\n\");");
+}
+
+TEST(Source, FileSourceFailing) {
+    const auto file_path = SNAPSHOTS_DIRECTORY / "00-none.c";
+    EXPECT_THROW((FileSource(file_path)), std::runtime_error);
+}
 
 // BSD 3-Clause License
 //

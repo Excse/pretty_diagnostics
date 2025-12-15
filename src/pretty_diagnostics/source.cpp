@@ -1,4 +1,4 @@
-#include "pretty_diagnostics/source.h"
+#include "pretty_diagnostics/source.hpp"
 
 #include <algorithm>
 #include <fstream>

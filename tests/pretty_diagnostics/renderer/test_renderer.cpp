@@ -3,11 +3,13 @@
 #include <filesystem>
 #include <fstream>
 
-#include "pretty_diagnostics/renderer.h"
+#include "pretty_diagnostics/renderer.hpp"
 
-#include "../snapshot/snapshot.h"
+#include "../../snapshot/snapshot.hpp"
 
 using namespace pretty_diagnostics;
+
+static const std::filesystem::path SNAPSHOTS_DIRECTORY(TEST_PATH "/pretty_diagnostics/renderer/snapshots/");
 
 TEST(Renderer, CorrectTextWrap) {
     const auto result = TextRenderer::wrap_text("Hello World!\nHow are you, today?", 10);
@@ -35,16 +37,20 @@ TEST(Renderer, RealExample) {
 }
 
 TEST(Renderer, SimpleTextRender) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
+    const auto snapshot_path = SNAPSHOTS_DIRECTORY / "01-renderer.snapshot";
+    const auto file_path = SNAPSHOTS_DIRECTORY / "01-renderer.c";
+
+    const auto file_name = file_path.filename().stem().string();
+    const auto file_source = std::make_shared<FileSource>(file_path);
 
     const auto report = Report::Builder()
                        .severity(Severity::Error)
                        .message("Displaying a brief summary of what happened")
                        .code("E1337")
-                       .label("And this is the function that actually makes the magic happen", { file, 37, 43 })
-                       .label("This is the string that is getting printed to the console", { file, 44, 60 })
-                       .label("Relevant include to enable the usage of printf", { file, 10, 17 })
-                       .label("This is a new line", { file, 1, 0, 1, 1 })
+                       .label("And this is the function that actually makes the magic happen", { file_source, 37, 43 })
+                       .label("This is the string that is getting printed to the console", { file_source, 44, 60 })
+                       .label("Relevant include to enable the usage of printf", { file_source, 10, 17 })
+                       .label("This is a new line", { file_source, 1, 0, 1, 1 })
                        .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
                        .help("Visit https://github.com/Excse/pretty_diagnostics for more help.")
                        .build();
@@ -53,11 +59,15 @@ TEST(Renderer, SimpleTextRender) {
     auto stream = std::ostringstream();
     report.render(renderer, stream);
 
-    EXPECT_SNAPSHOT_EQ(SimpleText, stream.str());
+    EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, stream.str());
 }
 
 TEST(Renderer, HardTextRender) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
+    const auto snapshot_path = SNAPSHOTS_DIRECTORY / "02-renderer.snapshot";
+    const auto file_path = SNAPSHOTS_DIRECTORY / "02-renderer.c";
+
+    const auto file_name = file_path.filename().stem().string();
+    const auto file_source = std::make_shared<FileSource>(file_path);
 
     static constexpr auto LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse semper hendrerit iaculis. Integer suscipit "
             "facilisis libero sed consectetur. Fusce turpis risus, elementum nec fermentum quis, ultricies a libero. Aliquam "
@@ -67,15 +77,15 @@ TEST(Renderer, HardTextRender) {
                        .severity(Severity::Error)
                        .message("Displaying a brief summary of what happened")
                        .code("E1337")
-                       .label(LOREM, { file, 37, 40 })
-                       .label(LOREM, { file, 40, 41 })
-                       .label(LOREM, { file, 41, 43 })
-                       .label(LOREM, { file, 44, 51 })
-                       .label(LOREM, { file, 51, 52 })
-                       .label(LOREM, { file, 52, 60 })
-                       .label(LOREM, { file, 10, 13 })
-                       .label(LOREM, { file, 13, 14 })
-                       .label(LOREM, { file, 14, 17 })
+                       .label(LOREM, { file_source, 37, 40 })
+                       .label(LOREM, { file_source, 40, 41 })
+                       .label(LOREM, { file_source, 41, 43 })
+                       .label(LOREM, { file_source, 44, 51 })
+                       .label(LOREM, { file_source, 51, 52 })
+                       .label(LOREM, { file_source, 52, 60 })
+                       .label(LOREM, { file_source, 10, 13 })
+                       .label(LOREM, { file_source, 13, 14 })
+                       .label(LOREM, { file_source, 14, 17 })
                        .note(LOREM)
                        .help(LOREM)
                        .build();
@@ -84,7 +94,7 @@ TEST(Renderer, HardTextRender) {
     auto stream = std::ostringstream();
     report.render(renderer, stream);
 
-    EXPECT_SNAPSHOT_EQ(HardText, stream.str());
+    EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, stream.str());
 }
 
 // BSD 3-Clause License

@@ -1,4 +1,4 @@
-#include "pretty_diagnostics/utils.h"
+#include "pretty_diagnostics/utils.hpp"
 
 using namespace pretty_diagnostics;
 

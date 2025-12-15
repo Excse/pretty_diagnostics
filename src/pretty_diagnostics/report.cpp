@@ -1,4 +1,4 @@
-#include "pretty_diagnostics/report.h"
+#include "pretty_diagnostics/report.hpp"
 
 #include <stdexcept>
 

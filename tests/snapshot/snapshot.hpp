@@ -1,50 +1,32 @@
-#include "gtest/gtest.h"
+#pragma once
 
-#include "pretty_diagnostics/span.h"
+#include <gtest/gtest.h>
 
-using namespace pretty_diagnostics;
+#include <filesystem>
+#include <string>
 
-TEST(Span, FirstLabel) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 0, 18);
+#define EXPECT_SNAPSHOT_EQ(name, path, actual) \
+    expect_snapshot_eq(name, path, actual);
 
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), Location(0, 0, 0));
-    ASSERT_EQ(span.end(), Location(0, 18, 18));
-    ASSERT_EQ(span.width(), 18);
-    ASSERT_EQ(span.line(), 1);
-    ASSERT_EQ(span.substr(), "#include <stdio.h>");
-}
+void expect_snapshot_eq(const std::string& name, const std::filesystem::path& path, const std::string& actual);
 
-TEST(Span, SecondLabel) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 37, 43);
+class Snapshot {
+public:
+    Snapshot(std::string name, std::filesystem::path path) :
+        _path(std::move(path)), _name(std::move(name)) { }
 
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), Location(3, 4, 37));
-    ASSERT_EQ(span.end(), Location(3, 10, 43));
-    ASSERT_EQ(span.width(), 6);
-    ASSERT_EQ(span.line(), 4);
-    ASSERT_EQ(span.substr(), "printf");
-}
+    void save(const std::string& data) const;
 
-TEST(Span, ThirdLabel) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
-    const auto span = Span(file, 44, 60);
+    [[nodiscard]] std::string load() const;
 
-    ASSERT_EQ(span.source(), file);
-    ASSERT_EQ(span.start(), Location(3, 11, 44));
-    ASSERT_EQ(span.end(), Location(3, 27, 60));
-    ASSERT_EQ(span.width(), 16);
-    ASSERT_EQ(span.line(), 4);
-    ASSERT_EQ(span.substr(), "\"Hello World!\\n\"");
-}
+    [[nodiscard]] auto& path() const { return _path; }
 
-TEST(Span, InvalidRange) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
+    [[nodiscard]] auto& name() const { return _name; }
 
-    ASSERT_THROW(Span(file, 16, 0), std::runtime_error);
-}
+private:
+    std::filesystem::path _path;
+    std::string _name;
+};
 
 // BSD 3-Clause License
 //

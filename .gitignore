@@ -92,10 +92,6 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
-build/
-# Exception: Allow snapshot files for testing
-!build/tests/snapshots/
-!build/tests/snapshots/*.snap
 
 ### CMake Patch ###
 # External projects

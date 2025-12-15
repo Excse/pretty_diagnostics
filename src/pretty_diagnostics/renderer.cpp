@@ -1,4 +1,4 @@
-#include "pretty_diagnostics/renderer.h"
+#include "pretty_diagnostics/renderer.hpp"
 
 #include <unordered_map>
 #include <ranges>

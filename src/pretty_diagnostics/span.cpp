@@ -1,6 +1,6 @@
-#include "pretty_diagnostics/span.h"
+#include "pretty_diagnostics/span.hpp"
 
-#include "pretty_diagnostics/utils.h"
+#include "pretty_diagnostics/utils.hpp"
 
 using namespace pretty_diagnostics;
 

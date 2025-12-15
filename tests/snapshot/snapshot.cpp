@@ -1,17 +1,19 @@
-#include "snapshot.h"
+#include "snapshot.hpp"
 
 #include <fstream>
 #include <sstream>
 
 void expect_snapshot_eq(const std::string& name, const std::filesystem::path& path, const std::string& actual) {
     const auto snapshot = Snapshot(name, path);
-    if (UPDATE_SNAPSHOTS) {
-        snapshot.save(actual);
-        SUCCEED() << "Snapshot updated: " << snapshot.path();
-    } else {
-        const auto expected = snapshot.load();
-        EXPECT_EQ(expected, actual) << "Snapshot mismatch: " << snapshot.path();
-    }
+
+#ifdef UPDATE_SNAPSHOTS
+    snapshot.save(actual);
+    SUCCEED() << "Snapshot \"" << snapshot.name() << "\" updated: " << snapshot.path();
+#else
+    const auto expected = snapshot.load();
+    EXPECT_EQ(expected, actual) << "Snapshot \"" << snapshot.name() << "\" mismatch: " << snapshot.path();
+    SUCCEED() << "Snapshot \"" << snapshot.name() << "\" matched: " << snapshot.path();
+#endif
 }
 
 void Snapshot::save(const std::string& data) const {

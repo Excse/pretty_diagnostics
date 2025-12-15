@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-#include "label.h"
+#include "label.hpp"
 
 namespace pretty_diagnostics {
 class IReporterRenderer;

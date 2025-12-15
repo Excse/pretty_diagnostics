@@ -1,4 +1,4 @@
-#include "pretty_diagnostics/label.h"
+#include "pretty_diagnostics/label.hpp"
 
 using namespace pretty_diagnostics;
 

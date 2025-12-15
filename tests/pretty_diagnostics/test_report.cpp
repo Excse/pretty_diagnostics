@@ -3,13 +3,16 @@
 #include <filesystem>
 #include <fstream>
 
-#include "pretty_diagnostics/report.h"
-#include "pretty_diagnostics/source.h"
+#include "pretty_diagnostics/report.hpp"
+#include "pretty_diagnostics/source.hpp"
 
 using namespace pretty_diagnostics;
 
+static const std::filesystem::path RESOURCES_DIRECTORY(TEST_PATH "/resources/");
+
 TEST(Report, BuilderCorrect) {
-    const auto file = std::make_shared<FileSource>("resources/main.c");
+    const auto file_path = RESOURCES_DIRECTORY / "01-main.c";
+    const auto file_source = std::make_shared<FileSource>(file_path);
 
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";
@@ -19,10 +22,10 @@ TEST(Report, BuilderCorrect) {
                        .severity(severity)
                        .message(message)
                        .code(code)
-                       .label("And this is the function that actually makes the magic happen", { file, 37, 43 })
-                       .label("This is the string that is getting printed to the console", { file, 44, 60 })
-                       .label("Relevant include to enable the usage of printf", { file, 10, 17 })
-                       .label("This is a new line", { file, 1, 0, 1, 1 })
+                       .label("And this is the function that actually makes the magic happen", { file_source, 37, 43 })
+                       .label("This is the string that is getting printed to the console", { file_source, 44, 60 })
+                       .label("Relevant include to enable the usage of printf", { file_source, 10, 17 })
+                       .label("This is a new line", { file_source, 1, 0, 1, 1 })
                        .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
                        .note("Visit https://github.com/Excse/pretty_diagnostics for more help.")
                        .build();
@@ -32,8 +35,8 @@ TEST(Report, BuilderCorrect) {
     ASSERT_EQ(report.code(), code);
 
     ASSERT_EQ(report.file_groups().size(), 1);
-    const auto& file_group = report.file_groups().at(file);
-    ASSERT_EQ(file_group.source(), file);
+    const auto& file_group = report.file_groups().at(file_source);
+    ASSERT_EQ(file_group.source(), file_source);
 
     ASSERT_EQ(file_group.line_groups().size(), 3);
     const auto& line_1_group = file_group.line_groups().at(1);
