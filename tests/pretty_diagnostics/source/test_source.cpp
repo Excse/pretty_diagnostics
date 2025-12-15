@@ -9,7 +9,7 @@
 
 using namespace pretty_diagnostics;
 
-static const std::filesystem::path SNAPSHOTS_DIRECTORY(TEST_PATH "/pretty_diagnostics/source/snapshots/");
+static const auto SNAPSHOTS_DIRECTORY = std::filesystem::path(TEST_PATH) / "pretty_diagnostics" / "source" / "snapshots";
 
 TEST(Source, FileSourceWorking) {
     const auto snapshot_path = SNAPSHOTS_DIRECTORY / "01-source.snapshot";

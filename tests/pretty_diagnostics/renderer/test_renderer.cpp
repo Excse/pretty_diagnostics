@@ -9,7 +9,7 @@
 
 using namespace pretty_diagnostics;
 
-static const std::filesystem::path SNAPSHOTS_DIRECTORY(TEST_PATH "/pretty_diagnostics/renderer/snapshots/");
+static const auto SNAPSHOTS_DIRECTORY = std::filesystem::path(TEST_PATH) / "pretty_diagnostics" / "renderer" / "snapshots";
 
 TEST(Renderer, CorrectTextWrap) {
     const auto result = TextRenderer::wrap_text("Hello World!\nHow are you, today?", 10);

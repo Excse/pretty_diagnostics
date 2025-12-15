@@ -8,7 +8,7 @@
 
 using namespace pretty_diagnostics;
 
-static const std::filesystem::path RESOURCES_DIRECTORY(TEST_PATH "/resources/");
+static const auto RESOURCES_DIRECTORY = std::filesystem::path(TEST_PATH) / "resources";
 
 TEST(Report, BuilderCorrect) {
     const auto file_path = RESOURCES_DIRECTORY / "01-main.c";
