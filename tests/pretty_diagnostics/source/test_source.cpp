@@ -17,10 +17,11 @@ TEST(Source, FileSourceWorking) {
 
     const auto file_name = file_path.filename().stem().string();
     const auto file_source = std::make_shared<FileSource>(file_path);
+    file_source->set_working_path(TEST_PATH);
 
     EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, file_source->contents());
 
-    ASSERT_EQ(file_source->path(), file_path.string());
+    ASSERT_EQ(file_source->path(), std::filesystem::relative(file_path, TEST_PATH));
     ASSERT_EQ(file_source->line_count(), 6);
     ASSERT_EQ(file_source->size(), 78);
     ASSERT_EQ(file_source->line(4), "    printf(\"Hello World!\\n\");");

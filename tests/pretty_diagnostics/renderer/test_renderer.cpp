@@ -42,6 +42,7 @@ TEST(Renderer, SimpleTextRender) {
 
     const auto file_name = file_path.filename().stem().string();
     const auto file_source = std::make_shared<FileSource>(file_path);
+    file_source->set_working_path(TEST_PATH);
 
     const auto report = Report::Builder()
                        .severity(Severity::Error)
@@ -68,6 +69,7 @@ TEST(Renderer, HardTextRender) {
 
     const auto file_name = file_path.filename().stem().string();
     const auto file_source = std::make_shared<FileSource>(file_path);
+    file_source->set_working_path(TEST_PATH);
 
     static constexpr auto LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse semper hendrerit iaculis. Integer suscipit "
             "facilisis libero sed consectetur. Fusce turpis risus, elementum nec fermentum quis, ultricies a libero. Aliquam "

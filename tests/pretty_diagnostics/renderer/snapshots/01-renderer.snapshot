@@ -1,5 +1,5 @@
 error[E1337]: Displaying a brief summary of what happened
-   ╭╴/home/timo/development/pretty_diagnostics/tests/pretty_diagnostics/renderer/snapshots/01-renderer.c╶─
+   ╭╴pretty_diagnostics/renderer/snapshots/01-renderer.c╶─
    ·
  1 │ #include <stdio.h>
    ·           ╰─────┴─▶ Relevant include to enable the usage of printf

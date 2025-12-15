@@ -9,6 +9,7 @@ static const auto RESOURCES_DIRECTORY = std::filesystem::path(TEST_PATH) / "reso
 TEST(Span, FirstLabel) {
     const auto file_path = RESOURCES_DIRECTORY / "01-main.c";
     const auto file_source = std::make_shared<FileSource>(file_path);
+    file_source->set_working_path(TEST_PATH);
 
     const auto span = Span(file_source, 0, 18);
     ASSERT_EQ(span.source(), file_source);
@@ -22,6 +23,7 @@ TEST(Span, FirstLabel) {
 TEST(Span, SecondLabel) {
     const auto file_path = RESOURCES_DIRECTORY / "01-main.c";
     const auto file_source = std::make_shared<FileSource>(file_path);
+    file_source->set_working_path(TEST_PATH);
 
     const auto span = Span(file_source, 37, 43);
     ASSERT_EQ(span.source(), file_source);
@@ -35,6 +37,7 @@ TEST(Span, SecondLabel) {
 TEST(Span, ThirdLabel) {
     const auto file_path = RESOURCES_DIRECTORY / "01-main.c";
     const auto file_source = std::make_shared<FileSource>(file_path);
+    file_source->set_working_path(TEST_PATH);
 
     const auto span = Span(file_source, 44, 60);
     ASSERT_EQ(span.source(), file_source);
@@ -48,6 +51,7 @@ TEST(Span, ThirdLabel) {
 TEST(Span, InvalidRange) {
     const auto file_path = RESOURCES_DIRECTORY / "01-main.c";
     const auto file_source = std::make_shared<FileSource>(file_path);
+    file_source->set_working_path(TEST_PATH);
 
     ASSERT_THROW(Span(file_source, 16, 0), std::runtime_error);
 }
