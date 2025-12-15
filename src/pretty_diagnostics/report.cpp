@@ -43,6 +43,10 @@ Report::Builder& Report::Builder::label(std::string text, Span span) {
     for (const auto& label : line_group.labels()) {
         if (!label.span().intersects(span)) continue;
 
+        if (label.span().start().row() != label.span().end().row()) {
+            throw std::runtime_error("Report::Builder::label(): currently multi-row spans are not supported");
+        }
+
         throw std::runtime_error("Report::Builder::label(): there is an intersection with a different label");
     }
 

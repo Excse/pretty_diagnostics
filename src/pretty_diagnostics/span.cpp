@@ -6,10 +6,6 @@ using namespace pretty_diagnostics;
 
 Span::Span(const std::shared_ptr<Source>& source, const Location& start, const Location& end) :
     _source(source), _start(start), _end(end) {
-    if (start.row() != end.row()) {
-        throw std::runtime_error("Span::Span(): start and end must be on the same line");
-    }
-
     if (start.index() > end.index()) {
         throw std::runtime_error("Span::Span(): start location must be smaller than the end location");
     }

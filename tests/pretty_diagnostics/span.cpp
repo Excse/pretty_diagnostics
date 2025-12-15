@@ -44,7 +44,6 @@ TEST(Span, InvalidRange) {
     const auto file = std::make_shared<FileSource>("resources/main.c");
 
     ASSERT_THROW(Span(file, 16, 0), std::runtime_error);
-    ASSERT_THROW(Span(file, 0, 80), std::runtime_error);
 }
 
 // BSD 3-Clause License
