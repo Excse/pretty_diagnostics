@@ -63,9 +63,10 @@ auto stream = std::ostringstream();
 report.render(renderer, stream);
 ```
 
-The output looks like:</br>
+The output looks like:
+
 ![Image of this example](resources/example.png)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
