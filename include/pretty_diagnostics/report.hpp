@@ -3,7 +3,6 @@
 #include <unordered_map>
 #include <optional>
 #include <iostream>
-#include <vector>
 #include <string>
 #include <map>
 #include <set>
@@ -13,21 +12,48 @@
 namespace pretty_diagnostics {
 class IReporterRenderer;
 
+/**
+ * @brief Indicates the importance of a diagnostic
+ */
 enum class Severity {
-    Error,
-    Warning,
-    Info,
-    Unknown,
+    Error,   ///< Serious problem that usually prevents progress
+    Warning, ///< Suspicious or suboptimal situation
+    Info,    ///< Informational message
+    Unknown, ///< Unspecified or not set
 };
 
+/**
+ * @brief A set of labels that belong to the same 1-based line number
+ */
 class LineGroup {
 public:
+    /**
+     * @brief Constructs a group for a single line and its labels
+     *
+     * @param line_number 1-based line number
+     * @param labels Labels associated with this line
+     */
     LineGroup(size_t line_number, std::set<Label> labels);
 
+    /**
+     * @brief Returns the 1-based line number
+     *
+     * @return 1-based line number of this group
+     */
     [[nodiscard]] auto& line_number() const { return _line_number; }
 
+    /**
+     * @brief Returns the set of labels for this line
+     *
+     * @return Const reference to labels
+     */
     [[nodiscard]] auto& labels() const { return _labels; }
 
+    /**
+     * @brief Returns the set of labels for this line
+     *
+     * @return Reference to labels
+     */
     [[nodiscard]] auto& labels() { return _labels; }
 
 private:
@@ -35,17 +61,41 @@ private:
     size_t _line_number;
 };
 
+/**
+ * @brief Groups `LineGroup`s belonging to the same `Source`
+ */
 class FileGroup {
 public:
     using MappedLineGroups = std::map<size_t, LineGroup>;
 
 public:
+    /**
+     * @brief Constructs a group for a source file with its line groups
+     *
+     * @param source Backing source for the group
+     * @param line_groups Mapping from line number to line groups
+     */
     FileGroup(const std::shared_ptr<Source>& source, MappedLineGroups line_groups);
 
+    /**
+     * @brief Returns the map of line groups
+     *
+     * @return Reference to mapped line groups
+     */
     [[nodiscard]] auto& line_groups() const { return _line_groups; }
 
+    /**
+     * @brief Returns the map of line groups
+     *
+     * @return Reference to mapped line groups
+     */
     [[nodiscard]] auto& line_groups() { return _line_groups; }
 
+    /**
+     * @brief Returns the source this file group refers to
+     *
+     * @return Shared pointer to the backing source
+     */
     [[nodiscard]] auto& source() const { return _source; }
 
 private:
@@ -53,29 +103,83 @@ private:
     MappedLineGroups _line_groups;
 };
 
+/**
+ * @brief Represents a fully constructed diagnostic report to be rendered
+ */
 class Report {
 public:
     using MappedFileGroups = std::unordered_map<std::shared_ptr<Source>, FileGroup>;
     class Builder;
 
 public:
+    /**
+     * @brief Constructs a report
+     *
+     * @param message Primary diagnostic message
+     * @param code Optional error code or identifier
+     * @param severity Diagnostic severity
+     * @param file_groups Mapping from sources to their file group
+     * @param note Optional note for additional context
+     * @param help Optional help text with suggestions
+     */
     Report(std::string message, std::optional<std::string> code, Severity severity, MappedFileGroups file_groups,
            std::optional<std::string> note, std::optional<std::string> help);
 
+    /**
+     * @brief Renders the report using the provided renderer to the output stream
+     *
+     * @param renderer Renderer implementation
+     * @param stream Output stream to write to (defaults to std::cout)
+     */
     void render(IReporterRenderer& renderer, std::ostream& stream = std::cout) const;
 
+    /**
+     * @brief Returns the mapping of sources to file groups
+     *
+     * @return Reference to mapped file groups
+     */
     [[nodiscard]] auto& file_groups() const { return _file_groups; }
 
+    /**
+     * @brief Returns the mapping of sources to file groups
+     *
+     * @return Reference to mapped file groups
+     */
     [[nodiscard]] auto& file_groups() { return _file_groups; }
 
+    /**
+     * @brief Returns the severity of this report
+     *
+     * @return Report severity
+     */
     [[nodiscard]] auto& severity() const { return _severity; }
 
+    /**
+     * @brief Returns the primary diagnostic message
+     *
+     * @return Message string
+     */
     [[nodiscard]] auto& message() const { return _message; }
 
+    /**
+     * @brief Returns an optional note with additional context
+     *
+     * @return Optional note string
+     */
     [[nodiscard]] auto& note() const { return _note; }
 
+    /**
+     * @brief Returns optional help text with suggestions
+     *
+     * @return Optional help string
+     */
     [[nodiscard]] auto& help() const { return _help; }
 
+    /**
+     * @brief Returns an optional error code or identifier
+     *
+     * @return Optional code string
+     */
     [[nodiscard]] auto& code() const { return _code; }
 
 private:
@@ -85,33 +189,112 @@ private:
     Severity _severity;
 };
 
+/**
+ * @brief Interface implemented by renderers that turn reports into output (e.g., text)
+ */
 class IReporterRenderer {
 public:
     virtual ~IReporterRenderer() = default;
 
+    /**
+     * @brief Renders just the severity label (e.g. "error", "warning")
+     *
+     * @param severity Severity to render
+     * @param stream Output stream to write to
+     */
     virtual void render(const Severity& severity, std::ostream& stream) = 0;
 
+    /**
+     * @brief Renders an entire report
+     *
+     * @param report Report to be rendered
+     * @param stream Output stream to write to
+     */
     virtual void render(const Report& report, std::ostream& stream) = 0;
 
+    /**
+     * @brief Renders a single file group
+     *
+     * @param file_group File group to render
+     * @param stream Output stream to write to
+     */
     virtual void render(const FileGroup& file_group, std::ostream& stream) = 0;
 
+    /**
+     * @brief Renders a single line group
+     *
+     * @param line_group Line group to render
+     * @param stream Output stream to write to
+     */
     virtual void render(const LineGroup& line_group, std::ostream& stream) = 0;
 };
 
+/**
+ * @brief Fluent builder for constructing `Report` instances
+ */
 class Report::Builder {
 public:
+    /**
+     * @brief Sets report severity
+     *
+     * @param severity Severity to set
+     *
+     * @return Reference to this builder
+     */
     Builder& severity(Severity severity);
 
+    /**
+     * @brief Sets the main diagnostic message
+     *
+     * @param message Diagnostic message text
+     *
+     * @return Reference to this builder
+     */
     Builder& message(std::string message);
 
+    /**
+     * @brief Sets an optional error code or identifier
+     *
+     * @param code Error code or identifier
+     *
+     * @return Reference to this builder
+     */
     Builder& code(std::string code);
 
+    /**
+     * @brief Adds a label to the report
+     *
+     * @param text Label message
+     * @param span Source span the label refers to
+     *
+     * @return Reference to this builder
+     */
     Builder& label(std::string text, Span span);
 
+    /**
+     * @brief Sets an optional note
+     *
+     * @param note Note text
+     *
+     * @return Reference to this builder
+     */
     Builder& note(std::string note);
 
+    /**
+     * @brief Sets optional help text
+     *
+     * @param help Help text
+     *
+     * @return Reference to this builder
+     */
     Builder& help(std::string help);
 
+    /**
+     * @brief Builds a complete `Report`
+     *
+     * @return The constructed report
+     * @throws std::exception If required fields are missing
+     */
     [[nodiscard]] Report build() const;
 
 private:

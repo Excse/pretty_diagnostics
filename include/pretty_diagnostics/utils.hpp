@@ -6,6 +6,14 @@
 
 namespace pretty_diagnostics {
 
+/**
+ * @brief Escapes control characters and quotes in a string for safe display
+ *        For example, converts newlines to "\\n" and tabs to "\\t"
+ *
+ * @param str Input string view to escape
+ *
+ * @return A newly allocated escaped string suitable for diagnostics output
+ */
 std::string escape_string(std::string_view str);
 
 } // namespace pretty_diagnostics
