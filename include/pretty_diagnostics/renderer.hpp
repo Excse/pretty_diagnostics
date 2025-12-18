@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "report.hpp"
 
 namespace pretty_diagnostics {

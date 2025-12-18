@@ -7,7 +7,7 @@
 namespace pretty_diagnostics {
 
 /**
- * @brief Escapes control characters and quotes in a string for safe display
+ * @brief Escapes control characters and quotes in a string for safe display.
  *        For example, converts newlines to "\\n" and tabs to "\\t"
  *
  * @param str Input string view to escape
