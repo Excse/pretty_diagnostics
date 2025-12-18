@@ -1,6 +1,8 @@
 # Pretty Diagnostics
 
-Pretty Diagnostics is a library designed to produce elegant and informative error messages, with labeled references to code segments across multiple files, similar to the error output in Rust. It is particularly useful for compilers, interpreters, and any program that needs to provide meaningful error messages based on text files. The goal is to make error diagnostics as user-friendly and descriptive as possible, helping users quickly identify and resolve issues in their code.
+Pretty Diagnostics is a small C++ library for rendering elegant, informative diagnostics with labeled spans across one or 
+multiple files similar to the output you get from Rust compilers. It is useful for compilers, interpreters, code analyzers,
+and any tool that needs to point to precise locations in text sources and explain what went wrong.
 
 ![State](https://img.shields.io/github/actions/workflow/status/Excse/pretty_diagnostics/cmake-single-platform.yml?style=flat&label=Build%2FTest)
 ![Last Commit](https://img.shields.io/github/last-commit/Excse/pretty_diagnostics?style=flat&label=Last%20Commit)
@@ -9,64 +11,119 @@ Pretty Diagnostics is a library designed to produce elegant and informative erro
 ![License](https://img.shields.io/github/license/Excse/pretty_diagnostics?style=flat&label=License)
 ![Stars](https://img.shields.io/github/stars/Excse/pretty_diagnostics)
 
+## Table of Contents
+
+- [Features](#features)
+- [Demo](#demo)
+- [Requirements](#requirements)
+- [Installation](#installation)
+  - [Option A: Install to your system](#option-a-install-to-your-system)
+  - [Option B: FetchContent (vendored)](#option-b-fetchcontent-vendored)
+- [CMake Integration](#cmake-integration)
+- [Example Usage](#example-usage)
+- [License](#license)
+
 ## Features
 
-- Generate structured, labeled error messages.
-- Highlight code segments across multiple files.
-- Enhance the debugging experience for developers.
-- Focused on compilers, interpreters, and other text file-based error reporting systems.
+- Labeled diagnostics with precise spans
+- Grouping by file and line with clean text layout
+- Output similar to modern compilers (multi-line, guides/arrows)
+- Works with multiple sources/files in a single report
+
+## Demo
+
+The text renderer produces output like this:
+
+![Rendered example](resources/example.png)
+
+## Requirements
+
+- C++20-compatible compiler
+- CMake 4.2+ (for the provided configuration)
+- Tested on Linux; expected to work on macOS and Windows as well
 
 ## Installation
 
-Download the project or use git to clone it:
+Clone the repository:
+
 ```sh
-$ git clone https://github.com/Excse/pretty_diagnostics.git
+git clone https://github.com/Excse/pretty_diagnostics.git
+cd pretty_diagnostics
 ```
 
-Navigate to the directory where the project is located and execute these commands:
+### Option A: Install to your system
+
 ```sh
-$ cmake -S . -B own_build Release -DCMAKE_BUILD_TYPE=Release \
-                                  -DBUILD_TESTING=OFF        \
-                                  -DBUILD_EXECUTABLE=OFF     \
-                                  -DMAKE_INSTALLABLE=ON      \
-                                  -DBUILD_SHARED_LIBS=OFF
-$ cmake --build own_build --config Release
-$ sudo cmake --install own_build --config Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+                    -DBUILD_TESTING=OFF        \
+                    -DBUILD_EXECUTABLE=OFF     \
+                    -DMAKE_INSTALLABLE=ON      \
+                    -DBUILD_SHARED_LIBS=OFF
+cmake --build build --config Release
+sudo cmake --install build --config Release
 ```
 
-When you are finished, you are ready to use the library. If you want to use it in a
-cmake project, use the following code to implement it.
+### Option B: FetchContent (vendored)
 
-and in CMakeLists.txt:
+Add the library as a dependency without installing it globally:
+
 ```cmake
-find_package(pretty_diagnostics CONFIG REQUIRED)
+include(FetchContent)
 
-target_link_libraries(!!PROJECT_NAME!! PRIVATE pretty_diagnostics::pretty_diagnostics)
+FetchContent_Declare(
+  pretty_diagnostics
+  GIT_REPOSITORY https://github.com/Excse/pretty_diagnostics.git
+  GIT_TAG        main
+)
+
+FetchContent_MakeAvailable(pretty_diagnostics)
+```
+
+## CMake Integration
+
+After installing or making it available via `FetchContent`, link the target to your project:
+
+```cmake
+find_package(pretty_diagnostics CONFIG REQUIRED) # not needed when using FetchContent with exported targets in the same build
+
+target_link_libraries(YourTarget PRIVATE pretty_diagnostics::pretty_diagnostics)
 ```
 
 ## Example Usage
 
 ```cpp
-const auto file = std::make_shared<FileSource>("resources/main.c");
+#include <sstream>
+#include <memory>
 
-const auto report = Report::Builder()
-        .severity(Severity::Error)
-        .message("Displaying a brief summary of what happened")
-        .code("E1337")
-        .label("And this is the function that actually makes the magic happen", {file, 37, 43})
-        .label("This is the string that is getting printed to the console", {file, 44, 60})
-        .label("Relevant include to enable the usage of printf", {file, 10, 17})
-        .build();
+#include "pretty_diagnostics/report.hpp"
+#include "pretty_diagnostics/source.hpp"
 
-auto renderer = TextRenderer(report);
-auto stream = std::ostringstream();
-report.render(renderer, stream);
+using namespace pretty_diagnostics;
+
+int main() {
+    auto file = std::make_shared<FileSource>("resources/main.c");
+
+    const auto report = Report::Builder()
+                       .severity(Severity::Error)
+                       .message("Displaying a brief summary of what happened")
+                       .code("E1337")
+                       .label("And this is the function that actually makes the magic happen", { file_source, 37, 43 })
+                       .label("This is the string that is getting printed to the console", { file_source, 44, 60 })
+                       .label("Relevant include to enable the usage of printf", { file_source, 10, 17 })
+                       .label("This is a new line", { file_source, 1, 0, 1, 1 })
+                       .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
+                       .note("Visit https://github.com/Excse/pretty_diagnostics for more help.")
+                       .build();
+
+    auto renderer = TextRenderer(report);
+    auto stream = std::ostringstream();
+    report.render(renderer, stream);
+    
+    // print or log the result
+    std::cout << stream.str();
+}
 ```
-
-The output looks like:
-
-![Image of this example](resources/example.png)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
+This project is licensed under the MIT License, see the [LICENSE](LICENSE.txt) file for details.
