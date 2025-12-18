@@ -4,7 +4,10 @@ error[E1337]: Displaying a brief summary of what happened
  1 │ #include <stdio.h>
    ·           ╰─────┴─▶ Relevant include to enable the usage of printf
  2 │ 
-   ·
+   · 
+ 1 │ #include <stdio.h>
+ 2 │ 
+   · ╰─▶ This is a new line
  3 │ int main() {
    · 
  3 │ int main() {

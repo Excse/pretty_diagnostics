@@ -153,21 +153,21 @@ public:
      *
      * @return Shared pointer to the backing source
      */
-    [[nodiscard]] auto& source() const { return _source; }
+    [[nodiscard]] const std::shared_ptr<Source>& source() const { return _source; }
 
     /**
      * @brief Returns the starting location of the span
      *
      * @return Start location (inclusive)
      */
-    [[nodiscard]] auto start() const { return _start; }
+    [[nodiscard]] Location start() const { return _start; }
 
     /**
      * @brief Returns the end location of the span
      *
      * @return End location (exclusive)
      */
-    [[nodiscard]] auto end() const { return _end; }
+    [[nodiscard]] Location end() const { return _end; }
 
 private:
     std::shared_ptr<Source> _source;

@@ -40,21 +40,21 @@ public:
      *
      * @return 1-based line number of this group
      */
-    [[nodiscard]] auto& line_number() const { return _line_number; }
+    [[nodiscard]] size_t line_number() const { return _line_number; }
 
     /**
      * @brief Returns the set of labels for this line
      *
      * @return Const reference to labels
      */
-    [[nodiscard]] auto& labels() const { return _labels; }
+    [[nodiscard]] const std::set<Label>& labels() const { return _labels; }
 
     /**
      * @brief Returns the set of labels for this line
      *
      * @return Reference to labels
      */
-    [[nodiscard]] auto& labels() { return _labels; }
+    [[nodiscard]] std::set<Label>& labels() { return _labels; }
 
 private:
     std::set<Label> _labels;
@@ -82,21 +82,21 @@ public:
      *
      * @return Reference to mapped line groups
      */
-    [[nodiscard]] auto& line_groups() const { return _line_groups; }
+    [[nodiscard]] const MappedLineGroups& line_groups() const { return _line_groups; }
 
     /**
      * @brief Returns the map of line groups
      *
      * @return Reference to mapped line groups
      */
-    [[nodiscard]] auto& line_groups() { return _line_groups; }
+    [[nodiscard]] MappedLineGroups& line_groups() { return _line_groups; }
 
     /**
      * @brief Returns the source this file group refers to
      *
      * @return Shared pointer to the backing source
      */
-    [[nodiscard]] auto& source() const { return _source; }
+    [[nodiscard]] const std::shared_ptr<Source>& source() const { return _source; }
 
 private:
     std::shared_ptr<Source> _source;
@@ -138,49 +138,49 @@ public:
      *
      * @return Reference to mapped file groups
      */
-    [[nodiscard]] auto& file_groups() const { return _file_groups; }
+    [[nodiscard]] const MappedFileGroups& file_groups() const { return _file_groups; }
 
     /**
      * @brief Returns the mapping of sources to file groups
      *
      * @return Reference to mapped file groups
      */
-    [[nodiscard]] auto& file_groups() { return _file_groups; }
+    [[nodiscard]] MappedFileGroups& file_groups() { return _file_groups; }
 
     /**
      * @brief Returns the severity of this report
      *
      * @return Report severity
      */
-    [[nodiscard]] auto& severity() const { return _severity; }
+    [[nodiscard]] Severity severity() const { return _severity; }
 
     /**
      * @brief Returns the primary diagnostic message
      *
      * @return Message string
      */
-    [[nodiscard]] auto& message() const { return _message; }
+    [[nodiscard]] const std::string& message() const { return _message; }
 
     /**
      * @brief Returns an optional note with additional context
      *
      * @return Optional note string
      */
-    [[nodiscard]] auto& note() const { return _note; }
+    [[nodiscard]] const std::optional<std::string>& note() const { return _note; }
 
     /**
      * @brief Returns optional help text with suggestions
      *
      * @return Optional help string
      */
-    [[nodiscard]] auto& help() const { return _help; }
+    [[nodiscard]] const std::optional<std::string>& help() const { return _help; }
 
     /**
      * @brief Returns an optional error code or identifier
      *
      * @return Optional code string
      */
-    [[nodiscard]] auto& code() const { return _code; }
+    [[nodiscard]] const std::optional<std::string>& code() const { return _code; }
 
 private:
     std::optional<std::string> _code, _note, _help;

@@ -72,14 +72,14 @@ public:
      *
      * @return Human-readable message associated with this label
      */
-    [[nodiscard]] auto& text() const { return _text; }
+    [[nodiscard]] const std::string& text() const { return _text; }
 
     /**
      * @brief Returns the span associated with this label
      *
      * @return Span this label highlights
      */
-    [[nodiscard]] auto& span() const { return _span; }
+    [[nodiscard]] const Span& span() const { return _span; }
 
 private:
     std::string _text;
