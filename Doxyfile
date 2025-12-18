@@ -54,7 +54,7 @@ PROJECT_NUMBER         =
 # for a project that appears at the top of each page and should give viewers a
 # quick idea about the purpose of the project. Keep the description short.
 
-PROJECT_BRIEF          = "Modern Doxygen theme"
+PROJECT_BRIEF          = "Create your own pretty diagnostics"
 
 # With the PROJECT_LOGO tag one can specify a logo or an icon that is included
 # in the documentation. The maximum height of the logo should not exceed 55
@@ -1457,7 +1457,9 @@ HTML_EXTRA_STYLESHEET  = docs/doxygen-awesome-css/doxygen-awesome.css \
 
 HTML_EXTRA_FILES       = docs/doxygen-awesome-css/doxygen-awesome-darkmode-toggle.js \
                          docs/doxygen-awesome-css/doxygen-awesome-fragment-copy-button.js \
-                         docs/doxygen-awesome-css/doxygen-awesome-interactive-toc.js
+                         docs/doxygen-awesome-css/doxygen-awesome-interactive-toc.js \
+                         LICENSE \
+                         resources/example.png
 
 # The HTML_COLORSTYLE tag can be used to specify if the generated HTML output
 # should be rendered with a dark or light theme.
