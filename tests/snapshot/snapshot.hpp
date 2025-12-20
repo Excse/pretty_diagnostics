@@ -13,7 +13,8 @@ void expect_snapshot_eq(const std::string& name, const std::filesystem::path& pa
 class Snapshot {
 public:
     Snapshot(std::string name, std::filesystem::path path) :
-        _path(std::move(path)), _name(std::move(name)) { }
+        _path(std::move(path)), _name(std::move(name)) {
+    }
 
     void save(const std::string& data) const;
 

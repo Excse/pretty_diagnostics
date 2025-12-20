@@ -119,6 +119,18 @@ public:
     }
 
     /**
+     * @brief Combines this span with another span into a single continuous span
+     *
+     * The resulting span starts at the earliest start location of the two
+     * spans and ends at the latest end location of the two spans.
+     *
+     * @param other The span to combine with
+     *
+     * @return A new span that encompasses both spans
+     */
+    [[nodiscard]] Span join(const Span& other) const;
+
+    /**
      * @brief Returns true if this span intersects the other span
      *
      * @param other Other span to test against

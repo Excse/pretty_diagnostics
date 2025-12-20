@@ -5,15 +5,18 @@
 using namespace pretty_diagnostics;
 
 LineGroup::LineGroup(const size_t line_number, std::set<Label> labels) :
-    _labels(std::move(labels)), _line_number(line_number) { }
+    _labels(std::move(labels)), _line_number(line_number) {
+}
 
 FileGroup::FileGroup(const std::shared_ptr<Source>& source, MappedLineGroups line_groups) :
-    _source(source), _line_groups(std::move(line_groups)) { }
+    _source(source), _line_groups(std::move(line_groups)) {
+}
 
 Report::Report(std::string message, std::optional<std::string> code, const Severity severity,
                MappedFileGroups file_groups, std::optional<std::string> note, std::optional<std::string> help) :
     _code(std::move(code)), _note(std::move(note)), _help(std::move(help)),
-    _file_groups(std::move(file_groups)), _message(std::move(message)), _severity(severity) { }
+    _file_groups(std::move(file_groups)), _message(std::move(message)), _severity(severity) {
+}
 
 void Report::render(IReporterRenderer& renderer, std::ostream& stream) const {
     renderer.render(*this, stream);
@@ -38,7 +41,7 @@ Report::Builder& Report::Builder::label(std::string text, Span span) {
     if (text.empty()) throw std::runtime_error("Report::Builder::label(): label text is empty");
 
     auto& file_group = _file_groups.try_emplace(span.source(), FileGroup(span.source(), FileGroup::MappedLineGroups())).first->second;
-    auto& line_group = file_group.line_groups().try_emplace(span.line(), LineGroup(span.line(), { })).first->second;
+    auto& line_group = file_group.line_groups().try_emplace(span.line(), LineGroup(span.line(), {})).first->second;
 
     for (const auto& label : line_group.labels()) {
         if (!label.span().intersects(span)) continue;

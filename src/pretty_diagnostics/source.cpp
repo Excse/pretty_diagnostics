@@ -6,10 +6,12 @@
 using namespace pretty_diagnostics;
 
 Location::Location(const size_t row, const size_t column, const size_t index) :
-    _row(row), _column(column), _index(index) { }
+    _row(row), _column(column), _index(index) {
+}
 
 Location::Location() :
-    _row(-1), _column(-1), _index(-1) { }
+    _row(-1), _column(-1), _index(-1) {
+}
 
 FileSource::FileSource(std::filesystem::path path) :
     _path(std::move(path)) {

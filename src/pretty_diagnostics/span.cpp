@@ -14,12 +14,18 @@ Span::Span(const std::shared_ptr<Source>& source, const Location& start, const L
 Span::Span(const std::shared_ptr<Source>& source,
            const size_t start_row, const size_t start_column,
            const size_t end_row, const size_t end_column) :
-    Span(source, source->from_coords(start_row, start_column), source->from_coords(end_row, end_column)) { }
+    Span(source, source->from_coords(start_row, start_column), source->from_coords(end_row, end_column)) {
+}
 
 Span::Span(const std::shared_ptr<Source>& source,
            const size_t start_index,
            const size_t end_index) :
-    Span(source, source->from_index(start_index), source->from_index(end_index)) { }
+    Span(source, source->from_index(start_index), source->from_index(end_index)) {
+}
+
+Span Span::join(const Span& other) const {
+    return { _source, std::min(_start, other._start), std::max(_end, other._end) };
+}
 
 bool Span::intersects(const Span& other) const {
     return _start.index() <= other._end.index() && _end.index() > other._start.index();

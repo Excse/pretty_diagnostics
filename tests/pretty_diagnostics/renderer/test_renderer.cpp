@@ -45,16 +45,16 @@ TEST(Renderer, SimpleTextRender) {
     file_source->set_working_path(TEST_PATH);
 
     const auto report = Report::Builder()
-                       .severity(Severity::Error)
-                       .message("Displaying a brief summary of what happened")
-                       .code("E1337")
-                       .label("And this is the function that actually makes the magic happen", { file_source, 37, 43 })
-                       .label("This is the string that is getting printed to the console", { file_source, 44, 60 })
-                       .label("Relevant include to enable the usage of printf", { file_source, 10, 17 })
-                       .label("This is a new line", { file_source, 1, 0, 1, 1 })
-                       .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
-                       .help("Visit https://github.com/Excse/pretty_diagnostics for more help.")
-                       .build();
+                        .severity(Severity::Error)
+                        .message("Displaying a brief summary of what happened")
+                        .code("E1337")
+                        .label("And this is the function that actually makes the magic happen", { file_source, 37, 43 })
+                        .label("This is the string that is getting printed to the console", { file_source, 44, 60 })
+                        .label("Relevant include to enable the usage of printf", { file_source, 10, 17 })
+                        .label("This is a new line", { file_source, 1, 0, 1, 1 })
+                        .note("This example showcases every little detail of the library, also with the capability of line wrapping.")
+                        .help("Visit https://github.com/Excse/pretty_diagnostics for more help.")
+                        .build();
 
     auto renderer = TextRenderer(report);
     auto stream = std::ostringstream();
@@ -76,21 +76,21 @@ TEST(Renderer, HardTextRender) {
             "et nisi quis elit pulvinar vestibulum sit amet id est. Integer.";
 
     const auto report = Report::Builder()
-                       .severity(Severity::Error)
-                       .message("Displaying a brief summary of what happened")
-                       .code("E1337")
-                       .label(LOREM, { file_source, 37, 40 })
-                       .label(LOREM, { file_source, 40, 41 })
-                       .label(LOREM, { file_source, 41, 43 })
-                       .label(LOREM, { file_source, 44, 51 })
-                       .label(LOREM, { file_source, 51, 52 })
-                       .label(LOREM, { file_source, 52, 60 })
-                       .label(LOREM, { file_source, 10, 13 })
-                       .label(LOREM, { file_source, 13, 14 })
-                       .label(LOREM, { file_source, 14, 17 })
-                       .note(LOREM)
-                       .help(LOREM)
-                       .build();
+                        .severity(Severity::Error)
+                        .message("Displaying a brief summary of what happened")
+                        .code("E1337")
+                        .label(LOREM, { file_source, 37, 40 })
+                        .label(LOREM, { file_source, 40, 41 })
+                        .label(LOREM, { file_source, 41, 43 })
+                        .label(LOREM, { file_source, 44, 51 })
+                        .label(LOREM, { file_source, 51, 52 })
+                        .label(LOREM, { file_source, 52, 60 })
+                        .label(LOREM, { file_source, 10, 13 })
+                        .label(LOREM, { file_source, 13, 14 })
+                        .label(LOREM, { file_source, 14, 17 })
+                        .note(LOREM)
+                        .help(LOREM)
+                        .build();
 
     auto renderer = TextRenderer(report);
     auto stream = std::ostringstream();

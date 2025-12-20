@@ -7,20 +7,36 @@ std::string pretty_diagnostics::escape_string(const std::string_view str) {
 
     for (const unsigned char current : str) {
         switch (current) {
-            case '\n': output << "\\n"; break;
-            case '\t': output << "\\t"; break;
-            case '\r': output << "\\r"; break;
-            case '\"': output << "\\\""; break;
-            case '\\': output << "\\\\"; break;
-            default:
+            case '\n': {
+                output << "\\n";
+                break;
+            }
+            case '\t': {
+                output << "\\t";
+                break;
+            }
+            case '\r': {
+                output << "\\r";
+                break;
+            }
+            case '\"': {
+                output << "\\\"";
+                break;
+            }
+            case '\\': {
+                output << "\\\\";
+                break;
+            }
+            default: {
                 if (std::isprint(current)) {
                     output << current;
                 } else {
                     output << "\\x" << std::hex << std::uppercase
-                        << std::setw(2) << std::setfill('0') << static_cast<int>(current)
-                        << std::dec;
+                            << std::setw(2) << std::setfill('0') << static_cast<int>(current)
+                            << std::dec;
                 }
                 break;
+            }
         }
     }
 
