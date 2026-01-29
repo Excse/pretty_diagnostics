@@ -16,7 +16,7 @@ TEST(Span, FirstLabel) {
     ASSERT_EQ(span.start(), Location(0, 0, 0));
     ASSERT_EQ(span.end(), Location(0, 18, 18));
     ASSERT_EQ(span.width(), 18);
-    ASSERT_EQ(span.line(), 1);
+    ASSERT_EQ(span.line(), 0);
     ASSERT_EQ(span.substr(), "#include <stdio.h>");
 }
 
@@ -30,7 +30,7 @@ TEST(Span, SecondLabel) {
     ASSERT_EQ(span.start(), Location(3, 4, 37));
     ASSERT_EQ(span.end(), Location(3, 10, 43));
     ASSERT_EQ(span.width(), 6);
-    ASSERT_EQ(span.line(), 4);
+    ASSERT_EQ(span.line(), 3);
     ASSERT_EQ(span.substr(), "printf");
 }
 
@@ -44,7 +44,7 @@ TEST(Span, ThirdLabel) {
     ASSERT_EQ(span.start(), Location(3, 11, 44));
     ASSERT_EQ(span.end(), Location(3, 27, 60));
     ASSERT_EQ(span.width(), 16);
-    ASSERT_EQ(span.line(), 4);
+    ASSERT_EQ(span.line(), 3);
     ASSERT_EQ(span.substr(), "\"Hello World!\\n\"");
 }
 

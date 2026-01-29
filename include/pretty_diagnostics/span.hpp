@@ -154,9 +154,9 @@ public:
     [[nodiscard]] size_t width() const;
 
     /**
-     * @brief Returns the 1-based line number of the span's start
+     * @brief Returns the 0-based line number of the span's start
      *
-     * @return 1-based start line number
+     * @return 0-based start line number
      */
     [[nodiscard]] size_t line() const;
 

@@ -123,13 +123,13 @@ void TextRenderer::render(const FileGroup& file_group, std::ostream& stream) {
     for (const auto& label_group : file_group.line_groups() | std::views::values) {
         const auto line_number = label_group.line_number();
 
-        const auto min_padded_line = std::max(1L, static_cast<long>(line_number) - LINE_PADDING);
-        const auto max_padded_line = std::min(max_line, static_cast<long>(line_number) + LINE_PADDING);
+        const auto min_padded_line = std::max(0L, static_cast<long>(line_number) - LINE_PADDING);
+        const auto max_padded_line = std::min(max_line - 1, static_cast<long>(line_number) + LINE_PADDING);
 
-        for (size_t padded_line = min_padded_line; padded_line <= max_padded_line; ++padded_line) {
+        for (size_t padded_line = min_padded_line; padded_line <= static_cast<size_t>(max_padded_line); ++padded_line) {
             const auto line = file_group.source()->line(padded_line);
 
-            stream << std::setw(static_cast<int>(_snippet_width)) << padded_line << " │ " << line << std::endl;
+            stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " │ " << line << std::endl;
 
             if (padded_line == line_number) TextRenderer::render(label_group, stream);
         }
@@ -215,10 +215,12 @@ size_t TextRenderer::render(const Label& label, std::ostream& stream,
 size_t TextRenderer::widest_line_number(const Report::MappedFileGroups& groups, const size_t padding) {
     long line = 0;
     for (const auto& group : groups | std::views::values) {
+        if (group.line_groups().empty()) continue;
         const auto biggest_line = group.line_groups().rbegin()->first;
-        if (biggest_line > line) line = static_cast<long>(biggest_line);
+        if (biggest_line > static_cast<size_t>(line)) line = static_cast<long>(biggest_line);
     }
-    return std::to_string(line + padding).size();
+    // line + 1 is the 1-based line number for display
+    return std::to_string(line + 1 + static_cast<long>(padding)).size();
 }
 
 std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const size_t max_width) {

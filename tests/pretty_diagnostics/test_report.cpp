@@ -40,11 +40,11 @@ TEST(Report, BuilderCorrect) {
     ASSERT_EQ(file_group.source(), file_source);
 
     ASSERT_EQ(file_group.line_groups().size(), 3);
-    const auto& line_1_group = file_group.line_groups().at(1);
+    const auto& line_1_group = file_group.line_groups().at(0);
     ASSERT_EQ(line_1_group.labels().size(), 1);
-    const auto& line_2_group = file_group.line_groups().at(2);
+    const auto& line_2_group = file_group.line_groups().at(1);
     ASSERT_EQ(line_2_group.labels().size(), 1);
-    const auto& line_4_group = file_group.line_groups().at(4);
+    const auto& line_4_group = file_group.line_groups().at(3);
     ASSERT_EQ(line_4_group.labels().size(), 2);
 }
 

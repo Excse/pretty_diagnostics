@@ -176,7 +176,7 @@ public:
     /**
      * @brief Returns the contents of the specified line number
      *
-     * @param line_number 1-based line number
+     * @param line_number 0-based line number
      *
      * @return The entire line contents without a trailing newline
      */
@@ -265,7 +265,7 @@ public:
     /**
      * @brief Returns the contents of the specified line number
      *
-     * @param line_number 1-based line number
+     * @param line_number 0-based line number
      *
      * @return The entire line contents without a trailing newline
      */

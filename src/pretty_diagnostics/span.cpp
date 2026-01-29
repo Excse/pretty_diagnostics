@@ -40,7 +40,7 @@ size_t Span::width() const {
 }
 
 size_t Span::line() const {
-    return _start.row() + 1;
+    return _start.row();
 }
 
 std::ostream& operator<<(std::ostream& os, const Span& span) {

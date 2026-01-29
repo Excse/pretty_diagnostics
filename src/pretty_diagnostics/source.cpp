@@ -59,15 +59,15 @@ std::string StringSource::substr(const Location& start, const Location& end) con
 }
 
 std::string StringSource::line(const Location& location) const {
-    return StringSource::line(location.row() + 1);
+    return StringSource::line(location.row());
 }
 
 std::string StringSource::line(const size_t line_number) const {
-    if (line_number == 0 || line_number > _line_starts.size()) {
+    if (line_number >= _line_starts.size()) {
         throw std::runtime_error("StringSource::line(): invalid line number, there are not enough lines present");
     }
 
-    const size_t row = line_number - 1;
+    const size_t row = line_number;
     const auto line_start = _line_starts[row];
     const auto line_end = (row + 1 < _line_starts.size()) ? _line_starts[row + 1] : _contents.size();
 

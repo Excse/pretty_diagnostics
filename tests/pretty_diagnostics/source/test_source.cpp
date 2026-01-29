@@ -23,7 +23,7 @@ TEST(Source, FileSourceWorking) {
     ASSERT_EQ(file_source->path(), std::filesystem::relative(file_path, TEST_PATH));
     ASSERT_EQ(file_source->line_count(), 6);
     ASSERT_EQ(file_source->size(), 78);
-    ASSERT_EQ(file_source->line(4), "    printf(\"Hello World!\\n\");");
+    ASSERT_EQ(file_source->line(3), "    printf(\"Hello World!\\n\");");
 }
 
 TEST(Source, FileSourceFailing) {

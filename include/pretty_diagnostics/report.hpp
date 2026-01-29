@@ -23,22 +23,22 @@ enum class Severity {
 };
 
 /**
- * @brief A set of labels that belong to the same 1-based line number
+ * @brief A set of labels that belong to the same 0-based line number
  */
 class LineGroup {
 public:
     /**
      * @brief Constructs a group for a single line and its labels
      *
-     * @param line_number 1-based line number
+     * @param line_number 0-based line number
      * @param labels Labels associated with this line
      */
     LineGroup(size_t line_number, std::set<Label> labels);
 
     /**
-     * @brief Returns the 1-based line number
+     * @brief Returns the 0-based line number
      *
-     * @return 1-based line number of this group
+     * @return 0-based line number of this group
      */
     [[nodiscard]] size_t line_number() const { return _line_number; }
 
