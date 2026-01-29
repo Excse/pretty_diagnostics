@@ -9,136 +9,119 @@ Location::Location(const size_t row, const size_t column, const size_t index) :
     _row(row), _column(column), _index(index) {
 }
 
-Location::Location() :
-    _row(-1), _column(-1), _index(-1) {
-}
-
-FileSource::FileSource(std::filesystem::path path) :
-    _path(std::move(path)) {
-    if (!std::filesystem::exists(_path)) throw std::runtime_error("FileSource::FileSource(): file does not exist: " + _path.string());
-}
-
-void FileSource::set_working_path(const std::filesystem::path& path) {
-    _working_path = path;
-}
-
-Location FileSource::from_coords(size_t row, size_t column) const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("FileSource::from_coords(): could not open file: " + _path.string());
-
-    size_t current_row = 0;
-    size_t index = 0;
-
-    std::string line;
-    while (std::getline(stream, line)) {
-        // We have to adjust for the newline character, so add one.
-        const auto line_length = line.length() + 1;
-
-        if (current_row != row) {
-            index += line_length;
-            current_row++;
-            continue;
+StringSource::StringSource(std::string contents, std::string display_path) :
+    _display_path(std::move(display_path)), _contents(std::move(contents)) {
+    _line_starts.push_back(0);
+    for (size_t index = 0; index < _contents.size(); ++index) {
+        if (_contents[index] == '\n') {
+            _line_starts.push_back(index + 1);
         }
+    }
+}
 
-        if (column > line_length) throw std::runtime_error("FileSource::from_coords(): invalid coordinates, column is out of line bounds");
-
-        return { row, column, index + column };
+Location StringSource::from_coords(size_t row, size_t column) const {
+    if (row >= _line_starts.size()) {
+        throw std::runtime_error("StringSource::from_coords(): invalid coordinates, there are not enough rows present");
     }
 
-    throw std::runtime_error("FileSource::from_coords(): invalid coordinates, there are not enough rows present");
-}
+    const auto line_start = _line_starts[row];
+    const auto line_end = (row + 1 < _line_starts.size()) ? _line_starts[row + 1] : _contents.size();
+    const auto line_length = line_end - line_start;
 
-Location FileSource::from_index(size_t index) const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("FileSource::from_index(): could not open file: " + _path.string());
-
-    size_t current_index = 0;
-    size_t row = 0;
-
-    std::string line;
-    while (std::getline(stream, line)) {
-        const auto line_length = line.length() + 1;
-
-        if (current_index + line_length < index) {
-            current_index += line_length;
-            row++;
-            continue;
-        }
-
-        const auto column = index - current_index;
-        if (column > line_length) throw std::runtime_error("FileSource::from_index(): invalid index, column is out of line bounds");
-
-        return { row, index - current_index, index };
+    if (column > line_length) {
+        throw std::runtime_error("StringSource::from_coords(): invalid coordinates, column is out of line bounds");
     }
 
-    throw std::runtime_error("FileSource::from_index(): invalid index, there are not enough rows present");
+    return { row, column, line_start + column };
 }
 
-std::string FileSource::substr(const Location& start, const Location& end) const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("File::substr(): could not open file: " + _path.string());
+Location StringSource::from_index(const size_t index) const {
+    if (index > _contents.size()) {
+        throw std::runtime_error("StringSource::from_index(): invalid index, out of bounds");
+    }
 
-    const auto start_index = static_cast<long>(start.index());
-    const auto width = static_cast<long>(end.index()) - static_cast<long>(start.index());
+    const auto it = std::ranges::upper_bound(_line_starts, index);
+    const size_t row = (it == _line_starts.begin()) ? 0 : static_cast<size_t>(std::distance(_line_starts.begin(), it) - 1);
+    const size_t column = index - _line_starts[row];
 
-    stream.seekg(start_index);
-    std::string result(width, '\0');
-    stream.read(&result[0], width);
-    result.resize(stream.gcount());
+    return from_coords(row, column);
+}
+
+std::string StringSource::substr(const Location& start, const Location& end) const {
+    const auto start_index = start.index();
+    const auto end_index = end.index();
+
+    if (end_index < start_index || end_index > _contents.size() || start_index > _contents.size()) {
+        throw std::runtime_error("StringSource::substr(): invalid range");
+    }
+
+    return _contents.substr(start_index, end_index - start_index);
+}
+
+std::string StringSource::line(const Location& location) const {
+    return StringSource::line(location.row() + 1);
+}
+
+std::string StringSource::line(const size_t line_number) const {
+    if (line_number == 0 || line_number > _line_starts.size()) {
+        throw std::runtime_error("StringSource::line(): invalid line number, there are not enough lines present");
+    }
+
+    const size_t row = line_number - 1;
+    const auto line_start = _line_starts[row];
+    const auto line_end = (row + 1 < _line_starts.size()) ? _line_starts[row + 1] : _contents.size();
+
+    auto result = _contents.substr(line_start, line_end - line_start);
+    if (!result.empty() && result.back() == '\n') result.pop_back();
+    if (!result.empty() && result.back() == '\r') result.pop_back();
 
     return result;
 }
 
-std::string FileSource::line(const Location& location) const {
-    return FileSource::line(location.row() + 1);
+size_t StringSource::line_count() const {
+    return _line_starts.size();
 }
 
-std::string FileSource::line(const size_t line_number) const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("File::line(): could not open file: " + _path.string());
+const std::string& StringSource::contents() const {
+    return _contents;
+}
 
-    std::string result;
+std::string StringSource::path() const {
+    return _display_path;
+}
 
-    for (size_t index = 0; index < line_number; ++index) {
-        if (std::getline(stream, result)) continue;
-        throw std::runtime_error("File::line(): invalid line number, there are not enough lines present");
+size_t StringSource::size() const {
+    return _contents.size();
+}
+
+FileSource::FileSource(const std::filesystem::path& path, const std::filesystem::path& working_path)
+    : StringSource(_read_contents(path), std::filesystem::relative(path, working_path).string()) {}
+
+std::string FileSource::_read_contents(const std::filesystem::path& path) {
+    if (!std::filesystem::exists(path)) {
+        throw std::runtime_error("FileSource::_read_contents(): file does not exist: " + path.string());
     }
 
-    return result;
-}
+    std::ifstream stream(path, std::ios::binary | std::ios::ate);
+    if (!stream.is_open()) {
+        throw std::runtime_error("FileSource::_read_contents(): could not open file: " + path.string());
+    }
 
-size_t FileSource::line_count() const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("FileSource::line_count(): could not open file: " + _path.string());
+    const auto size = stream.tellg();
+    if (size < 0) {
+        throw std::runtime_error("FileSource::_read_contents(): failed to determine file size: " + path.string());
+    }
 
-    size_t count = 0;
+    stream.seekg(0);
 
-    std::string line;
-    while (std::getline(stream, line)) count++;
+    std::string contents;
+    contents.resize(size);
 
-    return count;
-}
+    if (!stream.read(contents.data(), size)) {
+        throw std::runtime_error("FileSource::_read_contents(): failed to read file: " + path.string());
+    }
 
-std::string FileSource::contents() const {
-    std::ifstream stream(_path, std::ios::binary);
-    if (!stream.is_open()) throw std::runtime_error("File::contents(): could not open file: " + _path.string());
-
-    std::ostringstream result;
-    result << stream.rdbuf();
-
-    return result.str();
-}
-
-std::string FileSource::path() const {
-    if (!_working_path) return _path.string();
-    return std::filesystem::relative(_path, _working_path.value()).string();
-}
-
-size_t FileSource::size() const {
-    std::ifstream stream(_path, std::ios::binary | std::ios::ate);
-    if (!stream.is_open()) throw std::runtime_error("File::size(): could not open file: " + _path.string());
-
-    return stream.tellg();
+    return contents;
 }
 
 std::ostream& operator<<(std::ostream& os, const Location& location) {
@@ -146,6 +129,14 @@ std::ostream& operator<<(std::ostream& os, const Location& location) {
     os << "row=\"" << location.row() << "\", ";
     os << "column=\"" << location.column() << "\", ";
     os << "index=\"" << location.index() << "\"";
+    os << ")";
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const StringSource& source) {
+    os << "StringSource(";
+    os << "path=\"" << source.path() << "\", ";
+    os << "size=\"" << source.size() << "\"";
     os << ")";
     return os;
 }

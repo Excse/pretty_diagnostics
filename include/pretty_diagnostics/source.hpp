@@ -2,6 +2,8 @@
 
 #include <filesystem>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace pretty_diagnostics {
 /**
@@ -24,7 +26,7 @@ public:
     /**
      * @brief Constructs a default-initialized location (all -1).
      */
-    Location();
+    Location() = delete;
 
     /**
      * @brief Orders locations by their absolute index
@@ -192,7 +194,7 @@ public:
      *
      * @return Full source contents
      */
-    [[nodiscard]] virtual std::string contents() const = 0;
+    [[nodiscard]] virtual const std::string& contents() const = 0;
 
     /**
      * @brief Returns a displayable path or identifier of the source
@@ -210,26 +212,20 @@ public:
 };
 
 /**
- * @brief A `Source` implementation that reads from a file on disk
+ * @brief A `Source` implementation that reads from an in-memory string
  */
-class FileSource final : public Source {
+class StringSource : public Source {
 public:
     /**
-     * @brief Creates a file source from a filesystem path
+     * @brief Creates a string source with an optional display path
      *
-     * @param path Path to the file on disk (absolute or relative)
+     * @param contents Source contents held in memory
+     * @param display_path Optional display identifier for diagnostics output
      */
-    explicit FileSource(std::filesystem::path path);
+    explicit StringSource(std::string contents, std::string display_path = "<memory>");
 
     /**
-     * @brief Sets a working directory used to relativize the displayed path
-     *
-     * @param path Working directory used to make the file path relative for display
-     */
-    void set_working_path(const std::filesystem::path& path);
-
-    /**
-     * @brief Maps (row, column) to a `Location` within the file
+     * @brief Maps (row, column) to a `Location` within the string
      *
      * @param row 0-based line number
      * @param column 0-based column number
@@ -239,7 +235,7 @@ public:
     [[nodiscard]] Location from_coords(size_t row, size_t column) const override;
 
     /**
-     * @brief Maps an absolute index to a `Location` within the file
+     * @brief Maps an absolute index to a `Location` within the string
      *
      * @param index 0-based absolute character index
      *
@@ -276,32 +272,51 @@ public:
     [[nodiscard]] std::string line(size_t line_number) const override;
 
     /**
-     * @brief Returns the number of lines in the file
+     * @brief Returns the total number of lines in the string
      *
      * @return Line count
      */
     [[nodiscard]] size_t line_count() const override;
 
     /**
-     * @brief Returns the entire file contents
+     * @brief Returns the entire contents of the source
      *
-     * @return Full file contents
+     * @return Full source contents
      */
-    [[nodiscard]] std::string contents() const override;
+    [[nodiscard]] const std::string& contents() const override;
 
     /**
-     * @brief Returns the file system path to the file (possibly working path relative)
+     * @brief Returns a displayable path or identifier of the source
      *
-     * @return Display path string
+     * @return Display path or identifier
      */
     [[nodiscard]] std::string path() const override;
 
     /**
-     * @brief Returns the total size of the file in characters
+     * @brief Returns the total size (in characters) of the source
      *
      * @return Size in characters
      */
     [[nodiscard]] size_t size() const override;
+
+private:
+    std::vector<size_t> _line_starts;
+    std::string _display_path;
+    std::string _contents;
+};
+
+/**
+ * @brief A `Source` implementation that reads from a file on disk
+ */
+class FileSource final : public StringSource {
+public:
+    /**
+     * @brief Creates a file source from a filesystem path
+     *
+     * @param path Path to the file on disk (absolute or relative)
+     * @param working_path Optional path to make the path relative
+     */
+    explicit FileSource(const std::filesystem::path& path, const std::filesystem::path& working_path = std::filesystem::current_path());
 
     /**
      * @brief Equality compares path
@@ -312,7 +327,7 @@ public:
      * @return True if paths are equal
      */
     friend bool operator==(const FileSource& lhs, const FileSource& rhs) {
-        return lhs._path == rhs._path;
+        return lhs.path() == rhs.path();
     }
 
     /**
@@ -328,8 +343,7 @@ public:
     }
 
 private:
-    std::optional<std::filesystem::path> _working_path;
-    std::filesystem::path _path;
+    [[nodiscard]] static std::string _read_contents(const std::filesystem::path& path);
 };
 } // namespace pretty_diagnostics
 
@@ -342,6 +356,16 @@ private:
  * @return Reference to @p os
  */
 std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::Location& location);
+
+/**
+ * @brief Streams a readable description of a `StringSource`
+ *
+ * @param os Output stream to write to
+ * @param source Source to describe
+ *
+ * @return Reference to @p os.
+ */
+std::ostream& operator<<(std::ostream& os, const pretty_diagnostics::StringSource& source);
 
 /**
  * @brief Streams a readable description of a `FileSource`

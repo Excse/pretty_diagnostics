@@ -16,8 +16,7 @@ TEST(Source, FileSourceWorking) {
     const auto file_path = SNAPSHOTS_DIRECTORY / "01-source.c";
 
     const auto file_name = file_path.filename().stem().string();
-    const auto file_source = std::make_shared<FileSource>(file_path);
-    file_source->set_working_path(TEST_PATH);
+    const auto file_source = std::make_shared<FileSource>(file_path, TEST_PATH);
 
     EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, file_source->contents());
 

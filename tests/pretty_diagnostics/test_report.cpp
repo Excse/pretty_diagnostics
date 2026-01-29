@@ -12,8 +12,8 @@ static const auto RESOURCES_DIRECTORY = std::filesystem::path(TEST_PATH) / "reso
 
 TEST(Report, BuilderCorrect) {
     const auto file_path = RESOURCES_DIRECTORY / "01-main.c";
-    const auto file_source = std::make_shared<FileSource>(file_path);
-    file_source->set_working_path(TEST_PATH);
+
+    const auto file_source = std::make_shared<FileSource>(file_path, TEST_PATH);
 
     constexpr auto severity = Severity::Error;
     constexpr auto message = "Displaying a brief summary of what happened";
