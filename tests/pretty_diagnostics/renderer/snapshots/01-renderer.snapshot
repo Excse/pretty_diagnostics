@@ -12,7 +12,7 @@ error[E1337]: Displaying a brief summary of what happened
    ·     ╰────┴─▶ And this is the function that actually makes the magic happen
  5 │     return 0;
    · 
-   │ Note: This example showcases every little detail of the library, also
-   │       with the capability of line wrapping.
+   │ Note: This example showcases every little detail of the library, also with
+   │       the capability of line wrapping.
    │ Help: Visit https://github.com/Excse/pretty_diagnostics for more help.
    ╯

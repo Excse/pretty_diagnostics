@@ -88,6 +88,17 @@ public:
      */
     [[nodiscard]] static std::vector<std::string> wrap_text(const std::string& text, size_t max_width);
 
+    /**
+     * @brief Prints the wrapped text into lines no longer than `max_width` characters and adds a prefix to
+     *        wrapped lines
+     *
+     * @param text Text to wrap
+     * @param wrapped_prefix The prefix for wrapped lines
+     * @param max_width Maximum line width
+     * @param stream  Output stream to write to
+     */
+    static void print_wrapped_text(const std::string &text, const std::string& wrapped_prefix, size_t max_width, std::ostream &stream);
+
 private:
     size_t _padding, _snippet_width;
     std::string _whitespaces;

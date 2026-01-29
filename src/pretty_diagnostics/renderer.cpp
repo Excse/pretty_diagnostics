@@ -66,7 +66,12 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
 
     if (report.code().has_value()) stream << "[" << report.code().value() << "]";
 
-    stream << ": " << report.message() << std::endl;
+    stream << ": ";
+
+    const auto message_wrapped_padding = stream.tellp();
+    const auto message_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - message_wrapped_padding;
+    const auto message_wrapped_prefix = std::string(message_wrapped_padding, ' ');
+    print_wrapped_text(report.message(), message_wrapped_prefix, message_available_width, stream);
 
     for (auto it = groups.begin(); it != groups.end(); ++it) {
         const auto& [source, file_group] = *it;
@@ -83,36 +88,24 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
 
     if (report.note().has_value()) {
         const auto note_prefix = _whitespaces + "│ Note: ";
-        const auto normal_prefix = _whitespaces + "│       ";
+        const auto note_wrapped_prefix = _whitespaces + "│       ";
 
-        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
-                                     - static_cast<long>(note_prefix.size());
-        const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
+        const auto note_wrapped_padding = visual_width(note_wrapped_prefix);
+        const auto note_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - note_wrapped_padding;
 
-        const auto& text = report.note().value();
-        const auto lines = wrap_text(text, max_text_width);
-        stream << note_prefix << lines[0] << std::endl;
-
-        for (size_t index = 1; index < lines.size(); ++index) {
-            stream << normal_prefix << lines[index] << std::endl;
-        }
+        stream << note_prefix;
+        print_wrapped_text(report.note().value(), note_wrapped_prefix, note_available_width, stream);
     }
 
     if (report.help().has_value()) {
         const auto help_prefix = _whitespaces + "│ Help: ";
-        const auto normal_prefix = _whitespaces + "│       ";
+        const auto help_wrapped_prefix = _whitespaces + "│       ";
 
-        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
-                                     - static_cast<long>(help_prefix.size());
-        const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
+        const auto help_wrapped_padding = visual_width(help_wrapped_prefix);
+        const auto help_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - help_wrapped_padding;
 
-        const auto& text = report.help().value();
-        const auto lines = wrap_text(text, max_text_width);
-        stream << help_prefix << lines[0] << std::endl;
-
-        for (size_t index = 1; index < lines.size(); ++index) {
-            stream << normal_prefix << lines[index] << std::endl;
-        }
+        stream << help_prefix;
+        print_wrapped_text(report.help().value(), help_wrapped_prefix, help_available_width, stream);
     }
 
     stream << _whitespaces << "╯" << std::endl;
@@ -316,6 +309,16 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
     }
 
     return lines;
+}
+
+void TextRenderer::print_wrapped_text(const std::string& text, const std::string& wrapped_prefix, const size_t max_width, std::ostream& stream) {
+    const auto lines = wrap_text(text, max_width);
+
+    stream << lines[0] << std::endl;
+    for (size_t index = 1; index < lines.size(); ++index) {
+        const auto& line = lines[index];
+        stream << wrapped_prefix << line << std::endl;
+    }
 }
 
 // BSD 3-Clause License

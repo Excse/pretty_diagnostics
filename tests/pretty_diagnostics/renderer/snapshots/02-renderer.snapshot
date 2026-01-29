@@ -59,14 +59,14 @@ error[E1337]: Displaying a brief summary of what happened
    ·           pulvinar vestibulum sit amet id est. Integer.
  5 │     return 0;
    · 
-   │ Note: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-   │       Suspendisse semper hendrerit iaculis. Integer suscipit facilisis
-   │       libero sed consectetur. Fusce turpis risus, elementum nec fermentum
-   │       quis, ultricies a libero. Aliquam et nisi quis elit pulvinar
-   │       vestibulum sit amet id est. Integer.
-   │ Help: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-   │       Suspendisse semper hendrerit iaculis. Integer suscipit facilisis
-   │       libero sed consectetur. Fusce turpis risus, elementum nec fermentum
-   │       quis, ultricies a libero. Aliquam et nisi quis elit pulvinar
-   │       vestibulum sit amet id est. Integer.
+   │ Note: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+   │       semper hendrerit iaculis. Integer suscipit facilisis libero sed
+   │       consectetur. Fusce turpis risus, elementum nec fermentum quis,
+   │       ultricies a libero. Aliquam et nisi quis elit pulvinar vestibulum
+   │       sit amet id est. Integer.
+   │ Help: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
+   │       semper hendrerit iaculis. Integer suscipit facilisis libero sed
+   │       consectetur. Fusce turpis risus, elementum nec fermentum quis,
+   │       ultricies a libero. Aliquam et nisi quis elit pulvinar vestibulum
+   │       sit amet id est. Integer.
    ╯
