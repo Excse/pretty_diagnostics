@@ -36,9 +36,7 @@ public:
      *
      * @return True if @p lhs precedes @p rhs by absolute index
      */
-    friend bool operator<(const Location& lhs, const Location& rhs) {
-        return lhs._index < rhs._index;
-    }
+    friend bool operator<(const Location& lhs, const Location& rhs) { return lhs._index < rhs._index; }
 
     /**
      * @brief Less-than-or-equal comparison derived from `>=`
@@ -48,9 +46,7 @@ public:
      *
      * @return True if @p lhs is not greater than @p rhs
      */
-    friend bool operator<=(const Location& lhs, const Location& rhs) {
-        return rhs >= lhs;
-    }
+    friend bool operator<=(const Location& lhs, const Location& rhs) { return rhs >= lhs; }
 
     /**
      * @brief Greater-than comparison derived from `<`
@@ -60,9 +56,7 @@ public:
      *
      * @return True if @p lhs succeeds @p rhs by absolute index
      */
-    friend bool operator>(const Location& lhs, const Location& rhs) {
-        return rhs < lhs;
-    }
+    friend bool operator>(const Location& lhs, const Location& rhs) { return rhs < lhs; }
 
     /**
      * @brief Greater-than-or-equal comparison derived from `<`
@@ -72,9 +66,7 @@ public:
      *
      * @return True if @p lhs is not less than @p rhs
      */
-    friend bool operator>=(const Location& lhs, const Location& rhs) {
-        return !(lhs < rhs);
-    }
+    friend bool operator>=(const Location& lhs, const Location& rhs) { return !(lhs < rhs); }
 
     /**
      * @brief Equality compares row, column and index
@@ -85,9 +77,7 @@ public:
      * @return True if all coordinates and index are equal
      */
     friend bool operator==(const Location& lhs, const Location& rhs) {
-        return lhs._row == rhs._row
-               && lhs._column == rhs._column
-               && lhs._index == rhs._index;
+        return lhs._row == rhs._row && lhs._column == rhs._column && lhs._index == rhs._index;
     }
 
     /**
@@ -98,9 +88,7 @@ public:
      *
      * @return True if the locations differ
      */
-    friend bool operator!=(const Location& lhs, const Location& rhs) {
-        return !(lhs == rhs);
-    }
+    friend bool operator!=(const Location& lhs, const Location& rhs) { return !(lhs == rhs); }
 
     /**
      * @brief Returns the 0-based column number
@@ -326,21 +314,17 @@ public:
      *
      * @return True if paths are equal
      */
-    friend bool operator==(const FileSource& lhs, const FileSource& rhs) {
-        return lhs.path() == rhs.path();
-    }
+    friend bool operator==(const FileSource& lhs, const FileSource& rhs) { return lhs.path() == rhs.path(); }
 
     /**
      * @brief Inequality based on `operator==`
-    *
+     *
      * @param lhs Left-hand file source
      * @param rhs Right-hand file source
      *
      * @return True if the paths differ
      */
-    friend bool operator!=(const FileSource& lhs, const FileSource& rhs) {
-        return !(lhs == rhs);
-    }
+    friend bool operator!=(const FileSource& lhs, const FileSource& rhs) { return !(lhs == rhs); }
 
 private:
     [[nodiscard]] static std::string _read_contents(const std::filesystem::path& path);

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <unordered_map>
-#include <optional>
 #include <iostream>
-#include <string>
 #include <map>
+#include <optional>
 #include <set>
+#include <string>
+#include <unordered_map>
 
 #include "label.hpp"
 
@@ -122,8 +122,8 @@ public:
      * @param note Optional note for additional context
      * @param help Optional help text with suggestions
      */
-    Report(std::string message, std::optional<std::string> code, Severity severity, MappedFileGroups file_groups,
-           std::optional<std::string> note, std::optional<std::string> help);
+    Report(std::string message, std::optional<std::string> code, Severity severity, MappedFileGroups file_groups, std::optional<std::string> note,
+           std::optional<std::string> help);
 
     /**
      * @brief Renders the report using the provided renderer to the output stream

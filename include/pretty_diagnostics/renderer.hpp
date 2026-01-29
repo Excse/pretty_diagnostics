@@ -64,9 +64,8 @@ public:
      *
      * @return Next text index to continue rendering wrapped text
      */
-    static size_t render(const Label& label, std::ostream& stream,
-                         const std::vector<std::string>& text_lines, size_t text_index,
-                         bool active_render, size_t column_start = 0);
+    static size_t render(const Label& label, std::ostream& stream, const std::vector<std::string>& text_lines, size_t text_index, bool active_render,
+                         size_t column_start = 0);
 
     /**
      * @brief Computes the width of the widest line number across groups, plus padding
@@ -97,7 +96,7 @@ public:
      * @param max_width Maximum line width
      * @param stream  Output stream to write to
      */
-    static void print_wrapped_text(const std::string &text, const std::string& wrapped_prefix, size_t max_width, std::ostream &stream);
+    static void print_wrapped_text(const std::string& text, const std::string& wrapped_prefix, size_t max_width, std::ostream& stream);
 
 private:
     size_t _padding, _snippet_width;

@@ -29,9 +29,7 @@ public:
      * @param end_row 0-based end line number
      * @param end_column 0-based end column number
      */
-    Span(const std::shared_ptr<Source>& source,
-         size_t start_row, size_t start_column,
-         size_t end_row, size_t end_column);
+    Span(const std::shared_ptr<Source>& source, size_t start_row, size_t start_column, size_t end_row, size_t end_column);
 
     /**
      * @brief Constructs a span from 0-based character indices into the source content
@@ -40,9 +38,7 @@ public:
      * @param start_index 0-based start index (inclusive)
      * @param end_index 0-based end index (exclusive)
      */
-    Span(const std::shared_ptr<Source>& source,
-         size_t start_index,
-         size_t end_index);
+    Span(const std::shared_ptr<Source>& source, size_t start_index, size_t end_index);
 
     /**
      * @brief Orders spans by their start location
@@ -52,9 +48,7 @@ public:
      *
      * @return True if @p lhs starts before @p rhs
      */
-    friend bool operator<(const Span& lhs, const Span& rhs) {
-        return lhs._start < rhs._start;
-    }
+    friend bool operator<(const Span& lhs, const Span& rhs) { return lhs._start < rhs._start; }
 
     /**
      * @brief Less-than-or-equal comparison derived from `>=`
@@ -64,9 +58,7 @@ public:
      *
      * @return True if @p lhs is not greater than @p rhs
      */
-    friend bool operator<=(const Span& lhs, const Span& rhs) {
-        return rhs >= lhs;
-    }
+    friend bool operator<=(const Span& lhs, const Span& rhs) { return rhs >= lhs; }
 
     /**
      * @brief Greater-than comparison derived from `<`
@@ -76,9 +68,7 @@ public:
      *
      * @return True if @p lhs starts after @p rhs
      */
-    friend bool operator>(const Span& lhs, const Span& rhs) {
-        return rhs < lhs;
-    }
+    friend bool operator>(const Span& lhs, const Span& rhs) { return rhs < lhs; }
 
     /**
      * @brief Greater-than-or-equal comparison derived from `<`
@@ -88,9 +78,7 @@ public:
      *
      * @return True if @p lhs is not less than @p rhs
      */
-    friend bool operator>=(const Span& lhs, const Span& rhs) {
-        return !(lhs < rhs);
-    }
+    friend bool operator>=(const Span& lhs, const Span& rhs) { return !(lhs < rhs); }
 
     /**
      * @brief Equality compares source, start and end
@@ -101,9 +89,7 @@ public:
      * @return True if both spans refer to the same source and coordinates
      */
     friend bool operator==(const Span& lhs, const Span& rhs) {
-        return lhs._source == rhs._source
-               && lhs._start == rhs._start
-               && lhs._end == rhs._end;
+        return lhs._source == rhs._source && lhs._start == rhs._start && lhs._end == rhs._end;
     }
 
     /**
@@ -114,9 +100,7 @@ public:
      *
      * @return True if the spans differ
      */
-    friend bool operator!=(const Span& lhs, const Span& rhs) {
-        return !(lhs == rhs);
-    }
+    friend bool operator!=(const Span& lhs, const Span& rhs) { return !(lhs == rhs); }
 
     /**
      * @brief Combines this span with another span into a single continuous span

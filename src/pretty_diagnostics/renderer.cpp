@@ -64,7 +64,9 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
 
     this->render(report.severity(), stream);
 
-    if (report.code().has_value()) stream << "[" << report.code().value() << "]";
+    if (report.code().has_value()) {
+        stream << "[" << report.code().value() << "]";
+    }
 
     stream << ": ";
 

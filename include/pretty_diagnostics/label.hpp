@@ -27,9 +27,7 @@ public:
      *
      * @return True if @p lhs's span starts before @p rhs's span
      */
-    friend bool operator<(const Label& lhs, const Label& rhs) {
-        return lhs._span < rhs._span;
-    }
+    friend bool operator<(const Label& lhs, const Label& rhs) { return lhs._span < rhs._span; }
 
     /**
      * @brief Less-than-or-equal comparison derived from `>=`
@@ -39,9 +37,7 @@ public:
      *
      * @return True if @p lhs is not greater than @p rhs
      */
-    friend bool operator<=(const Label& lhs, const Label& rhs) {
-        return rhs >= lhs;
-    }
+    friend bool operator<=(const Label& lhs, const Label& rhs) { return rhs >= lhs; }
 
     /**
      * @brief Greater-than comparison derived from `<`
@@ -51,9 +47,7 @@ public:
      *
      * @return True if @p lhs is ordered after @p rhs
      */
-    friend bool operator>(const Label& lhs, const Label& rhs) {
-        return rhs < lhs;
-    }
+    friend bool operator>(const Label& lhs, const Label& rhs) { return rhs < lhs; }
 
     /**
      * @brief Greater-than-or-equal comparison derived from `<`
@@ -63,9 +57,7 @@ public:
      *
      * @return True if @p lhs is not less than @p rhs
      */
-    friend bool operator>=(const Label& lhs, const Label& rhs) {
-        return !(lhs < rhs);
-    }
+    friend bool operator>=(const Label& lhs, const Label& rhs) { return !(lhs < rhs); }
 
     /**
      * @brief Returns the label text
