@@ -2,10 +2,10 @@
 
 using namespace pretty_diagnostics;
 
-std::string pretty_diagnostics::escape_string(const std::string_view str) {
+std::string pretty_diagnostics::escape_string(const std::string_view input) {
     std::ostringstream output;
 
-    for (const unsigned char current : str) {
+    for (const unsigned char current : input) {
         switch (current) {
             case '\n': {
                 output << "\\n";
@@ -31,9 +31,7 @@ std::string pretty_diagnostics::escape_string(const std::string_view str) {
                 if (std::isprint(current)) {
                     output << current;
                 } else {
-                    output << "\\x" << std::hex << std::uppercase
-                            << std::setw(2) << std::setfill('0') << static_cast<int>(current)
-                            << std::dec;
+                    output << "\\x" << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << static_cast<int>(current) << std::dec;
                 }
                 break;
             }
@@ -41,6 +39,93 @@ std::string pretty_diagnostics::escape_string(const std::string_view str) {
     }
 
     return output.str();
+}
+
+size_t pretty_diagnostics::visual_width(const std::string_view input) {
+    size_t width = 0;
+
+    for (size_t index = 0; index < input.size();) {
+        const unsigned char current_char = input[index];
+        if (current_char <= 0x7F) { // ASCII
+            width += 1;
+            index += 1;
+        } else if ((current_char & 0xE0) == 0xC0) { // 2-byte sequence
+            width += 1;
+            index += 2;
+        } else if ((current_char & 0xF0) == 0xE0) { // 3-byte sequence
+            width += 2;
+            index += 3;
+        } else if ((current_char & 0xF8) == 0xF0) { // 4-byte sequence (Emojis, etc.)
+            width += 2;
+            index += 4;
+        } else { // Invalid UTF-8, skip one byte
+            width += 1;
+            index += 1;
+        }
+    }
+
+    return width;
+}
+
+size_t pretty_diagnostics::to_visual_column(const std::string_view line, const size_t byte_column) {
+    size_t column = 0;
+
+    for (size_t index = 0; index < byte_column && index < line.size();) {
+        const unsigned char current_char = line[index];
+        if (current_char <= 0x7F) { // ASCII
+            column += 1;
+            index += 1;
+        } else if ((current_char & 0xE0) == 0xC0 && index + 1 < line.size()) { // 2-byte sequence
+            column += 1;
+            index += 2;
+        } else if ((current_char & 0xF0) == 0xE0 && index + 2 < line.size()) { // 3-byte sequence
+            column += 2;
+            index += 3;
+        } else if ((current_char & 0xF8) == 0xF0 && index + 3 < line.size()) { // 4-byte sequence (Emojis, etc.)
+            column += 2;
+            index += 4;
+        } else { // Invalid UTF-8, skip one byte
+            column += 1;
+            index += 1;
+        }
+    }
+
+    return column;
+}
+
+size_t pretty_diagnostics::from_visual_column(const std::string_view line, const size_t visual_column) {
+    size_t current_column = 0;
+    size_t byte_column = 0;
+
+    while (byte_column < line.size() && current_column < visual_column) {
+        const unsigned char current = line[byte_column];
+        size_t char_width = 1;
+        size_t char_bytes = 1;
+
+        if (current <= 0x7F) { // ASCII
+            char_width = 1;
+            char_bytes = 1;
+        } else if ((current & 0xE0) == 0xC0 && byte_column + 1 < line.size()) { // 2-byte sequence
+            char_width = 1;
+            char_bytes = 2;
+        } else if ((current & 0xF0) == 0xE0 && byte_column + 2 < line.size()) { // 3-byte sequence
+            char_width = 2;
+            char_bytes = 3;
+        } else if ((current & 0xF8) == 0xF0 && byte_column + 3 < line.size()) { // 4-byte sequence (Emojis, etc.)
+            char_width = 2;
+            char_bytes = 4;
+        } else { // Invalid or truncated
+            char_width = 1;
+            char_bytes = 1;
+        }
+
+        if (current_column + char_width > visual_column) break;
+
+        current_column += char_width;
+        byte_column += char_bytes;
+    }
+
+    return byte_column;
 }
 
 // BSD 3-Clause License

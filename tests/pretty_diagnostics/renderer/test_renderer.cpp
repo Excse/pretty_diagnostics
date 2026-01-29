@@ -97,6 +97,50 @@ TEST(Renderer, HardTextRender) {
     EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, stream.str());
 }
 
+TEST(Renderer, UnicodeRender) {
+    const auto snapshot_path = SNAPSHOTS_DIRECTORY / "03-unicode.snapshot";
+    const auto file_path = SNAPSHOTS_DIRECTORY / "03-unicode.c";
+
+    const auto file_name = file_path.filename().stem().string();
+    const auto file_source = std::make_shared<FileSource>(file_path, TEST_PATH);
+
+    const auto report = Report::Builder()
+                        .severity(Severity::Error)
+                        .message("Even unicode characters are allowed 👍!")
+                        .code("E1337")
+                        .label("Look at this awesome unicode rocket!", { file_source, 94, 95 })
+                        .note("Takes some notes here 📝")
+                        .help("Or feel free to provide any help to open questions 🤔")
+                        .build();
+
+    auto renderer = TextRenderer(report);
+    auto stream = std::ostringstream();
+    report.render(renderer, stream);
+
+    EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, stream.str());
+}
+
+TEST(Renderer, UnicodeWrapRender) {
+    const auto snapshot_path = SNAPSHOTS_DIRECTORY / "04-unicode-wrap.snapshot";
+    const auto file_path = SNAPSHOTS_DIRECTORY / "04-unicode-wrap.txt";
+
+    const auto file_name = file_path.filename().stem().string();
+    const auto file_source = std::make_shared<FileSource>(file_path, TEST_PATH);
+
+    const auto report = Report::Builder()
+                        .severity(Severity::Error)
+                        .message("A curious girl leaves home, survives a dangerous adventure, defeats a dragon, finds a treasure, and returns wiser and happy. 🐉✨")
+                        .code("E1337")
+                        .label("Look at this awesome unicode rocket!", { file_source, 94, 95 })
+                        .build();
+
+    auto renderer = TextRenderer(report);
+    auto stream = std::ostringstream();
+    report.render(renderer, stream);
+
+    EXPECT_SNAPSHOT_EQ(file_name, snapshot_path, stream.str());
+}
+
 // BSD 3-Clause License
 //
 // Copyright (c) 2025, Timo Behrend

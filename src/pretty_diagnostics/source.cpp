@@ -1,4 +1,5 @@
 #include "pretty_diagnostics/source.hpp"
+#include "pretty_diagnostics/utils.hpp"
 
 #include <algorithm>
 #include <fstream>
@@ -25,14 +26,10 @@ Location StringSource::from_coords(size_t row, size_t column) const {
     }
 
     const auto line_start = _line_starts[row];
-    const auto line_end = (row + 1 < _line_starts.size()) ? _line_starts[row + 1] : _contents.size();
-    const auto line_length = line_end - line_start;
+    const auto line_text = this->line(row);
+    const auto byte_column = from_visual_column(line_text, column);
 
-    if (column > line_length) {
-        throw std::runtime_error("StringSource::from_coords(): invalid coordinates, column is out of line bounds");
-    }
-
-    return { row, column, line_start + column };
+    return { row, column, line_start + byte_column };
 }
 
 Location StringSource::from_index(const size_t index) const {
@@ -41,10 +38,13 @@ Location StringSource::from_index(const size_t index) const {
     }
 
     const auto it = std::ranges::upper_bound(_line_starts, index);
-    const size_t row = (it == _line_starts.begin()) ? 0 : static_cast<size_t>(std::distance(_line_starts.begin(), it) - 1);
-    const size_t column = index - _line_starts[row];
+    const auto row = (it == _line_starts.begin()) ? 0 : static_cast<size_t>(std::distance(_line_starts.begin(), it) - 1);
+    const auto byte_column = index - _line_starts[row];
 
-    return from_coords(row, column);
+    const auto line_text = this->line(row);
+    const auto visual_column = to_visual_column(line_text, byte_column);
+
+    return { row, visual_column, index };
 }
 
 std::string StringSource::substr(const Location& start, const Location& end) const {

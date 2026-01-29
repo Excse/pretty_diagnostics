@@ -10,11 +10,43 @@ namespace pretty_diagnostics {
  * @brief Escapes control characters and quotes in a string for safe display.
  *        For example, converts newlines to "\\n" and tabs to "\\t"
  *
- * @param str Input string view to escape
+ * @param input Input string view to escape
  *
  * @return A newly allocated escaped string suitable for diagnostics output
  */
-std::string escape_string(std::string_view str);
+std::string escape_string(std::string_view input);
+
+/**
+ * @brief Calculates the visual display width of a UTF-8 string (for terminal display)
+ *
+ * ASCII characters count as 1, most 3- and 4-byte characters (CJK, emojis) as 2.
+ * Invalid UTF-8 bytes are counted as width 1.
+ *
+ * @param input Input UTF-8 string view
+ *
+ * @return Visual width in terminal columns
+ */
+size_t visual_width(std::string_view input);
+
+/**
+ * @brief Returns the visual column of a specific byte column in a UTF-8 string
+ *
+ * @param line Input UTF-8 string view (usually a single line)
+ * @param byte_column 0-based byte column into @p line
+ *
+ * @return 0-based visual column index
+ */
+size_t to_visual_column(std::string_view line, size_t byte_column);
+
+/**
+ * @brief Maps a visual column to a UTF-8 byte index in a line
+ *
+ * @param line Input UTF-8 string view (usually a single line)
+ * @param visual_column 0-based visual column into @p line
+ *
+ * @return 0-based visual column index
+ */
+size_t from_visual_column(std::string_view line, size_t visual_column);
 
 } // namespace pretty_diagnostics
 

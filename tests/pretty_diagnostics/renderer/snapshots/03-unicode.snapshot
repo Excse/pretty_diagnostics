@@ -1,0 +1,11 @@
+error[E1337]: Even unicode characters are allowed 👍!
+   ╭╴pretty_diagnostics/renderer/snapshots/03-unicode.c╶─
+   ·
+ 4 │     printf("Hello World!\n");
+ 5 │     printf("Look at my rocket: 🚀!\n");
+   ·                                ╰┴─▶ Look at this awesome unicode rocket!
+ 6 │     return 0;
+   · 
+   │ Note: Takes some notes here 📝
+   │ Help: Or feel free to provide any help to open questions 🤔
+   ╯

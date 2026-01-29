@@ -1,4 +1,5 @@
 #include "pretty_diagnostics/renderer.hpp"
+#include "pretty_diagnostics/utils.hpp"
 
 #include <unordered_map>
 #include <ranges>
@@ -12,7 +13,7 @@ constexpr long MIN_TEXT_WRAP = 10;
 constexpr long LINE_PADDING = 1;
 
 TextRenderer::TextRenderer(const Report& report) {
-    _padding = TextRenderer::widest_line_number(report.file_groups(), LINE_PADDING) + 2;
+    _padding = widest_line_number(report.file_groups(), LINE_PADDING) + 2;
     _snippet_width = static_cast<int>(_padding - 1);
     _whitespaces = std::string(_padding, ' ');
 }
@@ -67,17 +68,17 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
 
     stream << ": " << report.message() << std::endl;
 
-    for (auto group_it = groups.begin(); group_it != groups.end(); ++group_it) {
-        const auto& [source, labels] = *group_it;
+    for (auto it = groups.begin(); it != groups.end(); ++it) {
+        const auto& [source, file_group] = *it;
 
-        if (group_it == groups.begin()) stream << _whitespaces << "╭";
+        if (it == groups.begin()) stream << _whitespaces << "╭";
         else stream << _whitespaces << "├";
 
         stream << "╴" << source->path() << "╶─" << std::endl;
 
-        if (group_it == groups.begin()) stream << _whitespaces << "·" << std::endl;
+        if (it == groups.begin()) stream << _whitespaces << "·" << std::endl;
 
-        render(labels, stream);
+        render(file_group, stream);
     }
 
     if (report.note().has_value()) {
@@ -119,23 +120,50 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
 
 void TextRenderer::render(const FileGroup& file_group, std::ostream& stream) {
     const auto max_line = static_cast<long>(file_group.source()->line_count());
+    const auto& line_groups = file_group.line_groups();
 
-    for (const auto& label_group : file_group.line_groups() | std::views::values) {
+    for (auto it = line_groups.begin(); it != line_groups.end(); ++it) {
+        const auto& label_group = it->second;
         const auto line_number = label_group.line_number();
 
         const auto min_padded_line = std::max(0L, static_cast<long>(line_number) - LINE_PADDING);
         const auto max_padded_line = std::min(max_line - 1, static_cast<long>(line_number) + LINE_PADDING);
 
+        // Calculate if we need a spacer before this group (if it's not the first and doesn't overlap with previous)
+        if (it != line_groups.begin()) {
+            const auto &previous_group = std::prev(it)->second;
+
+            const auto prev_line_number = previous_group.line_number();
+            const auto prev_max_padded = std::min(max_line - 1, static_cast<long>(prev_line_number) + LINE_PADDING);
+
+            if (min_padded_line > prev_max_padded + 1) {
+                stream << _whitespaces << "· " << std::endl;
+            }
+        }
+
         for (size_t padded_line = min_padded_line; padded_line <= static_cast<size_t>(max_padded_line); ++padded_line) {
+            // Avoid double-rendering lines if they are part of multiple groups
+            if (it != line_groups.begin()) {
+                const auto &previous_group = std::prev(it)->second;
+
+                const auto prev_line_number = previous_group.line_number();
+                const auto prev_max_padded = std::min(max_line - 1, static_cast<long>(prev_line_number) + LINE_PADDING);
+
+                if (padded_line <= prev_max_padded) {
+                    if (padded_line == line_number) TextRenderer::render(label_group, stream);
+                    continue;
+                }
+            }
+
             const auto line = file_group.source()->line(padded_line);
 
             stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " │ " << line << std::endl;
 
             if (padded_line == line_number) TextRenderer::render(label_group, stream);
         }
-
-        stream << _whitespaces << "· " << std::endl;
     }
+
+    stream << _whitespaces << "· " << std::endl;
 }
 
 void TextRenderer::render(const LineGroup& line_group, std::ostream& stream) {
@@ -159,14 +187,14 @@ void TextRenderer::render(const LineGroup& line_group, std::ostream& stream) {
         for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
             stream << _whitespaces << "· ";
 
-            size_t current = 0;
+            size_t current_column = 0;
             for (auto other_it = labels.begin(); other_it != std::prev(last_it.base()); ++other_it) {
                 const auto& other_label = *other_it;
-                const auto& finished = render(other_label, stream, text_lines, text_index, false, current);
-                current = finished + 1;
+                const auto& finished = render(other_label, stream, text_lines, text_index, false, current_column);
+                current_column = finished + 1;
             }
 
-            render(label, stream, text_lines, text_index, true, current);
+            render(label, stream, text_lines, text_index, true, current_column);
             stream << std::endl;
         }
     }
@@ -191,7 +219,10 @@ size_t TextRenderer::render(const Label& label, std::ostream& stream,
             if (text_index == 0) {
                 if (start_column == end_column - 1) stream << "╰─▶ ";
                 else stream << "┴─▶ ";
-            } else stream << "    ";
+            } else {
+                // We need to pad with spaces equal to the visual width of "┴─▶ " or "╰─▶ ", which is 4.
+                stream << "    ";
+            }
 
             stream << current_text;
             break;
@@ -214,13 +245,18 @@ size_t TextRenderer::render(const Label& label, std::ostream& stream,
 
 size_t TextRenderer::widest_line_number(const Report::MappedFileGroups& groups, const size_t padding) {
     long line = 0;
+
     for (const auto& group : groups | std::views::values) {
         if (group.line_groups().empty()) continue;
         const auto biggest_line = group.line_groups().rbegin()->first;
         if (biggest_line > static_cast<size_t>(line)) line = static_cast<long>(biggest_line);
     }
+
     // line + 1 is the 1-based line number for display
-    return std::to_string(line + 1 + static_cast<long>(padding)).size();
+    const auto line_string = std::to_string(line + 1 + static_cast<long>(padding));
+    const auto width = visual_width(line_string);
+
+    return width;
 }
 
 std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const size_t max_width) {
@@ -247,7 +283,7 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
             // Calculates the word length. If the line is empty, no whitespace has to be added. Otherwise, it is necessary
             // for concatenation of words.
             const std::string prefix = current_line.empty() ? "" : " ";
-            const size_t word_length = current_word.length() + prefix.length();
+            const size_t word_length = visual_width(current_word) + visual_width(prefix);
 
             // If the word itself doesn't fit into the max width, hard-break it.
             if (word_length > (max_width - position)) {
@@ -255,18 +291,19 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
                 if (!current_line.empty()) lines.push_back(current_line);
 
                 // If the one single word is larger than the entire max width, hard-split it until it fits.
-                while (current_word.length() > max_width) {
+                while (visual_width(current_word) > max_width) {
                     // Extract exactly one line worth out of the current word.
-                    const auto& substring = current_word.substr(0, max_width);
+                    auto byte_index = from_visual_column(current_word, max_width);
+                    const auto& substring = current_word.substr(0, byte_index);
                     lines.push_back(substring);
 
                     // Remove the added substring part from the current word.
-                    current_word = current_word.substr(max_width);
+                    current_word = current_word.substr(byte_index);
                 }
 
                 // Set the current line to be the word and reset the position pointer.
                 current_line = current_word;
-                position = current_word.length();
+                position = visual_width(current_word);
             } else {
                 // Add the separator and word to the current line and adjust the position.
                 current_line += prefix + current_word;
