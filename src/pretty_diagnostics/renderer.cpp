@@ -150,17 +150,7 @@ void TextRenderer::render(const FileGroup& file_group, std::ostream& stream) {
                 }
             }
 
-            // std::ostringstream line_number_stream;
-            // line_number_stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " │ ";
-            // const auto line_number_prefix = line_number_stream.str();
-            //
             const auto line_text = file_group.source()->line(padded_line);
-            // const auto line_wrapped_padding = visual_width(line_number_prefix);
-            // const auto line_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - line_wrapped_padding;
-            //
-            // stream << line_number_prefix;
-            // print_wrapped_text(line_text, line_number_prefix, line_available_width, stream);
-
             stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " │ " << line_text << std::endl;
 
             if (padded_line == line_number) TextRenderer::render(label_group, stream);
@@ -303,6 +293,8 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
 
                     // Extract exactly one line worth out of the current word.
                     const auto byte_index = from_visual_column(chunk, max_width);
+                    if (byte_index == 0) break;
+
                     const auto& substring = chunk.substr(0, byte_index);
                     lines.push_back(substring);
 

@@ -29,7 +29,8 @@ add_library(${PROJECT_NAME}
         src/pretty_diagnostics/renderer.cpp
         src/pretty_diagnostics/span.cpp
         src/pretty_diagnostics/label.cpp
-        src/pretty_diagnostics/utils.cpp)
+        src/pretty_diagnostics/utils.cpp
+        src/pretty_diagnostics/color.cpp)
 # Create an alias for the library: your_project::your_project
 add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
@@ -47,7 +48,8 @@ set(PUBLIC_HEADERS
         include/pretty_diagnostics/renderer.hpp
         include/pretty_diagnostics/span.hpp
         include/pretty_diagnostics/label.hpp
-        include/pretty_diagnostics/utils.hpp)
+        include/pretty_diagnostics/utils.hpp
+        include/pretty_diagnostics/color.hpp)
 
 # Set the properties of the resulting library
 set_target_properties(${PROJECT_NAME}
