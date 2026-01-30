@@ -1,5 +1,13 @@
 #include "pretty_diagnostics/color.hpp"
 
+#include <iostream>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 using namespace pretty_diagnostics::color;
 using namespace pretty_diagnostics;
 
@@ -15,12 +23,51 @@ int color::color_enabled_index() {
     return COLOR_INDEX;
 }
 
+void color::set_color_enabled(std::ostream& os, const bool enabled) {
+    os.iword(color_enabled_index()) = enabled ? 1 : 0;
+}
+
 bool color::is_color_enabled(std::ostream& os) {
     return os.iword(color_enabled_index()) != 0;
 }
 
-void color::set_color_enabled(std::ostream& os, const bool enabled) {
-    os.iword(color_enabled_index()) = enabled ? 1 : 0;
+bool color::is_colorable(const std::ostream& os) {
+#ifdef _WIN32
+    HANDLE handle = nullptr;
+
+    if (&os == &std::cout) {
+        handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    } else if (&os == &std::cerr) {
+        handle = GetStdHandle(STD_ERROR_HANDLE);
+    } else {
+        return false;
+    }
+
+    if (handle == INVALID_HANDLE_VALUE) {
+        return false;
+    }
+
+    DWORD mode = 0;
+    if (!GetConsoleMode(handle, &mode)) {
+        return false;
+    }
+
+    mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(handle, mode);
+    return true;
+#else
+    if (&os == &std::cout) {
+        return ::isatty(STDOUT_FILENO);
+    }
+    if (&os == &std::cerr) {
+        return ::isatty(STDERR_FILENO);
+    }
+    return false;
+#endif
+}
+
+void color::auto_enable_color(std::ostream& os) {
+    set_color_enabled(os, is_colorable(os));
 }
 
 // BSD 3-Clause License

@@ -5,7 +5,7 @@
 namespace pretty_diagnostics::color {
 
 /**
- * @brief ANSI color codes and styles
+ * @brief ANSI escape codes for text styling and coloring
  */
 enum class Code {
     Reset = 0,
@@ -58,19 +58,23 @@ enum class Code {
 };
 
 /**
- * @brief Stream manipulator to output ANSI escape codes
+ * @brief Outputs a single ANSI escape code to the given stream
  *
- * @param os Output stream to use the color
- * @param code ANSI code to output
+ * If color output is disabled for the stream, this operation produces no output
+ *
+ * @param os Target output stream
+ * @param code ANSI style or color code to emit
  * @return Reference to the given stream
  */
 std::ostream& operator<<(std::ostream& os, Code code);
 
 /**
- * @brief A small structure containing all color codes and the text
- *        that should get printed
+ * @brief Holds a piece of text together with one or more ANSI style codes
  *
- * @tparam N The number of color codes being used
+ * This is a lightweight proxy type used to apply multiple styles to a text
+ * segment and automatically reset formatting after output
+ *
+ * @tparam N Number of ANSI codes applied to the text
  */
 template <std::size_t N>
 struct SyledText {
@@ -79,11 +83,14 @@ struct SyledText {
 };
 
 /**
- * @brief Stream manipulator to output a styled text
+ * @brief Outputs styled text to the given stream
  *
- * @tparam N The number of color codes being used
- * @param os The target output stream
- * @param text The styled text which is being outputted
+ * All style codes are emitted in order, followed by the text and a final
+ * reset code to restore default formatting
+ *
+ * @tparam N Number of ANSI codes applied to the text
+ * @param os Target output stream
+ * @param text Styled text to be written
  * @return Reference to the given stream
  */
 template <std::size_t N>
@@ -96,11 +103,14 @@ std::ostream& operator<<(std::ostream& os, const SyledText<N>& text) {
 }
 
 /**
- * @brief A variadic helper to make it easier to style text
+ * @brief Creates a styled text object from a text and a set of ANSI codes
  *
- * @param text The text that should get styled
- * @param codes All the codes to be used
- * @return A populated `StyledText` structure using the given parameters
+ * This helper enables concise and expressive syntax for applying multiple
+ * styles to a single text segment
+ *
+ * @param text Text to be styled
+ * @param codes ANSI style and color codes to apply
+ * @return A `SyledText` instance containing the provided styles and text
  */
 template <typename... Codes>
 requires (std::conjunction_v<std::is_same<Codes, Code>...>)
@@ -112,30 +122,51 @@ requires (std::conjunction_v<std::is_same<Codes, Code>...>)
 }
 
 /**
- * @brief This will return a unique xalloc flag that can be used
- *        to check whether color is enabled or disabled for a specific
- *        stream
+ * @brief Returns a unique `std::ios_base::xalloc` index used to store
+ *        per-stream color enable state
  *
- * @return A unique xalloc flag
+ * @return Index used for accessing the stream-local color flag
  */
 int color_enabled_index();
 
 /**
  * @brief Enables or disables color output for a specific output stream
- *        If disabled, the stream manipulator will not output any escape codes
  *
- * @param os The output stream to be changed
- * @param enabled True to enable, false to disable
+ * When disabled, no ANSI escape codes will be emitted for that stream
+ *
+ * @param os Output stream to modify
+ * @param enabled Whether color output should be enabled
  */
 void set_color_enabled(std::ostream& os, bool enabled);
 
 /**
- * @brief Checks if color output is enabled for this stream
+ * @brief Checks whether color output is enabled for the given stream
  *
- * @param os The output stream to be checked
- * @return True if enabled, false otherwise
+ * @param os Output stream to query
+ * @return True if color output is enabled, false otherwise
  */
 bool is_color_enabled(std::ostream& os);
+
+/**
+ * @brief Checks whether the given output stream supports colored output.
+ *
+ * Performs a platform-specific best-effort check to determine whether the
+ * stream is connected to a terminal capable of displaying ANSI escape codes.
+ *
+ * @param os Output stream to check
+ * @return True if the stream likely supports color output
+ */
+bool is_colorable(const std::ostream& os);
+
+/**
+ * @brief Enables or disables color output for a stream based on its capability.
+ *
+ * Calls `is_colorable(os)` and enables color output if supported, otherwise
+ * disables it.
+ *
+ * @param os Output stream to initialize
+ */
+void auto_enable_color(std::ostream& os);
 
 } // namespace pretty_diagnostics::color
 

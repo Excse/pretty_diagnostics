@@ -6,6 +6,17 @@
 
 using namespace pretty_diagnostics::color;
 
+TEST(Color, StringStreamNotColorable) {
+    const std::stringstream stream;
+    EXPECT_FALSE(is_colorable(stream));
+}
+
+TEST(Color, StringStreamColorNotAutoTogglable) {
+    std::stringstream stream;
+    auto_enable_color(stream);
+    EXPECT_FALSE(is_color_enabled(stream));
+}
+
 TEST(Color, DefaultNotColored) {
     std::stringstream stream;
     stream << STYLE("Hello World!", Code::FgRed);
