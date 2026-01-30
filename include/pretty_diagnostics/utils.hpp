@@ -17,6 +17,23 @@ namespace pretty_diagnostics {
 std::string escape_string(std::string_view input);
 
 /**
+ * @brief A structure to contian the return values from `get_visual_char`
+ */
+struct VisualChar {
+    size_t visual_width;
+    size_t byte_count;
+};
+
+/**
+ * @brief Returns the visual width and byte count of a given UTF8 character
+ *
+ * @param input The input stringview that contains the UTF8 character
+ * @param index The index at which the character is located
+ * @return
+ */
+[[nodiscard]] VisualChar get_visual_char(std::string_view input, size_t index);
+
+/**
  * @brief Calculates the visual display width of a UTF-8 string (for terminal display)
  *
  * ASCII characters count as 1, most 3- and 4-byte characters (CJK, emojis) as 2.

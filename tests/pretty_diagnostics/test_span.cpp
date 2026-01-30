@@ -4,7 +4,7 @@
 
 using namespace pretty_diagnostics;
 
-static const auto RESOURCES_DIRECTORY = std::filesystem::path(TEST_PATH) / "resources";
+static const auto RESOURCES_DIRECTORY = std::filesystem::path(TEST_PATH) / "pretty_diagnostics" / "resources";
 
 TEST(Span, FirstLabel) {
     const auto file_path = RESOURCES_DIRECTORY / "01-main.c";

@@ -150,9 +150,18 @@ void TextRenderer::render(const FileGroup& file_group, std::ostream& stream) {
                 }
             }
 
-            const auto line = file_group.source()->line(padded_line);
+            // std::ostringstream line_number_stream;
+            // line_number_stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " │ ";
+            // const auto line_number_prefix = line_number_stream.str();
+            //
+            const auto line_text = file_group.source()->line(padded_line);
+            // const auto line_wrapped_padding = visual_width(line_number_prefix);
+            // const auto line_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - line_wrapped_padding;
+            //
+            // stream << line_number_prefix;
+            // print_wrapped_text(line_text, line_number_prefix, line_available_width, stream);
 
-            stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " │ " << line << std::endl;
+            stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " │ " << line_text << std::endl;
 
             if (padded_line == line_number) TextRenderer::render(label_group, stream);
         }
@@ -256,6 +265,8 @@ size_t TextRenderer::widest_line_number(const Report::MappedFileGroups& groups, 
 
 std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const size_t max_width) {
     std::vector<std::string> lines;
+    if (text.empty()) return lines;
+
     std::istringstream line_stream(text);
     std::string current_paragraph;
 
@@ -267,43 +278,70 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
             continue;
         }
 
-        std::istringstream word_stream(current_paragraph);
-
+        size_t visual_position = 0;
+        size_t byte_position = 0;
         std::string current_line;
-        std::string current_word;
-        size_t position = 0;
 
-        // Go over each word and test if it fits in the current line or a new one needs to be constructed.
-        while (word_stream >> current_word) {
-            // Calculates the word length. If the line is empty, no whitespace has to be added. Otherwise, it is necessary
-            // for concatenation of words.
-            const std::string prefix = current_line.empty() ? "" : " ";
-            const size_t word_length = visual_width(current_word) + visual_width(prefix);
+        const auto add_chunk = [&](std::string chunk) {
+            if (chunk.empty()) return;
+
+            const size_t chunk_width = visual_width(chunk);
 
             // If the word itself doesn't fit into the max width, hard-break it.
-            if (word_length > (max_width - position)) {
+            if (chunk_width > (max_width - visual_position)) {
                 // If the current line is non-empty add it to the lines.
-                if (!current_line.empty()) lines.push_back(current_line);
+                if (!current_line.empty()) {
+                    lines.push_back(current_line);
+                    current_line.clear();
+                    visual_position = 0;
+                }
 
                 // If the one single word is larger than the entire max width, hard-split it until it fits.
-                while (visual_width(current_word) > max_width) {
+                while (true) {
+                    const auto visua = visual_width(chunk);
+                    if (visua <= max_width) break;
+
                     // Extract exactly one line worth out of the current word.
-                    auto byte_index = from_visual_column(current_word, max_width);
-                    const auto& substring = current_word.substr(0, byte_index);
+                    const auto byte_index = from_visual_column(chunk, max_width);
+                    const auto& substring = chunk.substr(0, byte_index);
                     lines.push_back(substring);
 
                     // Remove the added substring part from the current word.
-                    current_word = current_word.substr(byte_index);
+                    chunk = chunk.substr(byte_index);
                 }
 
-                // Set the current line to be the word and reset the position pointer.
-                current_line = current_word;
-                position = visual_width(current_word);
+                current_line = chunk;
+                visual_position = visual_width(chunk);
             } else {
-                // Add the separator and word to the current line and adjust the position.
-                current_line += prefix + current_word;
-                position += word_length;
+                current_line += chunk;
+                visual_position += chunk_width;
             }
+        };
+
+        while (byte_position < current_paragraph.size()) {
+            const auto word_start = byte_position;
+            while (byte_position < current_paragraph.size()) {
+                const auto current_char = current_paragraph[byte_position];
+                if (std::isspace(current_char)) break;
+
+                const auto [_, byte_count] = get_visual_char(current_paragraph, byte_position);
+                byte_position += byte_count;
+            }
+
+            const auto word = current_paragraph.substr(word_start, byte_position - word_start);
+            add_chunk(word);
+
+            const auto space_start = byte_position;
+            while (byte_position < current_paragraph.size()) {
+                const auto current_char = current_paragraph[byte_position];
+                if (!std::isspace(current_char)) break;
+
+                const auto [_, byte_count] = get_visual_char(current_paragraph, byte_position);
+                byte_position += byte_count;
+            }
+
+            const auto space = current_paragraph.substr(space_start, byte_position - space_start);
+            add_chunk(space);
         }
 
         // Add the remaining line to the vector.
@@ -315,6 +353,10 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
 
 void TextRenderer::print_wrapped_text(const std::string& text, const std::string& wrapped_prefix, const size_t max_width, std::ostream& stream) {
     const auto lines = wrap_text(text, max_width);
+    if (lines.empty()) {
+        stream << std::endl;
+        return;
+    }
 
     stream << lines[0] << std::endl;
     for (size_t index = 1; index < lines.size(); ++index) {

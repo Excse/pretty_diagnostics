@@ -2,71 +2,71 @@ error[E1337]: Displaying a brief summary of what happened
    ╭╴pretty_diagnostics/renderer/snapshots/02-renderer.c╶─
    ·
  1 │ #include <stdio.h>
-   ·           │ ││╰─┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing
-   ·           │ ││      elit. Suspendisse semper hendrerit iaculis. Integer
+   ·           │ ││╰─┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing 
+   ·           │ ││      elit. Suspendisse semper hendrerit iaculis. Integer 
    ·           │ ││      suscipit facilisis libero sed consectetur. Fusce turpis
-   ·           │ ││      risus, elementum nec fermentum quis, ultricies a
-   ·           │ ││      libero. Aliquam et nisi quis elit pulvinar vestibulum
+   ·           │ ││       risus, elementum nec fermentum quis, ultricies a 
+   ·           │ ││      libero. Aliquam et nisi quis elit pulvinar vestibulum 
    ·           │ ││      sit amet id est. Integer.
-   ·           │ │╰─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-   ·           │ │    Suspendisse semper hendrerit iaculis. Integer suscipit
-   ·           │ │    facilisis libero sed consectetur. Fusce turpis risus,
-   ·           │ │    elementum nec fermentum quis, ultricies a libero. Aliquam
-   ·           │ │    et nisi quis elit pulvinar vestibulum sit amet id est.
+   ·           │ │╰─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+   ·           │ │    Suspendisse semper hendrerit iaculis. Integer suscipit 
+   ·           │ │    facilisis libero sed consectetur. Fusce turpis risus, 
+   ·           │ │    elementum nec fermentum quis, ultricies a libero. Aliquam 
+   ·           │ │    et nisi quis elit pulvinar vestibulum sit amet id est. 
    ·           │ │    Integer.
-   ·           ╰─┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-   ·                 Suspendisse semper hendrerit iaculis. Integer suscipit
-   ·                 facilisis libero sed consectetur. Fusce turpis risus,
-   ·                 elementum nec fermentum quis, ultricies a libero. Aliquam
-   ·                 et nisi quis elit pulvinar vestibulum sit amet id est.
+   ·           ╰─┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+   ·                 Suspendisse semper hendrerit iaculis. Integer suscipit 
+   ·                 facilisis libero sed consectetur. Fusce turpis risus, 
+   ·                 elementum nec fermentum quis, ultricies a libero. Aliquam 
+   ·                 et nisi quis elit pulvinar vestibulum sit amet id est. 
    ·                 Integer.
  2 │ 
  3 │ int main() {
  4 │     printf("Hello World!\n");
-   ·     │ ││││ │     ││╰──────┴─▶ Lorem ipsum dolor sit amet, consectetur
+   ·     │ ││││ │     ││╰──────┴─▶ Lorem ipsum dolor sit amet, consectetur 
    ·     │ ││││ │     ││           adipiscing elit. Suspendisse semper hendrerit
-   ·     │ ││││ │     ││           iaculis. Integer suscipit facilisis libero
-   ·     │ ││││ │     ││           sed consectetur. Fusce turpis risus,
-   ·     │ ││││ │     ││           elementum nec fermentum quis, ultricies a
-   ·     │ ││││ │     ││           libero. Aliquam et nisi quis elit pulvinar
+   ·     │ ││││ │     ││            iaculis. Integer suscipit facilisis libero 
+   ·     │ ││││ │     ││           sed consectetur. Fusce turpis risus, 
+   ·     │ ││││ │     ││           elementum nec fermentum quis, ultricies a 
+   ·     │ ││││ │     ││           libero. Aliquam et nisi quis elit pulvinar 
    ·     │ ││││ │     ││           vestibulum sit amet id est. Integer.
-   ·     │ ││││ │     │╰─▶ Lorem ipsum dolor sit amet, consectetur adipiscing
-   ·     │ ││││ │     │    elit. Suspendisse semper hendrerit iaculis. Integer
-   ·     │ ││││ │     │    suscipit facilisis libero sed consectetur. Fusce
+   ·     │ ││││ │     │╰─▶ Lorem ipsum dolor sit amet, consectetur adipiscing 
+   ·     │ ││││ │     │    elit. Suspendisse semper hendrerit iaculis. Integer 
+   ·     │ ││││ │     │    suscipit facilisis libero sed consectetur. Fusce 
    ·     │ ││││ │     │    turpis risus, elementum nec fermentum quis, ultricies
-   ·     │ ││││ │     │    a libero. Aliquam et nisi quis elit pulvinar
+   ·     │ ││││ │     │     a libero. Aliquam et nisi quis elit pulvinar 
    ·     │ ││││ │     │    vestibulum sit amet id est. Integer.
-   ·     │ ││││ ╰─────┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing
-   ·     │ ││││           elit. Suspendisse semper hendrerit iaculis. Integer
-   ·     │ ││││           suscipit facilisis libero sed consectetur. Fusce
-   ·     │ ││││           turpis risus, elementum nec fermentum quis, ultricies
-   ·     │ ││││           a libero. Aliquam et nisi quis elit pulvinar
+   ·     │ ││││ ╰─────┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing 
+   ·     │ ││││           elit. Suspendisse semper hendrerit iaculis. Integer 
+   ·     │ ││││           suscipit facilisis libero sed consectetur. Fusce 
+   ·     │ ││││           turpis risus, elementum nec fermentum quis, ultricies 
+   ·     │ ││││           a libero. Aliquam et nisi quis elit pulvinar 
    ·     │ ││││           vestibulum sit amet id est. Integer.
-   ·     │ ││╰┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-   ·     │ ││     Suspendisse semper hendrerit iaculis. Integer suscipit
-   ·     │ ││     facilisis libero sed consectetur. Fusce turpis risus,
-   ·     │ ││     elementum nec fermentum quis, ultricies a libero. Aliquam et
+   ·     │ ││╰┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+   ·     │ ││     Suspendisse semper hendrerit iaculis. Integer suscipit 
+   ·     │ ││     facilisis libero sed consectetur. Fusce turpis risus, 
+   ·     │ ││     elementum nec fermentum quis, ultricies a libero. Aliquam et 
    ·     │ ││     nisi quis elit pulvinar vestibulum sit amet id est. Integer.
-   ·     │ │╰─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+   ·     │ │╰─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
    ·     │ │    Suspendisse semper hendrerit iaculis. Integer suscipit facilisis
-   ·     │ │    libero sed consectetur. Fusce turpis risus, elementum nec
-   ·     │ │    fermentum quis, ultricies a libero. Aliquam et nisi quis elit
+   ·     │ │     libero sed consectetur. Fusce turpis risus, elementum nec 
+   ·     │ │    fermentum quis, ultricies a libero. Aliquam et nisi quis elit 
    ·     │ │    pulvinar vestibulum sit amet id est. Integer.
-   ·     ╰─┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-   ·           Suspendisse semper hendrerit iaculis. Integer suscipit facilisis
-   ·           libero sed consectetur. Fusce turpis risus, elementum nec
-   ·           fermentum quis, ultricies a libero. Aliquam et nisi quis elit
+   ·     ╰─┴─▶ Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
+   ·           Suspendisse semper hendrerit iaculis. Integer suscipit facilisis 
+   ·           libero sed consectetur. Fusce turpis risus, elementum nec 
+   ·           fermentum quis, ultricies a libero. Aliquam et nisi quis elit 
    ·           pulvinar vestibulum sit amet id est. Integer.
  5 │     return 0;
    · 
    │ Note: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-   │       semper hendrerit iaculis. Integer suscipit facilisis libero sed
-   │       consectetur. Fusce turpis risus, elementum nec fermentum quis,
-   │       ultricies a libero. Aliquam et nisi quis elit pulvinar vestibulum
+   │        semper hendrerit iaculis. Integer suscipit facilisis libero sed 
+   │       consectetur. Fusce turpis risus, elementum nec fermentum quis, 
+   │       ultricies a libero. Aliquam et nisi quis elit pulvinar vestibulum 
    │       sit amet id est. Integer.
    │ Help: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-   │       semper hendrerit iaculis. Integer suscipit facilisis libero sed
-   │       consectetur. Fusce turpis risus, elementum nec fermentum quis,
-   │       ultricies a libero. Aliquam et nisi quis elit pulvinar vestibulum
+   │        semper hendrerit iaculis. Integer suscipit facilisis libero sed 
+   │       consectetur. Fusce turpis risus, elementum nec fermentum quis, 
+   │       ultricies a libero. Aliquam et nisi quis elit pulvinar vestibulum 
    │       sit amet id est. Integer.
    ╯

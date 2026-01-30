@@ -41,56 +41,59 @@ std::string pretty_diagnostics::escape_string(const std::string_view input) {
     return output.str();
 }
 
-size_t pretty_diagnostics::visual_width(const std::string_view input) {
-    size_t width = 0;
-
-    for (size_t index = 0; index < input.size();) {
-        const unsigned char current_char = input[index];
-        if (current_char <= 0x7F) { // ASCII
-            width += 1;
-            index += 1;
-        } else if ((current_char & 0xE0) == 0xC0) { // 2-byte sequence
-            width += 1;
-            index += 2;
-        } else if ((current_char & 0xF0) == 0xE0) { // 3-byte sequence
-            width += 2;
-            index += 3;
-        } else if ((current_char & 0xF8) == 0xF0) { // 4-byte sequence (Emojis, etc.)
-            width += 2;
-            index += 4;
-        } else { // Invalid UTF-8, skip one byte
-            width += 1;
-            index += 1;
-        }
+VisualChar pretty_diagnostics::get_visual_char(const std::string_view input, const size_t index) {
+    if (index >= input.size()) {
+        return { 0, 0 };
     }
 
-    return width;
+    const unsigned char current = input[index];
+
+    // ASCII
+    if (current <= 0x7F) {
+        return { 1, 1 };
+    }
+
+    // 2-byte UTF-8
+    if ((current & 0xE0) == 0xC0 && index + 1 < input.size()) {
+        return { 1, 2 };
+    }
+
+    // 3-byte UTF-8
+    if ((current & 0xF0) == 0xE0 && index + 2 < input.size()) {
+        return { 2, 3 };
+    }
+
+    // 4-byte UTF-8 (emoji, etc.)
+    if ((current & 0xF8) == 0xF0 && index + 3 < input.size()) {
+        return { 2, 4 };
+    }
+
+    // Invalid or truncated UTF-8
+    return { 1, 1 };
+}
+
+size_t pretty_diagnostics::visual_width(const std::string_view input) {
+    size_t visual_width = 0;
+
+    for (size_t index = 0; index < input.size();) {
+        auto [width, byte_count] = get_visual_char(input, index);
+        visual_width += width;
+        index += byte_count;
+    }
+
+    return visual_width;
 }
 
 size_t pretty_diagnostics::to_visual_column(const std::string_view line, const size_t byte_column) {
-    size_t column = 0;
+    size_t visual_column = 0;
 
     for (size_t index = 0; index < byte_column && index < line.size();) {
-        const unsigned char current_char = line[index];
-        if (current_char <= 0x7F) { // ASCII
-            column += 1;
-            index += 1;
-        } else if ((current_char & 0xE0) == 0xC0 && index + 1 < line.size()) { // 2-byte sequence
-            column += 1;
-            index += 2;
-        } else if ((current_char & 0xF0) == 0xE0 && index + 2 < line.size()) { // 3-byte sequence
-            column += 2;
-            index += 3;
-        } else if ((current_char & 0xF8) == 0xF0 && index + 3 < line.size()) { // 4-byte sequence (Emojis, etc.)
-            column += 2;
-            index += 4;
-        } else { // Invalid UTF-8, skip one byte
-            column += 1;
-            index += 1;
-        }
+        auto [width, byte_count] = get_visual_char(line, index);
+        visual_column += width;
+        index += byte_count;
     }
 
-    return column;
+    return visual_column;
 }
 
 size_t pretty_diagnostics::from_visual_column(const std::string_view line, const size_t visual_column) {
@@ -98,31 +101,14 @@ size_t pretty_diagnostics::from_visual_column(const std::string_view line, const
     size_t byte_column = 0;
 
     while (byte_column < line.size() && current_column < visual_column) {
-        const unsigned char current = line[byte_column];
-        size_t char_width = 1;
-        size_t char_bytes = 1;
+        auto [width, byte_count] = get_visual_char(line, byte_column);
 
-        if (current <= 0x7F) { // ASCII
-            char_width = 1;
-            char_bytes = 1;
-        } else if ((current & 0xE0) == 0xC0 && byte_column + 1 < line.size()) { // 2-byte sequence
-            char_width = 1;
-            char_bytes = 2;
-        } else if ((current & 0xF0) == 0xE0 && byte_column + 2 < line.size()) { // 3-byte sequence
-            char_width = 2;
-            char_bytes = 3;
-        } else if ((current & 0xF8) == 0xF0 && byte_column + 3 < line.size()) { // 4-byte sequence (Emojis, etc.)
-            char_width = 2;
-            char_bytes = 4;
-        } else { // Invalid or truncated
-            char_width = 1;
-            char_bytes = 1;
+        if (current_column + width > visual_column) {
+            break;
         }
 
-        if (current_column + char_width > visual_column) break;
-
-        current_column += char_width;
-        byte_column += char_bytes;
+        byte_column += byte_count;
+        current_column += width;
     }
 
     return byte_column;

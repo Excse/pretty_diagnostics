@@ -1,11 +1,12 @@
-error[E1337]: A curious girl leaves home, survives a dangerous adventure,
-              defeats a dragon, finds a treasure, and returns wiser and happy.
+error[E1337]: A curious girl leaves home, survives a dangerous adventure, 
+              defeats a dragon, finds a treasure, and returns wiser and happy. 
               🐉✨
    ╭╴pretty_diagnostics/renderer/snapshots/04-unicode-wrap.txt╶─
    ·
  1 │ 🌅🏡👧📖✨🗺️➡️👧🚶‍♀️🌲🌲🦌🌼🌤️➡️🌙⭐🌲🔥⛺➡️🌧️⚡🌬️😱➡️🏃‍♀️🏔️🪨➡️🕳️⬇️🌌➡️🐉🔥😈➡️⚔️🛡️💥➡️🐉😵‍💫💨➡️💎🌈🌞➡️👧😁🎒➡️🏡👨‍👩‍👧🎉🍰➡️🌙🛌⭐😌
-   ·                                                      ┴─▶ Look at this
-   ·                                                          awesome unicode
-   ·                                                          rocket!
+   ·                                                             ╰──┴─▶ This is 
+   ·                                                                    the hole 
+   ·                                                                    she fell 
+   ·                                                                    through!
    · 
    ╯

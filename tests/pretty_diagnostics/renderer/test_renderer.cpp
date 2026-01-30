@@ -13,7 +13,7 @@ static const auto SNAPSHOTS_DIRECTORY = std::filesystem::path(TEST_PATH) / "pret
 
 TEST(Renderer, CorrectTextWrap) {
     const auto result = TextRenderer::wrap_text("Hello World!\nHow are you, today?", 10);
-    ASSERT_EQ(result, std::vector<std::string>({ "Hello", "World!", "How are", "you,", "today?" }));
+    ASSERT_EQ(result, std::vector<std::string>({ "Hello ", "World!", "How are ", "you, ", "today?" }));
 }
 
 TEST(Renderer, SingleCharWrap) {
@@ -23,7 +23,7 @@ TEST(Renderer, SingleCharWrap) {
 
 TEST(Renderer, LongHardSplit) {
     const auto result = TextRenderer::wrap_text("AAAAAAAAAA BBBBBBBBBB", 5);
-    ASSERT_EQ(result, std::vector<std::string>({ "AAAAA", "AAAAA", "BBBBB", "BBBBB" }));
+    ASSERT_EQ(result, std::vector<std::string>({ "AAAAA", "AAAAA", " ", "BBBBB", "BBBBB" }));
 }
 
 TEST(Renderer, RealExample) {
@@ -31,7 +31,7 @@ TEST(Renderer, RealExample) {
             "This example showcases every little detail of the library, also with the capability of line wrapping.",
             69);
     ASSERT_EQ(result, std::vector<std::string>({
-                  "This example showcases every little detail of the library, also with",
+                  "This example showcases every little detail of the library, also with ",
                   "the capability of line wrapping."
                   }));
 }
@@ -131,7 +131,7 @@ TEST(Renderer, UnicodeWrapRender) {
                         .severity(Severity::Error)
                         .message("A curious girl leaves home, survives a dangerous adventure, defeats a dragon, finds a treasure, and returns wiser and happy. 🐉✨")
                         .code("E1337")
-                        .label("Look at this awesome unicode rocket!", { file_source, 94, 95 })
+                        .label("This is the hole she fell through!", { file_source, 0, 60, 0, 64 })
                         .build();
 
     auto renderer = TextRenderer(report);
