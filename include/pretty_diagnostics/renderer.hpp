@@ -157,7 +157,7 @@ public:
     static void print_wrapped_text(const std::string& text, const std::string& wrapped_prefix, size_t max_width, std::ostream& stream);
 
 private:
-    size_t _padding, _snippet_width;
+    size_t _line_number_width, _snippet_width;
     std::string _whitespaces;
     Config _config;
 };

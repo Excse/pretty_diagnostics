@@ -45,9 +45,9 @@ GlyphSet Glyphs::Ascii() {
 }
 
 TextRenderer::TextRenderer(const Report& report, Config config) : _config(std::move(config)) {
-    _padding = widest_line_number(report.file_groups(), LINE_PADDING) + 2;
-    _snippet_width = static_cast<int>(_padding - 1);
-    _whitespaces = std::string(_padding, ' ');
+    _line_number_width = widest_line_number(report.file_groups(), LINE_PADDING) + 2;
+    _snippet_width = static_cast<int>(_line_number_width - 1);
+    _whitespaces = std::string(_line_number_width, ' ');
 }
 
 void TextRenderer::render(const Severity& severity, std::ostream& stream) {
@@ -204,7 +204,9 @@ void TextRenderer::render(const LineGroup& line_group, std::ostream& stream) {
         //  (end_column + 4)   -> "┴─▶ " (4 characters have to be drawn at end_column)
         //  MAX_TERMINAL_WIDTH -> a (for now) static variable that determines the terminal width
         const auto end_column = active_label.span().end().column();
-        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - static_cast<long>(end_column + 4) - static_cast<long>(_padding + 1);
+        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
+                                   - static_cast<long>(end_column + 4)
+                                   - static_cast<long>(_line_number_width + 1);
 
         const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
         const auto text_lines = wrap_text(active_label.text(), max_text_width);

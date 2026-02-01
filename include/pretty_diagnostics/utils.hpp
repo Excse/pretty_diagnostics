@@ -70,6 +70,8 @@ T min(T first, Ts... rest) {
     return (rest_min < first) ? rest_min : first;
 }
 
+size_t get_stream_width(const std::ostream &stream);
+
 /**
  * @brief A structure to contian the return values from `get_visual_char`
  */

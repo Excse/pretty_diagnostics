@@ -1,5 +1,15 @@
 #include "pretty_diagnostics/utils.hpp"
 
+#include <iostream>
+#include <limits>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#include <sys/ioctl.h>
+#endif
+
 using namespace pretty_diagnostics;
 
 std::string pretty_diagnostics::escape_string(const std::string_view input) {
@@ -39,6 +49,47 @@ std::string pretty_diagnostics::escape_string(const std::string_view input) {
     }
 
     return output.str();
+}
+
+size_t pretty_diagnostics::get_stream_width(const std::ostream& stream) {
+    int file_descriptor;
+    if (&stream == &std::cout) {
+        file_descriptor = STDOUT_FILENO;
+    } else if (&stream == &std::cerr || &stream == &std::clog) {
+        file_descriptor = STDERR_FILENO;
+    } else {
+        return std::numeric_limits<size_t>::max();
+    }
+
+#ifdef _WIN32
+    HANDLE handle = (file_descriptor == STDOUT_FILENO) ? GetStdHandle(STD_OUTPUT_HANDLE) : GetStdHandle(STD_ERROR_HANDLE);
+
+    if (handle == INVALID_HANDLE_VALUE) {
+        return std::numeric_limits<size_t>::max();
+    }
+
+    CONSOLE_SCREEN_BUFFER_INFO screen_buffer_info;
+
+    const int result = GetConsoleScreenBufferInfo(handle, &screen_buffer_info);
+    if (result == 0) {
+        return std::numeric_limits<size_t>::max();
+    }
+
+    return static_cast<size_t>(screen_buffer_info.srWindow.Right - screen_buffer_info.srWindow.Left + 1);
+#else
+    if (!isatty(file_descriptor)) {
+        return std::numeric_limits<size_t>::max();
+    }
+
+    winsize window_size{};
+
+    const int result = ioctl(file_descriptor, TIOCGWINSZ, &window_size);
+    if (result == -1) {
+        return std::numeric_limits<size_t>::max();
+    }
+
+    return window_size.ws_col;
+#endif
 }
 
 VisualChar pretty_diagnostics::get_visual_char(const std::string_view input, const size_t index) {

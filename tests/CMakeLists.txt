@@ -23,7 +23,8 @@ file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS *.cpp)
 # set(TEST_SOURCES ...)
 
 # Define test executable
-add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
+add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES}
+        pretty_diagnostics/test_utils.cpp)
 # Link the test binary with the main library and GoogleTest
 target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME} gtest_main gtest gmock)
 # Add the path as a definition
