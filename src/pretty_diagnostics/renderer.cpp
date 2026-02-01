@@ -1,8 +1,8 @@
 #include "pretty_diagnostics/renderer.hpp"
 #include "pretty_diagnostics/utils.hpp"
 
-#include <unordered_map>
 #include <ranges>
+#include <unordered_map>
 #include <vector>
 
 using namespace pretty_diagnostics;
@@ -92,7 +92,7 @@ void TextRenderer::render(const Severity& severity, std::ostream& stream) {
  *     bottom     ╶─┤ ───╯
  */
 void TextRenderer::render(const Report& report, std::ostream& stream) {
-    const auto& groups = report.file_groups();
+    const auto& file_groups = report.file_groups();
 
     this->render(report.severity(), stream);
 
@@ -107,15 +107,20 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
     const auto message_wrapped_prefix = std::string(message_wrapped_padding, ' ');
     print_wrapped_text(report.message(), message_wrapped_prefix, message_available_width, stream);
 
-    for (auto it = groups.begin(); it != groups.end(); ++it) {
+    for (auto it = file_groups.begin(); it != file_groups.end(); ++it) {
         const auto& [source, file_group] = *it;
 
-        if (it == groups.begin()) stream << _whitespaces << _config.glyphs.corner_top_left;
-        else stream << _whitespaces << _config.glyphs.tee_right;
+        if (it == file_groups.begin()) {
+            stream << _whitespaces << _config.glyphs.corner_top_left;
+        } else {
+            stream << _whitespaces << _config.glyphs.tee_right;
+        }
 
-        stream << _config.glyphs.cap_left << source->path() << _config.glyphs.cap_right << std::endl;
+        stream << _config.glyphs.cap_left << source->path() << _config.glyphs.cap_right << "\n";
 
-        if (it == groups.begin()) stream << _whitespaces << _config.glyphs.filler << std::endl;
+        if (it == file_groups.begin()) {
+            stream << _whitespaces << _config.glyphs.filler << "\n";
+        }
 
         render(file_group, stream);
     }
@@ -142,148 +147,149 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
         print_wrapped_text(report.help().value(), help_wrapped_prefix, help_available_width, stream);
     }
 
-    stream << _whitespaces << _config.glyphs.corner_bottom_right << std::endl;
+    stream << _whitespaces << _config.glyphs.corner_bottom_right << "\n";
 }
 
 void TextRenderer::render(const FileGroup& file_group, std::ostream& stream) {
     const auto max_line = static_cast<long>(file_group.source()->line_count());
     const auto& line_groups = file_group.line_groups();
 
+    long max_rendered_line = -1;
     for (auto it = line_groups.begin(); it != line_groups.end(); ++it) {
         const auto& label_group = it->second;
-        const auto line_number = label_group.line_number();
 
-        const auto min_padded_line = std::max(0L, static_cast<long>(line_number) - LINE_PADDING);
-        const auto max_padded_line = std::min(max_line - 1, static_cast<long>(line_number) + LINE_PADDING);
+        const auto next_line = (it == std::prev(line_groups.end())) ? max_line : static_cast<long>(std::next(it)->second.line_number());
+        const auto prev_line = (it == line_groups.begin()) ? -1 : static_cast<long>(std::prev(it)->second.line_number());
 
-        // Calculate if we need a spacer before this group (if it's not the first and doesn't overlap with previous)
-        if (it != line_groups.begin()) {
-            const auto &previous_group = std::prev(it)->second;
+        const auto current_line = static_cast<long>(label_group.line_number());
 
-            const auto prev_line_number = previous_group.line_number();
-            const auto prev_max_padded = std::min(max_line - 1, static_cast<long>(prev_line_number) + LINE_PADDING);
+        const auto max_padded_line = min(max_line - 1, next_line - 1, current_line + LINE_PADDING);
+        const auto min_padded_line = max(0L, prev_line + 1, current_line - LINE_PADDING);
 
-            if (min_padded_line > prev_max_padded + 1) {
-                stream << _whitespaces << _config.glyphs.filler << " " << std::endl;
-            }
+        if (it != line_groups.begin() && min_padded_line > max_rendered_line + 1) {
+            stream << _whitespaces << _config.glyphs.filler << " \n";
         }
 
-        for (size_t padded_line = min_padded_line; padded_line <= static_cast<size_t>(max_padded_line); ++padded_line) {
-            // Avoid double-rendering lines if they are part of multiple groups
-            if (it != line_groups.begin()) {
-                const auto &previous_group = std::prev(it)->second;
+        for (long line = min_padded_line; line <= max_padded_line; ++line) {
+            const bool source_line_needed = line > max_rendered_line;
+            const bool render_label_here = line == current_line;
 
-                const auto prev_line_number = previous_group.line_number();
-                const auto prev_max_padded = std::min(max_line - 1, static_cast<long>(prev_line_number) + LINE_PADDING);
-
-                if (padded_line <= prev_max_padded) {
-                    if (padded_line == line_number) TextRenderer::render(label_group, stream);
-                    continue;
-                }
+            if (source_line_needed) {
+                const auto line_text = file_group.source()->line(line);
+                stream << std::setw(static_cast<int>(_snippet_width))
+                       << line + 1 << " "
+                       << _config.glyphs.line_vertical << " "
+                       << line_text << '\n';
+                max_rendered_line = line;
             }
 
-            const auto line_text = file_group.source()->line(padded_line);
-            stream << std::setw(static_cast<int>(_snippet_width)) << padded_line + 1 << " " << _config.glyphs.line_vertical << " " << line_text << std::endl;
-
-            if (padded_line == line_number) TextRenderer::render(label_group, stream);
+            if (render_label_here) {
+                TextRenderer::render(label_group, stream);
+            }
         }
     }
 
-    stream << _whitespaces << _config.glyphs.filler << " " << std::endl;
+    stream << _whitespaces << _config.glyphs.filler << " \n";
 }
 
 void TextRenderer::render(const LineGroup& line_group, std::ostream& stream) {
     const auto& labels = line_group.labels();
 
-    for (auto last_it = labels.rbegin(); last_it != labels.rend(); ++last_it) {
-        const auto& label = *last_it;
-        const auto end_column = label.span().end().column();
+    for (auto active_it = labels.rbegin(); active_it != labels.rend(); ++active_it) {
+        const auto& active_label = *active_it;
 
         // This equation consists of the following parts:
         // [prefix][padding until label end][arrow][wrapped_text]
         //  (padding + 1)      -> "  · " (the dynamic prefix)
         //  (end_column + 4)   -> "┴─▶ " (4 characters have to be drawn at end_column)
         //  MAX_TERMINAL_WIDTH -> a (for now) static variable that determines the terminal width
-        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH)
-                                     - static_cast<long>(end_column + 4)
-                                     - static_cast<long>(_padding + 1);
+        const auto end_column = active_label.span().end().column();
+        const auto available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - static_cast<long>(end_column + 4) - static_cast<long>(_padding + 1);
+
         const auto max_text_width = static_cast<size_t>(std::max(MIN_TEXT_WRAP, available_width));
-        const auto text_lines = wrap_text(label.text(), max_text_width);
+        const auto text_lines = wrap_text(active_label.text(), max_text_width);
 
         for (size_t text_index = 0; text_index < text_lines.size(); ++text_index) {
             stream << _whitespaces << _config.glyphs.filler << " ";
 
             size_t current_column = 0;
-            for (auto other_it = labels.begin(); other_it != std::prev(last_it.base()); ++other_it) {
-                const auto& other_label = *other_it;
-                const auto& finished = render(other_label, stream, text_lines, text_index, false, current_column);
-                current_column = finished + 1;
+            for (auto inactive_it = labels.begin(); inactive_it != std::prev(active_it.base()); ++inactive_it) {
+                const auto& inactive_label = *inactive_it;
+                render(inactive_label, stream, text_lines, text_index, false, current_column);
+                current_column = inactive_label.span().end().column();
             }
 
-            render(label, stream, text_lines, text_index, true, current_column);
-            stream << std::endl;
+            render(active_label, stream, text_lines, text_index, true, current_column);
+            stream << "\n";
         }
     }
 }
 
-size_t TextRenderer::render(const Label& label, std::ostream& stream,
-                            const std::vector<std::string>& text_lines, const size_t text_index,
-                            const bool active_render, const size_t column_start) const {
-    const auto start_column = label.span().start().column();
-    const auto end_column = label.span().end().column();
+void TextRenderer::render(const Label& label, std::ostream& stream, const std::vector<std::string>& text_lines, const size_t text_index,
+                          const bool active_render, const size_t column_start) const {
+    const auto start = label.span().start().column();
+    const auto end = label.span().end().column();
+    const auto is_first_line = (text_index == 0);
 
-    const auto& current_text = text_lines[text_index];
-
-    size_t column = column_start;
-    for (; column < end_column; column++) {
-        if (column == end_column - 1) {
-            if (!active_render) {
-                stream << _config.glyphs.line_vertical;
-                break;
-            }
-
-            if (text_index == 0) {
-                if (start_column == end_column - 1) stream << _config.glyphs.label_start;
-                else stream << _config.glyphs.label_end;
-                stream << _config.glyphs.line_horizontal << _config.glyphs.arrow_right << " ";
+    for (size_t column = column_start; column < end - 1; column++) {
+        if (column == start) {
+            if (active_render) {
+                if (is_first_line) {
+                    stream << _config.glyphs.label_start;
+                } else {
+                    stream << " ";
+                }
             } else {
-                // We need to pad with spaces equal to the visual width of "┴─▶ " or "╰─▶ ", which is 4.
-                stream << "    ";
+                stream << _config.glyphs.line_vertical;
             }
-
-            stream << current_text;
-            break;
-        }
-
-        if (column == start_column) {
-            if (active_render && text_index == 0) stream << _config.glyphs.label_start;
-            else if (!active_render) stream << _config.glyphs.line_vertical;
-            else stream << " ";
-        } else if (column > start_column && column < end_column) {
-            if (active_render && text_index == 0) stream << _config.glyphs.line_horizontal;
-            else stream << " ";
+        } else if (column > start) {
+            if (active_render && is_first_line) {
+                stream << _config.glyphs.line_horizontal;
+            } else {
+                stream << " ";
+            }
         } else {
             stream << " ";
         }
     }
 
-    return column;
+    if (!active_render) {
+        stream << _config.glyphs.line_vertical;
+        return;
+    }
+
+    if (is_first_line) {
+        if (start == end - 1) {
+            stream << _config.glyphs.label_start;
+        } else {
+            stream << _config.glyphs.label_end;
+        }
+
+        stream << _config.glyphs.line_horizontal << _config.glyphs.arrow_right << " ";
+    } else {
+        // We need to pad with spaces equal to the visual width of "┴─▶ " or "╰─▶ ", which is 4.
+        stream << "    ";
+    }
+
+    const auto& text = text_lines[text_index];
+    stream << text;
 }
 
 size_t TextRenderer::widest_line_number(const Report::MappedFileGroups& groups, const size_t padding) {
-    long line = 0;
+    size_t max_line = 0;
 
     for (const auto& group : groups | std::views::values) {
-        if (group.line_groups().empty()) continue;
-        const auto biggest_line = group.line_groups().rbegin()->first;
-        if (biggest_line > static_cast<size_t>(line)) line = static_cast<long>(biggest_line);
+        auto& lines = group.line_groups();
+        if (lines.empty()) continue;
+
+        // line_groups() is ordered; last key is the largest line number
+        max_line = std::max(max_line, lines.rbegin()->first);
     }
 
-    // line + 1 is the 1-based line number for display
-    const auto line_string = std::to_string(line + 1 + static_cast<long>(padding));
-    const auto width = visual_width(line_string);
+    // Convert to the 1-based display line number and apply padding
+    const size_t display_line = max_line + 1 + padding;
 
-    return width;
+    return visual_width(std::to_string(display_line));
 }
 
 std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const size_t max_width) {
@@ -379,14 +385,14 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
 void TextRenderer::print_wrapped_text(const std::string& text, const std::string& wrapped_prefix, const size_t max_width, std::ostream& stream) {
     const auto lines = wrap_text(text, max_width);
     if (lines.empty()) {
-        stream << std::endl;
+        stream << "\n";
         return;
     }
 
-    stream << lines[0] << std::endl;
-    for (size_t index = 1; index < lines.size(); ++index) {
-        const auto& line = lines[index];
-        stream << wrapped_prefix << line << std::endl;
+    stream << lines.front() << "\n";
+
+    for (const auto& line : lines | std::views::drop(1)) {
+        stream << wrapped_prefix << line << "\n";
     }
 }
 

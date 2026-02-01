@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "report.hpp"
 
@@ -45,7 +45,7 @@ namespace Glyphs {
      * limited or legacy terminals
      */
     GlyphSet Ascii();
-}
+} // namespace Glyphs
 
 /**
  * @brief Configuration options for the TextRenderer
@@ -122,8 +122,8 @@ public:
      *
      * @return Next text index to continue rendering wrapped text
      */
-    size_t render(const Label& label, std::ostream& stream, const std::vector<std::string>& text_lines, size_t text_index, bool active_render,
-                         size_t column_start = 0) const;
+    void render(const Label& label, std::ostream& stream, const std::vector<std::string>& text_lines, size_t text_index, bool active_render,
+                size_t column_start = 0) const;
 
     /**
      * @brief Computes the width of the widest line number across groups, plus padding

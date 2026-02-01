@@ -17,6 +17,60 @@ namespace pretty_diagnostics {
 std::string escape_string(std::string_view input);
 
 /**
+ * @brief Returns the maximum of a single value.
+ *
+ * @tparam T Type of the value (supports <)
+ * @param first The value
+ * @return The value itself
+ */
+template <typename T>
+T max(T first) {
+    return first;
+}
+
+/**
+ * @brief Returns the maximum of multiple values.
+ *
+ * @tparam T Type of the first argument (supports <)
+ * @tparam Ts Types of remaining arguments
+ * @param first First argument
+ * @param rest Remaining arguments
+ * @return Maximum value among all arguments
+ */
+template <typename T, typename... Ts>
+T max(T first, Ts... rest) {
+    T rest_max = max(rest...);
+    return (first < rest_max) ? rest_max : first;
+}
+
+/**
+ * @brief Returns the minimum of a single value
+ *
+ * @tparam T Type of the value (supports <)
+ * @param first The value
+ * @return The value itself
+ */
+template <typename T>
+T min(T first) {
+    return first;
+}
+
+/**
+ * @brief Returns the minimum of multiple values
+ *
+ * @tparam T Type of the first argument (supports <)
+ * @tparam Ts Types of remaining arguments
+ * @param first First argument
+ * @param rest Remaining arguments
+ * @return Minimum value among all arguments
+ */
+template <typename T, typename... Ts>
+T min(T first, Ts... rest) {
+    T rest_min = min(rest...);
+    return (rest_min < first) ? rest_min : first;
+}
+
+/**
  * @brief A structure to contian the return values from `get_visual_char`
  */
 struct VisualChar {
