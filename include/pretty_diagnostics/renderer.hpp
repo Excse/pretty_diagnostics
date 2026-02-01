@@ -1,10 +1,67 @@
 #pragma once
 
 #include <vector>
+#include <string>
 
 #include "report.hpp"
 
 namespace pretty_diagnostics {
+
+/**
+ * @brief Collection of glyphs used for rendering text-based UI elements
+ *
+ * A GlyphSet defines all characters used to draw borders, connectors,
+ * labels, and indicators in the TextRenderer. Different glyph sets
+ * (e.g. Unicode or ASCII) allow the renderer to adapt to terminal
+ * capabilities and user preferences
+ */
+struct GlyphSet {
+    std::string corner_top_left;
+    std::string corner_bottom_right;
+    std::string tee_right;
+    std::string cap_left;
+    std::string cap_right;
+    std::string line_vertical;
+    std::string line_horizontal;
+    std::string label_start;
+    std::string label_end;
+    std::string filler;
+    std::string arrow_right;
+};
+
+namespace Glyphs {
+    /**
+     * @brief Returns a Unicode glyph set for rich terminal rendering
+     *
+     * Uses box-drawing and symbolic Unicode characters. Recommended
+     * for modern terminals with full Unicode support
+     */
+    GlyphSet Unicode();
+
+    /**
+     * @brief Returns an ASCII-only glyph set for maximum compatibility
+     *
+     * Uses simple ASCII characters to ensure correct rendering on
+     * limited or legacy terminals
+     */
+    GlyphSet Ascii();
+}
+
+/**
+ * @brief Configuration options for the TextRenderer
+ *
+ * Controls visual aspects of the renderer, including which glyph
+ * set is used to draw borders, connectors, and labels
+ */
+struct Config {
+    /**
+     * @brief Glyph set used for rendering.
+     *
+     * Defaults to the Unicode glyph set.
+     */
+    GlyphSet glyphs = Glyphs::Unicode();
+};
+
 /**
  * @brief A plain-text renderer for diagnostic `Report`s
  *
@@ -16,8 +73,9 @@ public:
      * @brief Initializes the renderer with a reference layout taken from a `Report`
      *
      * @param report Report instance used to derive initial layout parameters
+     * @param config Optional configuration for the renderer
      */
-    explicit TextRenderer(const Report& report);
+    explicit TextRenderer(const Report& report, Config config = {});
 
     /**
      * @brief Renders just the severity label to the stream
@@ -64,8 +122,8 @@ public:
      *
      * @return Next text index to continue rendering wrapped text
      */
-    static size_t render(const Label& label, std::ostream& stream, const std::vector<std::string>& text_lines, size_t text_index, bool active_render,
-                         size_t column_start = 0);
+    size_t render(const Label& label, std::ostream& stream, const std::vector<std::string>& text_lines, size_t text_index, bool active_render,
+                         size_t column_start = 0) const;
 
     /**
      * @brief Computes the width of the widest line number across groups, plus padding
@@ -101,6 +159,7 @@ public:
 private:
     size_t _padding, _snippet_width;
     std::string _whitespaces;
+    Config _config;
 };
 } // namespace pretty_diagnostics
 
