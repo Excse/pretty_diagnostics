@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "color.hpp"
 #include "report.hpp"
 
 namespace pretty_diagnostics {
@@ -48,6 +49,31 @@ namespace Glyphs {
 } // namespace Glyphs
 
 /**
+ * @brief Collection of color styles used for semantic highlighting
+ *
+ * A ColorSet groups together styles used to visually distinguish
+ * different kinds of messages (errors, warnings, notes, etc.)
+ * in the TextRenderer output.
+ */
+struct ColorSet {
+    std::vector<color::Code> error;
+    std::vector<color::Code> warning;
+    std::vector<color::Code> info;
+    std::vector<color::Code> unknown;
+};
+
+namespace Colors {
+    /**
+     * @brief Returns the default ANSI color set for rendering
+     *
+     * Provides a sensible set of ANSI color styles suitable for
+     * most terminals. Intended as the default color configuration
+     * for the TextRenderer.
+     */
+    ColorSet Default();
+}
+
+/**
  * @brief Configuration options for the TextRenderer
  *
  * Controls visual aspects of the renderer, including which glyph
@@ -60,6 +86,13 @@ struct Config {
      * Defaults to the Unicode glyph set.
      */
     GlyphSet glyphs = Glyphs::Unicode();
+
+    /**
+     * @brief Color set used for rendering.
+     *
+     * Defaults to the standard ANSI color set.
+     */
+    ColorSet colors = Colors::Default();
 };
 
 /**
@@ -126,6 +159,17 @@ public:
                 size_t column_start = 0) const;
 
     /**
+     * @brief Prints the wrapped text into lines no longer than `max_width` characters and adds a prefix to
+     *        wrapped lines
+     *
+     * @param text Text to wrap
+     * @param wrapped_prefix The prefix for wrapped lines
+     * @param max_width Maximum line width
+     * @param stream  Output stream to write to
+     */
+    static void render_wrapped_text(const std::string& text, const std::string& wrapped_prefix, size_t max_width, std::ostream& stream);
+
+    /**
      * @brief Computes the width of the widest line number across groups, plus padding
      *
      * @param groups Mapped file groups used for rendering
@@ -144,17 +188,6 @@ public:
      * @return Wrapped text as a vector of lines
      */
     [[nodiscard]] static std::vector<std::string> wrap_text(const std::string& text, size_t max_width);
-
-    /**
-     * @brief Prints the wrapped text into lines no longer than `max_width` characters and adds a prefix to
-     *        wrapped lines
-     *
-     * @param text Text to wrap
-     * @param wrapped_prefix The prefix for wrapped lines
-     * @param max_width Maximum line width
-     * @param stream  Output stream to write to
-     */
-    static void print_wrapped_text(const std::string& text, const std::string& wrapped_prefix, size_t max_width, std::ostream& stream);
 
 private:
     size_t _line_number_width, _snippet_width;

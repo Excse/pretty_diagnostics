@@ -5,6 +5,7 @@ project(pretty_diagnostics VERSION 1.0.0 LANGUAGES CXX) # Define project name, v
 # Use C++23 and enforce it
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_SCAN_FOR_MODULES OFF)
 
 # Option to enable/disable testing:
 option(BUILD_TESTING "Enable testing" ON)

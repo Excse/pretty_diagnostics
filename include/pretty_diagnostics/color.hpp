@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ostream>
+#include <vector>
 
 namespace pretty_diagnostics::color {
 
@@ -73,12 +74,9 @@ std::ostream& operator<<(std::ostream& os, Code code);
  *
  * This is a lightweight proxy type used to apply multiple styles to a text
  * segment and automatically reset formatting after output
- *
- * @tparam N Number of ANSI codes applied to the text
  */
-template <std::size_t N>
 struct SyledText {
-    std::array<Code, N> codes;
+    std::vector<Code> style;
     std::string_view text;
 };
 
@@ -88,19 +86,11 @@ struct SyledText {
  * All style codes are emitted in order, followed by the text and a final
  * reset code to restore default formatting
  *
- * @tparam N Number of ANSI codes applied to the text
  * @param os Target output stream
  * @param text Styled text to be written
  * @return Reference to the given stream
  */
-template <std::size_t N>
-std::ostream& operator<<(std::ostream& os, const SyledText<N>& text) {
-    for (const auto code : text.codes) {
-        os << code;
-    }
-    os << text.text << Code::Reset;
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const SyledText& text);
 
 /**
  * @brief Creates a styled text object from a text and a set of ANSI codes
@@ -112,14 +102,7 @@ std::ostream& operator<<(std::ostream& os, const SyledText<N>& text) {
  * @param codes ANSI style and color codes to apply
  * @return A `SyledText` instance containing the provided styles and text
  */
-template <typename... Codes>
-requires (std::conjunction_v<std::is_same<Codes, Code>...>)
-[[nodiscard]] SyledText<sizeof...(Codes)> STYLE(std::string_view text, Codes... codes) {
-    return SyledText<sizeof...(Codes)>{
-        std::array<Code, sizeof...(Codes)>{codes...},
-        text
-    };
-}
+[[nodiscard]] SyledText style(std::string_view text, const std::vector<Code>& codes);
 
 /**
  * @brief Returns a unique `std::ios_base::xalloc` index used to store

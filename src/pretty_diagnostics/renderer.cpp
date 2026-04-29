@@ -3,8 +3,10 @@
 
 #include <ranges>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
+using namespace pretty_diagnostics::color;
 using namespace pretty_diagnostics;
 
 // TODO: Make this variable more dynamic
@@ -44,6 +46,15 @@ GlyphSet Glyphs::Ascii() {
     };
 }
 
+ColorSet Colors::Default() {
+    return {
+        .error = { Code::FgRed },
+        .warning = { Code::FgYellow },
+        .info = { Code::FgBlue },
+        .unknown = { Code::FgWhite },
+    };
+}
+
 TextRenderer::TextRenderer(const Report& report, Config config) : _config(std::move(config)) {
     _line_number_width = widest_line_number(report.file_groups(), LINE_PADDING) + 2;
     _snippet_width = static_cast<int>(_line_number_width - 1);
@@ -53,20 +64,20 @@ TextRenderer::TextRenderer(const Report& report, Config config) : _config(std::m
 void TextRenderer::render(const Severity& severity, std::ostream& stream) {
     switch (severity) {
         case Severity::Error: {
-            stream << "error";
+            stream << style("error", _config.colors.error);
             break;
         }
         case Severity::Warning: {
-            stream << "warning";
+            stream << style("warning", _config.colors.warning);
             break;
         }
         case Severity::Info: {
-            stream << "info";
+            stream << style("info", _config.colors.info);
             break;
         }
         case Severity::Unknown:
         default: {
-            stream << "unknown";
+            stream << style("unknown", _config.colors.unknown);
             break;
         }
     }
@@ -105,7 +116,7 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
     const auto message_wrapped_padding = stream.tellp();
     const auto message_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - message_wrapped_padding;
     const auto message_wrapped_prefix = std::string(message_wrapped_padding, ' ');
-    print_wrapped_text(report.message(), message_wrapped_prefix, message_available_width, stream);
+    render_wrapped_text(report.message(), message_wrapped_prefix, message_available_width, stream);
 
     for (auto it = file_groups.begin(); it != file_groups.end(); ++it) {
         const auto& [source, file_group] = *it;
@@ -133,7 +144,7 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
         const auto note_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - note_wrapped_padding;
 
         stream << note_prefix;
-        print_wrapped_text(report.note().value(), note_wrapped_prefix, note_available_width, stream);
+        render_wrapped_text(report.note().value(), note_wrapped_prefix, note_available_width, stream);
     }
 
     if (report.help().has_value()) {
@@ -144,7 +155,7 @@ void TextRenderer::render(const Report& report, std::ostream& stream) {
         const auto help_available_width = static_cast<long>(MAX_TERMINAL_WIDTH) - help_wrapped_padding;
 
         stream << help_prefix;
-        print_wrapped_text(report.help().value(), help_wrapped_prefix, help_available_width, stream);
+        render_wrapped_text(report.help().value(), help_wrapped_prefix, help_available_width, stream);
     }
 
     stream << _whitespaces << _config.glyphs.corner_bottom_right << "\n";
@@ -384,7 +395,7 @@ std::vector<std::string> TextRenderer::wrap_text(const std::string& text, const 
     return lines;
 }
 
-void TextRenderer::print_wrapped_text(const std::string& text, const std::string& wrapped_prefix, const size_t max_width, std::ostream& stream) {
+void TextRenderer::render_wrapped_text(const std::string& text, const std::string& wrapped_prefix, const size_t max_width, std::ostream& stream) {
     const auto lines = wrap_text(text, max_width);
     if (lines.empty()) {
         stream << "\n";

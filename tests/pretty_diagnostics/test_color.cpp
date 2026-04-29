@@ -19,42 +19,42 @@ TEST(Color, StringStreamColorNotAutoTogglable) {
 
 TEST(Color, DefaultNotColored) {
     std::stringstream stream;
-    stream << STYLE("Hello World!", Code::FgRed);
+    stream << style("Hello World!", { Code::FgRed });
     EXPECT_EQ(stream.str(), "Hello World!");
 }
 
 TEST(Color, BasicColoring) {
     std::stringstream stream;
     set_color_enabled(stream, true);
-    stream << STYLE("Hello World!", Code::FgRed);
+    stream << style("Hello World!", { Code::FgRed });
     EXPECT_EQ(stream.str(), "\033[31mHello World!\033[0m");
 }
 
 TEST(Color, DisabledColoring) {
     std::stringstream stream;
     set_color_enabled(stream, false);
-    stream << STYLE("Hello World!", Code::FgRed);
+    stream << style("Hello World!", { Code::FgRed });
     EXPECT_EQ(stream.str(), "Hello World!");
 }
 
 TEST(Color, MultipleStyles) {
     std::stringstream stream;
     set_color_enabled(stream, true);
-    stream << STYLE("Hello World!", Code::Bold, Code::FgGreen);
+    stream << style("Hello World!", { Code::Bold, Code::FgGreen });
     EXPECT_EQ(stream.str(), "\033[1m\033[32mHello World!\033[0m");
 }
 
 TEST(Color, BrightColors) {
     std::stringstream stream;
     set_color_enabled(stream, true);
-    stream << STYLE("Hello World!", Code::FgBrightRed);
+    stream << style("Hello World!", { Code::FgBrightRed });
     EXPECT_EQ(stream.str(), "\033[91mHello World!\033[0m");
 }
 
 TEST(Color, BackgroundColors) {
     std::stringstream stream;
     set_color_enabled(stream, true);
-    stream << STYLE("Hello World!", Code::BgBlue);
+    stream << style("Hello World!", { Code::BgBlue });
     EXPECT_EQ(stream.str(), "\033[44mHello World!\033[0m");
 }
 

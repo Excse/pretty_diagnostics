@@ -18,6 +18,18 @@ std::ostream& color::operator<<(std::ostream& os, Code code) {
     return os;
 }
 
+std::ostream& color::operator<<(std::ostream& os, const SyledText& text) {
+    for (const auto code : text.style) {
+        os << code;
+    }
+    os << text.text << Code::Reset;
+    return os;
+}
+
+SyledText color::style(const std::string_view text, const std::vector<Code>& codes) {
+    return SyledText { codes, text };
+}
+
 int color::color_enabled_index() {
     static int COLOR_INDEX = std::ios_base::xalloc();
     return COLOR_INDEX;
